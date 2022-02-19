@@ -11,7 +11,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class Bluestar
 {
-    public static void useCommand(CommandSender sender, String cmd)
+    public static void useCommand(CommandSender sender, String cmd,Plugin plugin)
     {
         new BukkitRunnable()
         {
@@ -20,7 +20,7 @@ public class Bluestar
             {
                 Bukkit.getServer().dispatchCommand(sender,cmd);
             }
-        }.runTask(BluestarAPI.getPlugin(BluestarAPI.class));
+        }.runTask(plugin);
     }
     public static void setBlock(Location location, Material block,String playerName)
     {
