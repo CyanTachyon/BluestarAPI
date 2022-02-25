@@ -1,4 +1,4 @@
-package me.lanzhi.bluestarapi;
+package me.lanzhi.bluestarapi.Api;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
