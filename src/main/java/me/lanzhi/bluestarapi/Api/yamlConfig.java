@@ -2,10 +2,12 @@ package me.lanzhi.bluestarapi.Api;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+
 import java.io.File;
 import java.io.IOException;
 
-public class yamlConfig extends FileConfiguration
+public class yamlConfig extends YamlConfiguration
 {
     private File file;
 
@@ -45,10 +47,4 @@ public class yamlConfig extends FileConfiguration
             System.out.println("§4[BluestarAPI]无法保存文件:" + file.getName());
         }
     }
-
-    @Override
-    public String saveToString() {return file.getPath();}
-
-    @Override
-    public void loadFromString(String contents) throws InvalidConfigurationException {}
 }
