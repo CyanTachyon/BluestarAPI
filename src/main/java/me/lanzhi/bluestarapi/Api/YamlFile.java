@@ -1,17 +1,15 @@
 package me.lanzhi.bluestarapi.Api;
 
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
 
-public class yamlConfig extends YamlConfiguration
+public class YamlFile extends YamlConfiguration
 {
     private File file;
 
-    public yamlConfig(File file)
+    public YamlFile(File file)
     {
         this.file = file;
         try

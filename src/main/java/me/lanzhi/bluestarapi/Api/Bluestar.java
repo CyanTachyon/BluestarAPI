@@ -1,5 +1,6 @@
 package me.lanzhi.bluestarapi.Api;
 
+import me.lanzhi.bluestarapi.BluestarAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,34 +23,41 @@ public class Bluestar
             }
         }.runTask(plugin);
     }
-    public static void setBlock(Location location, Material block,String playerName)
+    public static void setBlock(Location location,Material block,String playerName)
     {
         if(location.getBlock().getType() == block)
         {
             return;
         }
         Material type = location.getBlock().getType();
-        if (coreProtect==null)
-        {
-            coreProtect=getCoreProtect();
-        }
-        if(coreProtect!=null)
-        {
-            if(type==Material.AIR&&block!=Material.AIR)
-            {
-                coreProtect.logPlacement(playerName,location,block,null);
-            }
-            else if(type!=Material.AIR&&block==Material.AIR)
-            {
-                coreProtect.logRemoval(playerName,location,type,null);
-            }
-            else if(type!=Material.AIR)
-            {
-                coreProtect.logRemoval(playerName,location,type,null);
-                coreProtect.logPlacement(playerName,location,block,null);
-            }
-        }
         location.getBlock().setType(block);
+        new BukkitRunnable()
+        {
+            @Override
+            public void run()
+            {
+                if (coreProtect==null)
+                {
+                    coreProtect=getCoreProtect();
+                }
+                if(coreProtect!=null)
+                {
+                    if(type==Material.AIR&&block!=Material.AIR)
+                    {
+                        coreProtect.logPlacement(playerName,location,block,null);
+                    }
+                    else if(type!=Material.AIR&&block==Material.AIR)
+                    {
+                        coreProtect.logRemoval(playerName,location,type,null);
+                    }
+                    else if(type!=Material.AIR)
+                    {
+                        coreProtect.logRemoval(playerName,location,type,null);
+                        coreProtect.logPlacement(playerName,location,block,null);
+                    }
+                }
+            }
+        }.runTaskAsynchronously(BluestarAPI.thisPlugin);
     }
     private static CoreProtectAPI coreProtect=null;
     private static CoreProtectAPI getCoreProtect()
