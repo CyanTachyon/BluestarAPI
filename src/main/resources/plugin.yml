@@ -4,3 +4,4 @@ main: me.lanzhi.bluestarapi.BluestarAPI
 api-version: 1.18
 softdepend:
   - CoreProtect
+website: https://github.com/lanzhi6/BluestarAPI

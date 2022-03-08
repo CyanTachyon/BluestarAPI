@@ -25,11 +25,11 @@ public class Bluestar
     }
     public static void setBlock(Location location,Material block,String playerName)
     {
-        if(location.getBlock().getType() == block)
+        Material type = location.getBlock().getType();
+        if(type == block)
         {
             return;
         }
-        Material type = location.getBlock().getType();
         location.getBlock().setType(block);
         new BukkitRunnable()
         {
