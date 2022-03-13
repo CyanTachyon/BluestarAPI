@@ -9,7 +9,7 @@ public final class BluestarAPI extends JavaPlugin
     @Override
     public void onEnable()
     {
-        thisPlugin=BluestarAPI.getProvidingPlugin(BluestarAPI.class);
+        thisPlugin=this;
         System.out.println("BluestarAPI已加载");
     }
     @Override
