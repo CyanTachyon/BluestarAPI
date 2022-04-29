@@ -6,10 +6,10 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class AutoConfigSerialize implements ConfigurationSerializable
+public interface AutoConfigSerialize extends ConfigurationSerializable
 {
     @Override
-    public Map<String, Object> serialize()
+    public default Map<String, Object> serialize()
     {
         HashMap<String,Object> map=new HashMap<>();
         Class<? extends AutoConfigSerialize> clazz=this.getClass();
@@ -28,19 +28,23 @@ public abstract class AutoConfigSerialize implements ConfigurationSerializable
             catch (Throwable e)
             {}
         }
+        map.put("class",clazz.getName());
         return map;
     }
-    public static AutoConfigSerialize deserialize(Map<String,Object>map)
+    public static AutoConfigSerialize deserialize(Map<String,Object> map)
     {
+        System.out.println("反序列化开始");
         Class<? extends AutoConfigSerialize> clazz;
         try
         {
-            clazz=(Class<? extends AutoConfigSerialize>)Class.forName((String) map.get("=="));
+            clazz=(Class<? extends AutoConfigSerialize>)Class.forName((String) map.get("class"));
         }
         catch (Throwable e)
         {
+            System.out.println("获取class失败");
             return null;
         }
+        System.out.println("找到class: "+clazz.getName());
         AutoConfigSerialize object;
         try
         {
@@ -48,6 +52,7 @@ public abstract class AutoConfigSerialize implements ConfigurationSerializable
         }
         catch (Throwable e)
         {
+            System.out.println("获取对象失败");
             return null;
         }
         Field[] fields=clazz.getDeclaredFields();
@@ -63,9 +68,11 @@ public abstract class AutoConfigSerialize implements ConfigurationSerializable
                 field.set(object,map.get(field.getName()));
             }
             catch (IllegalAccessException e)
-            {}
+            {
+                System.out.println("设置变量失败");
+            }
         }
         return object;
     }
-    public abstract AutoConfigSerialize getNewObject();
+    public AutoConfigSerialize getNewObject();
 }
