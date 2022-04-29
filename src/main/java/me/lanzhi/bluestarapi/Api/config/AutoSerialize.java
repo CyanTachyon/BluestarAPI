@@ -7,16 +7,17 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AutoSerialize
+public class AutoSerialize implements AutoSerializeInterface
 {
-    private final static HashMap<String,Class<? extends AutoSerializeInterface>> serializableClazz=new HashMap<>();
+    private final static HashMap<String,Class<? extends AutoSerializeInterface>> classNames=new HashMap<>();
+    private final static HashMap<Class<? extends AutoSerializeInterface>,String> allClazz=new HashMap<>();
 
     public static AutoSerializeInterface deserialize(Map<String, Object> map)
     {
         String clazzName=(String) map.get("class");
         System.out.println("反序列化: "+clazzName);
         Class<? extends AutoSerializeInterface> clazz;
-        clazz=serializableClazz.get(clazzName);
+        clazz=AutoSerialize.classNames.get(clazzName);
         if (clazz==null)
         {
             Bukkit.getLogger().warning(ChatColor.RED+"反序列化失败,未找到类: \""+clazzName+"\"");
@@ -57,6 +58,11 @@ public class AutoSerialize
     }
     public static void registerClass(Class<? extends AutoSerializeInterface> clazz,String name)
     {
-        serializableClazz.put(name,clazz);
+        classNames.put(name,clazz);
+        allClazz.put(clazz,name);
+    }
+    public static String getClassName(Class<? extends AutoSerializeInterface>clazz)
+    {
+        return allClazz.get(clazz);
     }
 }

@@ -1,5 +1,6 @@
 package me.lanzhi.bluestarapi;
 
+import me.lanzhi.bluestarapi.Api.config.AutoSerialize;
 import me.lanzhi.bluestarapi.Api.config.AutoSerializeInterface;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.Plugin;
@@ -13,6 +14,7 @@ public final class BluestarAPI extends JavaPlugin
     {
         thisPlugin=this;
         ConfigurationSerialization.registerClass(AutoSerializeInterface.class);
+        ConfigurationSerialization.registerClass(AutoSerialize.class,"BluestarAPI.AutoSerialize");
         System.out.println("BluestarAPI已加载");
     }
     @Override

@@ -14,7 +14,7 @@ public interface AutoSerializeInterface extends ConfigurationSerializable
     {
         HashMap<String, Object> map=new HashMap<>();
         Class<? extends AutoSerializeInterface> clazz=this.getClass();
-        map.put("class",clazz.getName());
+        map.put("class",AutoSerialize.getClassName(clazz));
         map.put(ConfigurationSerialization.SERIALIZED_TYPE_KEY,AutoSerialize.class.getName());
         Field[] fields=clazz.getDeclaredFields();
         for (Field field: fields)
