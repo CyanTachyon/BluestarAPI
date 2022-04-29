@@ -1,9 +1,12 @@
 package me.lanzhi.bluestarapi.Api.config;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,17 +22,27 @@ public interface AutoSerializeInterface extends ConfigurationSerializable
         Field[] fields=clazz.getDeclaredFields();
         for (Field field: fields)
         {
-            if (field.isAnnotationPresent(DoNotSerialize.class))
-            {
-                continue;
-            }
+            field.setAccessible(true);
             try
             {
-                field.setAccessible(true);
-                map.put(field.getName(),field.get(this));
+                if (field.isAnnotationPresent(SpecialSerialize.class))
+                {
+                    SpecialSerialize specialSerialize=field.getAnnotation(SpecialSerialize.class);
+                    if (!specialSerialize.doSerialize())
+                    {
+                        continue;
+                    }
+                    Method method=clazz.getMethod(specialSerialize.method(),field.getType());
+                    map.put(field.getName(),method.invoke(this,field.get(this)));
+                }
+                else
+                {
+                    map.put(field.getName(),field.get(this));
+                }
             }
             catch (Throwable e)
             {
+                Bukkit.getLogger().warning(ChatColor.RED+"变量 "+field.getName()+" 序列化失败");
             }
         }
         return map;

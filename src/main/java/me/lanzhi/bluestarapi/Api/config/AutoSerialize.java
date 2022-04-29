@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,19 +37,27 @@ public class AutoSerialize implements AutoSerializeInterface
         Field[] fields=clazz.getDeclaredFields();
         for (Field field: fields)
         {
-            if (field.isAnnotationPresent(DoNotSerialize.class))
-            {
-                continue;
-            }
             field.setAccessible(true);
             try
             {
-                field.set(object,map.get(field.getName()));
+                if (field.isAnnotationPresent(SpecialSerialize.class))
+                {
+                    SpecialSerialize specialSerialize=field.getAnnotation(SpecialSerialize.class);
+                    if (!specialSerialize.doSerialize())
+                    {
+                        continue;
+                    }
+                    Method method=clazz.getMethod(specialSerialize.method(),Object.class);
+                    field.set(object,method.invoke(object,map.get(field.getName())));
+                }
+                else
+                {
+                    field.set(object,map.get(field.getName()));
+                }
             }
-            catch (IllegalAccessException e)
+            catch (Throwable e)
             {
-                System.out.println(ChatColor.RED+"设置变量失败");
-                throw new RuntimeException(e);
+                Bukkit.getLogger().warning(ChatColor.RED+"变量 "+field.getName()+" 反序列化失败");
             }
         }
         return object;
