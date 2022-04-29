@@ -19,7 +19,7 @@ public interface AutoSerializeInterface extends ConfigurationSerializable
         Field[] fields=clazz.getDeclaredFields();
         for (Field field: fields)
         {
-            if ((field.getModifiers()&8)!=0||field.getAnnotation(DoNotSerialize.class)!=null)
+            if (field.isAnnotationPresent(DoNotSerialize.class))
             {
                 continue;
             }

@@ -36,7 +36,7 @@ public class AutoSerialize implements AutoSerializeInterface
         Field[] fields=clazz.getDeclaredFields();
         for (Field field: fields)
         {
-            if ((field.getModifiers()&8)!=0)
+            if (field.isAnnotationPresent(DoNotSerialize.class))
             {
                 continue;
             }
