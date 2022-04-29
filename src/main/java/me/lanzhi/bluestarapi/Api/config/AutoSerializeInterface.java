@@ -15,11 +15,11 @@ public interface AutoSerializeInterface extends ConfigurationSerializable
         HashMap<String, Object> map=new HashMap<>();
         Class<? extends AutoSerializeInterface> clazz=this.getClass();
         map.put("class",AutoSerialize.getClassName(clazz));
-        map.put(ConfigurationSerialization.SERIALIZED_TYPE_KEY,AutoSerialize.class.getName());
+        map.put(ConfigurationSerialization.SERIALIZED_TYPE_KEY,AutoSerialize.nameOfAutoSerialize);
         Field[] fields=clazz.getDeclaredFields();
         for (Field field: fields)
         {
-            if ((field.getModifiers()&8)!=0)
+            if ((field.getModifiers()&8)!=0||field.getAnnotation(DoNotSerialize.class)!=null)
             {
                 continue;
             }

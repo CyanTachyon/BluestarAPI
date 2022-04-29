@@ -9,6 +9,7 @@ import java.util.Map;
 
 public class AutoSerialize implements AutoSerializeInterface
 {
+    public final static String nameOfAutoSerialize="BluestarAPI.AutoSerialize";
     private final static HashMap<String,Class<? extends AutoSerializeInterface>> classNames=new HashMap<>();
     private final static HashMap<Class<? extends AutoSerializeInterface>,String> allClazz=new HashMap<>();
 
