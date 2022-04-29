@@ -13,6 +13,8 @@ public interface AutoConfigSerialize extends ConfigurationSerializable
     {
         HashMap<String,Object> map=new HashMap<>();
         Class<? extends AutoConfigSerialize> clazz=this.getClass();
+        map.put("Class",clazz.getName());
+        map.put("==",AutoConfigSerialize.class.getName());
         Field[] fields=clazz.getDeclaredFields();
         for (Field field:fields)
         {
@@ -28,7 +30,7 @@ public interface AutoConfigSerialize extends ConfigurationSerializable
             catch (Throwable e)
             {}
         }
-        map.put("class",clazz.getName());
+        this.getClass();
         return map;
     }
     public static AutoConfigSerialize deserialize(Map<String,Object> map)
@@ -37,7 +39,7 @@ public interface AutoConfigSerialize extends ConfigurationSerializable
         Class<? extends AutoConfigSerialize> clazz;
         try
         {
-            clazz=(Class<? extends AutoConfigSerialize>)Class.forName((String) map.get("class"));
+            clazz=(Class<? extends AutoConfigSerialize>)Class.forName((String) map.get("Class"));
         }
         catch (Throwable e)
         {
@@ -48,7 +50,7 @@ public interface AutoConfigSerialize extends ConfigurationSerializable
         AutoConfigSerialize object;
         try
         {
-            object=clazz.cast(clazz.getMethod("getNewObject").invoke(null));
+            object=clazz.cast(clazz.newInstance());
         }
         catch (Throwable e)
         {
@@ -74,5 +76,4 @@ public interface AutoConfigSerialize extends ConfigurationSerializable
         }
         return object;
     }
-    public AutoConfigSerialize getNewObject();
 }
