@@ -1,4 +1,4 @@
-package me.lanzhi.bluestarapi.Api;
+package me.lanzhi.bluestarapi.Api.config;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 
