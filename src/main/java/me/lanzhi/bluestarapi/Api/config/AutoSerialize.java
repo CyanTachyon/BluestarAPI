@@ -47,8 +47,9 @@ public class AutoSerialize implements AutoSerializeInterface
                     {
                         continue;
                     }
-                    Method method=clazz.getMethod(specialSerialize.deserialize(),Object.class);
-                    field.set(object,method.invoke(object,map.get(field.getName())));
+                    Method serializeMethod=clazz.getMethod(specialSerialize.serialize(),field.getType());
+                    Method deserializeMethod=clazz.getMethod(specialSerialize.deserialize(),serializeMethod.getReturnType());
+                    field.set(object,deserializeMethod.invoke(object,map.get(field.getName())));
                 }
                 else
                 {
