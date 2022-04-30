@@ -28,7 +28,7 @@ public interface AutoSerializeInterface extends ConfigurationSerializable
                 if (field.isAnnotationPresent(SpecialSerialize.class))
                 {
                     SpecialSerialize specialSerialize=field.getAnnotation(SpecialSerialize.class);
-                    if (!specialSerialize.doSerialize())
+                    if (specialSerialize.serialize().isEmpty())
                     {
                         continue;
                     }

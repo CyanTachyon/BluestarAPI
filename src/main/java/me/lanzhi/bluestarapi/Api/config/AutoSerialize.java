@@ -43,7 +43,7 @@ public class AutoSerialize implements AutoSerializeInterface
                 if (field.isAnnotationPresent(SpecialSerialize.class))
                 {
                     SpecialSerialize specialSerialize=field.getAnnotation(SpecialSerialize.class);
-                    if (!specialSerialize.doSerialize())
+                    if (specialSerialize.deserialize().isEmpty())
                     {
                         continue;
                     }
