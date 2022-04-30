@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import net.coreprotect.CoreProtectAPI;
 import net.coreprotect.CoreProtect;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -30,6 +31,7 @@ public class Bluestar
         {
             return;
         }
+        BlockData blockData=location.getBlock().getBlockData();
         location.getBlock().setType(block);
         new BukkitRunnable()
         {
@@ -42,17 +44,17 @@ public class Bluestar
                 }
                 if(coreProtect!=null)
                 {
-                    if(type==Material.AIR&&block!=Material.AIR)
+                    if(type==Material.AIR)
                     {
                         coreProtect.logPlacement(playerName,location,block,null);
                     }
-                    else if(type!=Material.AIR&&block==Material.AIR)
+                    else if(block==Material.AIR)
                     {
-                        coreProtect.logRemoval(playerName,location,type,null);
+                        coreProtect.logRemoval(playerName,location,type,blockData);
                     }
-                    else if(type!=Material.AIR)
+                    else
                     {
-                        coreProtect.logRemoval(playerName,location,type,null);
+                        coreProtect.logRemoval(playerName,location,type,blockData);
                         coreProtect.logPlacement(playerName,location,block,null);
                     }
                 }

@@ -62,6 +62,7 @@ public class YamlFile extends YamlConfiguration
     {
         try
         {
+            file.createNewFile();
             this.save(file);
         }
         catch (IOException e)

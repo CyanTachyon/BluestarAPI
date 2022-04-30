@@ -32,7 +32,7 @@ public interface AutoSerializeInterface extends ConfigurationSerializable
                     {
                         continue;
                     }
-                    Method method=clazz.getMethod(specialSerialize.method(),field.getType());
+                    Method method=clazz.getMethod(specialSerialize.serialize(),field.getType());
                     map.put(field.getName(),method.invoke(this,field.get(this)));
                 }
                 else

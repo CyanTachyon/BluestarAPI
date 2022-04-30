@@ -12,6 +12,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface SpecialSerialize
 {
-    boolean doSerialize() default true;
-    String method() default "";
+    boolean doSerialize() default false;
+    String serialize() default "";
+    String deserialize() default "";
 }

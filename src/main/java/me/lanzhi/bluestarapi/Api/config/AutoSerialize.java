@@ -47,7 +47,7 @@ public class AutoSerialize implements AutoSerializeInterface
                     {
                         continue;
                     }
-                    Method method=clazz.getMethod(specialSerialize.method(),Object.class);
+                    Method method=clazz.getMethod(specialSerialize.deserialize(),Object.class);
                     field.set(object,method.invoke(object,map.get(field.getName())));
                 }
                 else
@@ -71,7 +71,17 @@ public class AutoSerialize implements AutoSerializeInterface
         classNames.put(name,clazz);
         allClazz.put(clazz,name);
     }
-    public static String getClassName(Class<? extends AutoSerializeInterface>clazz)
+    public static void unregisterClass(Class<? extends AutoSerializeInterface>clazz)
+    {
+        classNames.values().remove(clazz);
+        allClazz.remove(clazz);
+    }
+    public static void unregisterClass(String name)
+    {
+        classNames.remove(name);
+        allClazz.values().remove(name);
+    }
+    protected static String getClassName(Class<? extends AutoSerializeInterface>clazz)
     {
         return allClazz.get(clazz);
     }

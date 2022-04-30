@@ -15,7 +15,7 @@ public final class BluestarAPI extends JavaPlugin
     public void onEnable()
     {
         thisPlugin=this;
-        ConfigurationSerialization.registerClass(AutoSerializeInterface.class);
+        //ConfigurationSerialization.registerClass(AutoSerializeInterface.class);
         ConfigurationSerialization.registerClass(AutoSerialize.class,nameOfAutoSerialize);
         System.out.println("BluestarAPI已加载");
     }
