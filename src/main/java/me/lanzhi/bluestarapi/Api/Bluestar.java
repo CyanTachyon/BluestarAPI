@@ -12,7 +12,7 @@ import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class Bluestar
+final public class Bluestar
 {
     public static void useCommand(CommandSender sender,String cmd,Plugin plugin)
     {
