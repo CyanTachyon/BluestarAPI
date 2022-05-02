@@ -112,14 +112,9 @@ final public class AutoSerialize implements AutoSerializeInterface
         return Collections.emptyMap();
     }
 
-    protected static void registerClass(Class<? extends AutoSerializeInterface> clazz)
+    public static void registerClass(Class<? extends AutoSerializeInterface> clazz)
     {
-        registerClass(clazz,getClassName(clazz));
-    }
-
-    private static void registerClass(Class<? extends AutoSerializeInterface> clazz,String name)
-    {
-        classNames.put(name,clazz);
+        classNames.put(getClassName(clazz),clazz);
     }
     private static String getClassName(Class<?> clazz)
     {
