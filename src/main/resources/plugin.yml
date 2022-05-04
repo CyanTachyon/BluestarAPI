@@ -4,4 +4,6 @@ main: me.lanzhi.bluestarapi.BluestarAPI
 api-version: 1.18
 softdepend:
   - CoreProtect
+loadbefore:
+  - BluestarGame
 website: https://github.com/lanzhi6/BluestarAPI

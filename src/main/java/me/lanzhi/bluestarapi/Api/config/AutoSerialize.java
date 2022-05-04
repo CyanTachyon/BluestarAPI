@@ -20,10 +20,11 @@ final public class AutoSerialize implements AutoSerializeInterface
         String clazzName=(String) map.get("class");
         System.out.println("反序列化: "+clazzName);
         Class<? extends AutoSerializeInterface> clazz;
-        clazz=AutoSerialize.classNames.get(clazzName);
+        clazz=classNames.get(clazzName);
         if (clazz==null)
         {
             Bukkit.getLogger().warning(ChatColor.RED+"反序列化失败,未找到类: \""+clazzName+"\"");
+            return null;
         }
         AutoSerializeInterface object;
         try
@@ -74,7 +75,7 @@ final public class AutoSerialize implements AutoSerializeInterface
     {
         HashMap<String, Object> map=new HashMap<>();
         String clazzName=getClassName(clazz);
-        System.out.println("反序列化: "+clazzName);
+        System.out.println("序列化: "+clazzName);
         map.put("class",clazzName);
         map.put(ConfigurationSerialization.SERIALIZED_TYPE_KEY,AutoSerialize.nameOfAutoSerialize);
         Field[] fields=clazz.getDeclaredFields();
@@ -109,7 +110,7 @@ final public class AutoSerialize implements AutoSerializeInterface
     @Override
     public Map<String, Object> serialize()
     {
-        return Collections.emptyMap();
+        return new HashMap<>();
     }
 
     public static void registerClass(Class<? extends AutoSerializeInterface> clazz)

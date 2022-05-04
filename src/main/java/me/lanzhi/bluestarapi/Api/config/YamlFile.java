@@ -20,18 +20,6 @@ final public class YamlFile extends YamlConfiguration
         {
             System.out.println("§4[BluestarAPI]创建文件时出错:"+file.getName());
         }
-        try
-        {
-            this.load(file);
-        }
-        catch (IOException e)
-        {
-            System.out.println("§4[BluestarAPI]加载文件时出错:" + file.getName());
-        }
-        catch (org.bukkit.configuration.InvalidConfigurationException e)
-        {
-            System.out.println("§4[BluestarAPI]加载文件时出错:" + file.getName());
-        }
     }
 
     public void reload()
