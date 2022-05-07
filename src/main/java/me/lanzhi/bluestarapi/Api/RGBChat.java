@@ -56,13 +56,7 @@ public class RGBChat
     }
     public String toColorCode()
     {
-        StringBuilder stringBuilder=new StringBuilder("§x");
-        for (char i:getHexColor().toCharArray())
-        {
-            stringBuilder.append("§");
-            stringBuilder.append(i);
-        }
-        return stringBuilder.toString();
+        return toColorCode(getHexColor());
     }
     @Override
     public String toString()
@@ -105,5 +99,14 @@ public class RGBChat
     public static String getHexColor(int color)
     {
         return getHexRed(color)+getHexGreen(color)+getHexBlue(color);
+    }
+    public static String toColorCode(String hexColor)
+    {
+        StringBuilder builder=new StringBuilder("§x");
+        for (char i:hexColor.toCharArray())
+        {
+            builder.append("§").append(i);
+        }
+        return builder.toString();
     }
 }
