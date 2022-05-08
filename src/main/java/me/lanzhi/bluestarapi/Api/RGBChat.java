@@ -1,5 +1,10 @@
 package me.lanzhi.bluestarapi.Api;
 
+import org.bukkit.ChatColor;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class RGBChat
 {
     private final int r;
@@ -13,8 +18,8 @@ public class RGBChat
             color=0;
         }
         this.r=Math.min(getRed(color),0xff);
-        this.g=Math.min(getRed(color),0xff);
-        this.b=Math.min(getRed(color),0xff);
+        this.g=Math.min(getGreen(color),0xff);
+        this.b=Math.min(getBlue(color),0xff);
     }
     public RGBChat(int r,int g,int b)
     {
@@ -105,8 +110,24 @@ public class RGBChat
         StringBuilder builder=new StringBuilder("§x");
         for (char i:hexColor.toCharArray())
         {
+            if ("0123456789AaBbCcDdEeFfKkLlMmNnOoRr".indexOf(i)<=-1)
+            {
+                continue;
+            }
             builder.append("§").append(i);
         }
         return builder.toString();
+    }
+    private static Pattern hex=Pattern.compile("#([0-9A-Fa-fK-Ok-oRr]{6})");
+    public static String setColor(String message)
+    {
+        StringBuilder stringBuilder=new StringBuilder();
+        Matcher matcher=hex.matcher(message);
+        while (matcher.find())
+        {
+            matcher.appendReplacement(stringBuilder,toColorCode(matcher.group()));
+        }
+        matcher.appendTail(stringBuilder);
+        return ChatColor.translateAlternateColorCodes('&',stringBuilder.toString());
     }
 }
