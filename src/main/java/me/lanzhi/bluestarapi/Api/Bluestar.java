@@ -12,6 +12,8 @@ import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.Random;
+
 final public class Bluestar
 {
     public static void useCommand(CommandSender sender,String cmd,Plugin plugin)
@@ -68,6 +70,36 @@ final public class Bluestar
     {
         Bukkit.getPluginManager().callEvent(event);
         return event;
+    }
+    private static Random random=new Random();
+    public static int randomInt(int bound)
+    {
+        return random.nextInt(bound);
+    }
+
+    public static long randomLong(long bound)
+    {
+        return random.nextLong(bound);
+    }
+
+    public static double randomDouble(double bound)
+    {
+        return random.nextDouble(bound);
+    }
+
+    public static int randomInt()
+    {
+        return random.nextInt();
+    }
+
+    public static long randomLong()
+    {
+        return random.nextLong();
+    }
+
+    public static double randomDouble()
+    {
+        return random.nextDouble();
     }
 
     private static CoreProtectAPI coreProtect=null;
