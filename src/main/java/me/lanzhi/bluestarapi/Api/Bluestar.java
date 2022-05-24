@@ -16,6 +16,9 @@ import java.util.Random;
 
 final public class Bluestar
 {
+    private static Random random=new Random();
+    private static CoreProtectAPI coreProtect=null;
+
     public static void useCommand(CommandSender sender,String cmd,Plugin plugin)
     {
         new BukkitRunnable()
@@ -66,25 +69,15 @@ final public class Bluestar
         }.runTaskAsynchronously(BluestarAPI.thisPlugin);
     }
 
-    public static <T extends Event>T callEvent(T event)
+    public static <T extends Event> T callEvent(T event)
     {
         Bukkit.getPluginManager().callEvent(event);
         return event;
     }
-    private static Random random=new Random();
+
     public static int randomInt(int bound)
     {
         return random.nextInt(bound);
-    }
-
-    public static long randomLong(long bound)
-    {
-        return random.nextLong(bound);
-    }
-
-    public static double randomDouble(double bound)
-    {
-        return random.nextDouble(bound);
     }
 
     public static int randomInt()
@@ -101,8 +94,6 @@ final public class Bluestar
     {
         return random.nextDouble();
     }
-
-    private static CoreProtectAPI coreProtect=null;
 
     private static CoreProtectAPI getCoreProtect()
     {
