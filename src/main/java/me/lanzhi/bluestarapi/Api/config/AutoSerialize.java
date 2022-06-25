@@ -18,7 +18,7 @@ final public class AutoSerialize implements AutoSerializeInterface
     public static AutoSerializeInterface deserialize(Map<String, Object> map)
     {
         String clazzName=(String) map.get("class");
-        System.out.println("反序列化: "+clazzName);
+        //System.out.println("反序列化: "+clazzName);
         Class<? extends AutoSerializeInterface> clazz;
         clazz=classNames.get(clazzName);
         if (clazz==null)
@@ -75,7 +75,7 @@ final public class AutoSerialize implements AutoSerializeInterface
     {
         HashMap<String, Object> map=new HashMap<>();
         String clazzName=getClassName(clazz);
-        System.out.println("序列化: "+clazzName);
+        //System.out.println("序列化: "+clazzName);
         map.put("class",clazzName);
         map.put(ConfigurationSerialization.SERIALIZED_TYPE_KEY,AutoSerialize.nameOfAutoSerialize);
         Field[] fields=clazz.getDeclaredFields();

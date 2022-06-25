@@ -5,7 +5,7 @@ import org.bukkit.ChatColor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class RGBChat
+public final class RGBChat
 {
     private final int r;
     private final int g;
