@@ -21,24 +21,24 @@ import java.util.Random;
 final public class Bluestar
 {
     private static final Random random=new Random();
-    private static CoreProtectAPI coreProtect=null;
     private static final Field acceptRegisterEnchantment;
     private static final Map<NamespacedKey, Enchantment> enchantmentByKey;
     private static final Map<String, Enchantment> enchantmentByName;
+    private static CoreProtectAPI coreProtect=null;
 
     static
     {
         try
         {
-            acceptRegisterEnchantment=Enchantment.class.getField("acceptingNew");
-            Field byKey=Enchantment.class.getField("byKey");
+            acceptRegisterEnchantment=Enchantment.class.getDeclaredField("acceptingNew");
+            Field byKey=Enchantment.class.getDeclaredField("byKey");
             byKey.setAccessible(true);
-            enchantmentByKey=(Map<NamespacedKey, Enchantment>)byKey.get(null);
+            enchantmentByKey=(Map<NamespacedKey, Enchantment>) byKey.get(null);
             byKey.setAccessible(false);
 
-            Field byName=Enchantment.class.getField("byName");
+            Field byName=Enchantment.class.getDeclaredField("byName");
             byName.setAccessible(true);
-            enchantmentByName=(Map<String, Enchantment>)byName.get(null);
+            enchantmentByName=(Map<String, Enchantment>) byName.get(null);
             byName.setAccessible(false);
         }
         catch (Throwable e)
