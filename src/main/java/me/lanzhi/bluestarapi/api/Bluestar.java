@@ -1,4 +1,4 @@
-package me.lanzhi.bluestarapi.Api;
+package me.lanzhi.bluestarapi.api;
 
 import me.lanzhi.bluestarapi.BluestarAPI;
 import net.coreprotect.CoreProtect;

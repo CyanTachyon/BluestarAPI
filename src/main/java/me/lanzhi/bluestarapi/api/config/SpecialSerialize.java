@@ -1,4 +1,4 @@
-package me.lanzhi.bluestarapi.Api.config;
+package me.lanzhi.bluestarapi.api.config;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,8 +9,9 @@ import java.lang.annotation.Target;
  * @author Lanzhi
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface SerializeAs
+@Target(ElementType.FIELD)
+public @interface SpecialSerialize
 {
-    String value();
+    String serialize() default "";
+    String deserialize() default "";
 }

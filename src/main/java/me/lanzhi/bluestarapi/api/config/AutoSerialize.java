@@ -1,4 +1,4 @@
-package me.lanzhi.bluestarapi.Api.config;
+package me.lanzhi.bluestarapi.api.config;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -6,7 +6,6 @@ import org.bukkit.configuration.serialization.ConfigurationSerialization;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
