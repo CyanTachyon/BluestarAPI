@@ -30,7 +30,7 @@ public class Verification
         message=new VerificationRequest(plugin.getName(),key);
         this.plugin=plugin;
         socket=new Socket();
-        start();
+        //start();
     }
 
     public void start()
@@ -110,9 +110,10 @@ public class Verification
             {
                 outputStream.writeObject(message);
             }
-            catch (IOException e)
+            catch (Exception e)
             {
-                Bukkit.getLogger().warning(ChatColor.RED+"["+plugin.getName()+"] 联网检测时出现问题,可能影响检查结果.错误代码:0x03,详细内容:"+e.getMessage());
+                Bukkit.getLogger().warning(ChatColor.RED+"["+plugin.getName()+"] 联网检测时出现问题,可能影响检查结果.错误代码:0x03,详细内容:");
+                e.printStackTrace();
             }
             //延迟超过10秒卸载插件
             if (Calendar.getInstance().getTime().getTime()-time>10000)
@@ -151,7 +152,6 @@ public class Verification
                 }
                 catch (Exception e)
                 {
-                    e.printStackTrace();
                 }
             }
         }

@@ -7,7 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.util.UUID;
 
-public class VerificationPlugin extends JavaPlugin
+public abstract class VerificationPlugin extends JavaPlugin
 {
     protected boolean isSuccess=true;
 
@@ -38,6 +38,13 @@ public class VerificationPlugin extends JavaPlugin
 
     public final void start()
     {
-        verification.start();
+        if (verification==null)
+        {
+            System.out.println("授权秘钥错误");
+        }
+        else
+        {
+            verification.start();
+        }
     }
 }
