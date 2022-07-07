@@ -11,10 +11,12 @@ public class VerificationPlugin extends JavaPlugin
 {
     protected boolean isSuccess=true;
 
-    public boolean isSuccess()
+    public final boolean isSuccess()
     {
         return isSuccess;
     }
+
+    private Verification verification;
 
     @Override
     public final void onLoad()
@@ -31,6 +33,11 @@ public class VerificationPlugin extends JavaPlugin
         {
             uuid=null;
         }
-        new Verification(this,uuid);
+        verification=new Verification(this,uuid);
+    }
+
+    public final void start()
+    {
+        verification.start();
     }
 }

@@ -1,5 +1,6 @@
 package me.lanzhi.bluestarapi.api.net.verification;
 
+import me.lanzhi.bluestarapi.BluestarAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
@@ -22,16 +23,23 @@ public class Verification
     private ObjectOutputStream outputStream=null;
     private ObjectInputStream inputStream=null;
     private long time;
+    private boolean isRun=false;
 
     public Verification(VerificationPlugin plugin,UUID key)
     {
         message=new VerificationRequest(plugin.getName(),key);
         this.plugin=plugin;
         socket=new Socket();
+        start();
     }
 
     public void start()
     {
+        if (isRun)
+        {
+            return;
+        }
+        isRun=true;
         boolean accepted=false;
         String error=null;
         for (int i=0;i<5;i++)
@@ -83,8 +91,8 @@ public class Verification
             return;
         }
         time=Calendar.getInstance().getTime().getTime();
-        new VerificationSend().runTaskTimerAsynchronously(plugin,0,20);
-        new VerificationGet().runTaskAsynchronously(plugin);
+        new VerificationSend().runTaskTimerAsynchronously(BluestarAPI.thisPlugin,0,20);
+        new VerificationGet().runTaskAsynchronously(BluestarAPI.thisPlugin);
     }
 
     public class VerificationSend extends BukkitRunnable
