@@ -9,9 +9,9 @@ public class VerificationRequest
     private final String plugin;
     private final UUID key;
 
-    public VerificationRequest(Plugin plugin,UUID key)
+    public VerificationRequest(String plugin,UUID key)
     {
-        this.plugin=plugin.getName();
+        this.plugin=plugin;
         this.key=key;
     }
 

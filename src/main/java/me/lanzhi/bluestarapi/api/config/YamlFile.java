@@ -15,6 +15,7 @@ public final class YamlFile extends YamlConfiguration
         this.file=file;
         try
         {
+            file.getParentFile().mkdirs();
             file.createNewFile();
         }
         catch (IOException e)
@@ -36,6 +37,7 @@ public final class YamlFile extends YamlConfiguration
     {
         try
         {
+            file.getParentFile().mkdirs();
             file.createNewFile();
         }
         catch (IOException e)

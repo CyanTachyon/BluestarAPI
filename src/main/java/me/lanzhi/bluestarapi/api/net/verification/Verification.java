@@ -25,10 +25,15 @@ public class Verification
 
     public Verification(VerificationPlugin plugin,UUID key)
     {
-        boolean accepted=false;
-        message=new VerificationRequest(plugin,key);
+        message=new VerificationRequest(plugin.getName(),key);
         this.plugin=plugin;
         socket=new Socket();
+    }
+
+    public void start()
+    {
+        boolean accepted=false;
+        String error=null;
         for (int i=0;i<5;i++)
         {
             try
@@ -41,6 +46,7 @@ public class Verification
                 //Bukkit.getLogger().warning(ChatColor.RED+"["+plugin.getName()+"] 联网检测时出现问题,请检查网络连接.错误代码:0x01");
                 //Bukkit.getLogger().warning(ChatColor.RED+"["+plugin.getName()+"] 错误信息:"+e.getMessage());
                 //Bukkit.getLogger().warning(ChatColor.RED+"["+plugin.getName()+"] 重新进行尝试...");
+                error=e.getMessage();
                 continue;
             }
             accepted=true;
@@ -48,7 +54,7 @@ public class Verification
         }
         if (!accepted)
         {
-            Bukkit.getLogger().warning(ChatColor.RED+"["+plugin.getName()+"] 无法完成联网检测,插件将被停用.请检查网络连接,或者联系作者.错误代码:0x01");
+            Bukkit.getLogger().warning(ChatColor.RED+"["+plugin.getName()+"] 无法完成联网检测,插件将被停用.请检查网络连接,或者联系作者.错误代码:0x01,错误信息:"+error);
             Bukkit.getPluginManager().disablePlugin(plugin);
             return;
         }
