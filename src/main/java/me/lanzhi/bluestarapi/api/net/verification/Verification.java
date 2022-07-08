@@ -109,6 +109,7 @@ public class Verification
             try
             {
                 outputStream.writeObject(message);
+                System.out.println("发送消息成功");
             }
             catch (Exception e)
             {
@@ -142,6 +143,7 @@ public class Verification
                 try
                 {
                     VerificationReceive mess=(VerificationReceive) inputStream.readObject();
+                    System.out.println("接收到反馈: "+mess.isSuccess()+","+mess.getTime());
                     if (!mess.isSuccess())
                     {
                         plugin.isSuccess=false;

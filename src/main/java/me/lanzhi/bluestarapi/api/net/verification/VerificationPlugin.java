@@ -1,10 +1,11 @@
 package me.lanzhi.bluestarapi.api.net.verification;
 
 import me.lanzhi.bluestarapi.api.config.YamlFile;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.UUID;
 
 public abstract class VerificationPlugin extends JavaPlugin
@@ -16,35 +17,37 @@ public abstract class VerificationPlugin extends JavaPlugin
         return isSuccess;
     }
 
-    private Verification verification;
-
     @Override
-    public final void onLoad()
+    public final void onEnable()
     {
-        //saveResource("key.yml", false);
-        YamlFile file=YamlFile.loadYamlFile(new File(getDataFolder(),"key.yml"));
-        file.set("key","授权秘钥");
+        getDataFolder().mkdirs();
+        File file=new File(getDataFolder(),"key.yml");
+        try
+        {
+            if (file.createNewFile())
+            {
+                PrintStream printStream=new PrintStream(file);
+                printStream.println("key: \"授权秘钥\"");
+                printStream.close();
+            }
+        }
+        catch (IOException e)
+        {
+            System.out.println("创建配置文件失败");
+        }
+        YamlFile yamlFile=YamlFile.loadYamlFile(file);
         UUID uuid;
         try
         {
-            uuid=UUID.fromString(file.getString("key"));
+            uuid=UUID.fromString(yamlFile.getString("key"));
         }
         catch (Exception e)
         {
             uuid=null;
         }
-        verification=new Verification(this,uuid);
+        new Verification(this,uuid).start();
+        onStart();
     }
 
-    public final void start()
-    {
-        if (verification==null)
-        {
-            System.out.println("授权秘钥错误");
-        }
-        else
-        {
-            verification.start();
-        }
-    }
+    public abstract void onStart();
 }
