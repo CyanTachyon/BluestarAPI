@@ -3,41 +3,47 @@ package me.lanzhi.bluestarapi.api.net.verification;
 import me.lanzhi.bluestarapi.BluestarAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.UUID;
 
-public class Verification
+public final class Verification
 {
-    private final VerificationRequest message;
+    private VerificationRequest message;
+    private UUID key;
     private final VerificationPlugin plugin;
     private final Socket socket;
     private ObjectOutputStream outputStream=null;
     private ObjectInputStream inputStream=null;
     private long time;
     private boolean isRun=false;
+    private boolean isSuccess=false;
 
     public Verification(VerificationPlugin plugin,UUID key)
     {
+        this.key=key;
         message=new VerificationRequest(plugin.getName(),key);
         this.plugin=plugin;
         socket=new Socket();
         //start();
     }
 
-    public void start()
+    public void setKey(UUID key)
+    {
+        this.key=key;
+        message=new VerificationRequest(plugin.getName(),key);
+    }
+
+    public Verification start()
     {
         if (isRun)
         {
-            return;
+            return this;
         }
         isRun=true;
         boolean accepted=false;
@@ -62,9 +68,10 @@ public class Verification
         }
         if (!accepted)
         {
-            Bukkit.getLogger().warning(ChatColor.RED+"["+plugin.getName()+"] 无法完成联网检测,插件将被停用.请检查网络连接,或者联系作者.错误代码:0x01,错误信息:"+error);
+            Bukkit.getLogger().warning(
+                    ChatColor.RED+"["+plugin.getName()+"] 无法完成联网检测,插件将被停用.请检查网络连接,或者联系作者.错误代码:0x01,错误信息:"+error);
             Bukkit.getPluginManager().disablePlugin(plugin);
-            return;
+            return this;
         }
         accepted=false;
         for (int i=0;i<5;i++)
@@ -88,11 +95,17 @@ public class Verification
         {
             Bukkit.getLogger().warning(ChatColor.RED+"["+plugin.getName()+"] 无法完成联网检测,插件将被停用.请检查网络连接,或者联系作者.错误代码:0x02");
             Bukkit.getPluginManager().disablePlugin(plugin);
-            return;
+            return this;
         }
         time=Calendar.getInstance().getTime().getTime();
         new VerificationSend().runTaskTimerAsynchronously(BluestarAPI.thisPlugin,0,20);
         new VerificationGet().runTaskAsynchronously(BluestarAPI.thisPlugin);
+        return this;
+    }
+
+    public boolean isSuccess()
+    {
+        return isSuccess;
     }
 
     public class VerificationSend extends BukkitRunnable
@@ -120,14 +133,15 @@ public class Verification
             if (Calendar.getInstance().getTime().getTime()-time>10000)
             {
                 Bukkit.getLogger().warning(ChatColor.RED+"["+plugin.getName()+"] 联网检测延迟过高,插件功能被停用.");
-                plugin.isSuccess=false;
+                isSuccess=false;
             }
             else
             {
-                plugin.isSuccess=true;
+                isSuccess=true;
             }
         }
     }
+
     public class VerificationGet extends BukkitRunnable
     {
         @Override
@@ -144,13 +158,9 @@ public class Verification
                 {
                     VerificationReceive mess=(VerificationReceive) inputStream.readObject();
                     System.out.println("接收到反馈: "+mess.isSuccess()+","+mess.getTime());
-                    if (!mess.isSuccess())
-                    {
-                        plugin.isSuccess=false;
-                        return;
-                    }
+                    isSuccess=mess.isSuccess();
                     time=Math.max(time,mess.getTime());
-                    plugin.isSuccess=true;
+                    isSuccess=true;
                 }
                 catch (Exception e)
                 {

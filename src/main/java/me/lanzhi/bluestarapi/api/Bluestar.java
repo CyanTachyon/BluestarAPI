@@ -8,7 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.command.CommandSender;
+import org.bukkit.command.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
@@ -208,5 +208,41 @@ final public class Bluestar
     public static Enchantment[] getEnchantments()
     {
         return Enchantment.values();
+    }
+
+    public static CommandMap getCommandMap()
+    {
+        try
+        {
+            Field field=Bukkit.getServer().getClass().getDeclaredField("commandMap");
+            field.setAccessible(true);
+            return (CommandMap) field.get(Bukkit.getServer());
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+    }
+
+    public static PluginCommand newPluginCommand(String name,Plugin plugin)
+    {
+        return BluestarCommandManager.newPluginCommand(name,plugin);
+    }
+
+    public static boolean registerCommand(String fallbackPrefix,Command command)
+    {
+        try
+        {
+            return getCommandMap().register(fallbackPrefix,command);
+        }
+        catch (Throwable e)
+        {
+            return false;
+        }
+    }
+
+    public static boolean registerPluginCommand(PluginCommand command)
+    {
+        return registerCommand(command.getPlugin().getName(),command);
     }
 }

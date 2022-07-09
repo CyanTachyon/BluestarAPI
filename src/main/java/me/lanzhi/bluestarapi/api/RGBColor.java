@@ -9,10 +9,11 @@ import java.util.regex.Pattern;
 public final class RGBColor
 {
     private final static int MASK=0xff;
-    private static Pattern hex=Pattern.compile("#([0-9A-Fa-fK-Ok-oRr]{6})");
+    private static final Pattern hex=Pattern.compile("#([0-9A-Fa-fK-Ok-oRr]{6})");
     private final int r;
     private final int g;
     private final int b;
+    private final int format;
 
     public RGBColor(int color)
     {
@@ -20,16 +21,18 @@ public final class RGBColor
         {
             color=0;
         }
-        this.r=Math.min(getRed(color),0xff);
-        this.g=Math.min(getGreen(color),0xff);
-        this.b=Math.min(getBlue(color),0xff);
+        this.r=getRed(color)&MASK;
+        this.g=getGreen(color)&MASK;
+        this.b=getBlue(color)&MASK;
+        format=-1;
     }
 
     public RGBColor(int r,int g,int b)
     {
-        this.r=Math.max(0,Math.min(0xff,r));
-        this.g=Math.max(0,Math.min(0xff,g));
-        this.b=Math.max(0,Math.min(0xff,b));
+        this.r=r&MASK;
+        this.g=g&MASK;
+        this.b=b&MASK;
+        format=-1;
     }
 
     public static int getRed(int color)
@@ -151,6 +154,16 @@ public final class RGBColor
     public String toColorCode()
     {
         return toColorCode(getHexColor());
+    }
+
+    public boolean isFormat()
+    {
+        return format!=-1;
+    }
+
+    public boolean isColor()
+    {
+        return !isFormat();
     }
 
     @Override

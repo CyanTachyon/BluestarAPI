@@ -1,6 +1,8 @@
 package me.lanzhi.bluestarapi.api.net.verification;
 
+import me.lanzhi.bluestarapi.api.Bluestar;
 import me.lanzhi.bluestarapi.api.config.YamlFile;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -8,13 +10,29 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.UUID;
 
-public abstract class VerificationPlugin extends JavaPlugin
+public class VerificationPlugin extends JavaPlugin
 {
-    protected boolean isSuccess=true;
-
+    private Verification verification;
+    private YamlFile keyFile;
+    private UUID key;
     public final boolean isSuccess()
     {
-        return isSuccess;
+        return verification.isSuccess();
+    }
+
+    public YamlFile getKeyFile()
+    {
+        return keyFile;
+    }
+
+    public UUID getKey()
+    {
+        return key;
+    }
+
+    public void setKey(UUID key)
+    {
+        this.key=key;
     }
 
     @Override
@@ -35,19 +53,21 @@ public abstract class VerificationPlugin extends JavaPlugin
         {
             System.out.println("创建配置文件失败");
         }
-        YamlFile yamlFile=YamlFile.loadYamlFile(file);
-        UUID uuid;
+        keyFile=YamlFile.loadYamlFile(file);
         try
         {
-            uuid=UUID.fromString(yamlFile.getString("key"));
+            key=UUID.fromString(keyFile.getString("key"));
         }
         catch (Exception e)
         {
-            uuid=null;
+            key=null;
         }
-        new Verification(this,uuid).start();
+        verification=new Verification(this,key).start();
         onStart();
+        PluginCommand pluginCommand=Bluestar.newPluginCommand(getName()+"key",this);
+        pluginCommand.setExecutor(new VerificationCommand(this));
+        Bluestar.registerPluginCommand(pluginCommand);
     }
 
-    public abstract void onStart();
+    public void onStart(){}
 }

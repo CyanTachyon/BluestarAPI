@@ -2,7 +2,7 @@ package me.lanzhi.bluestarapi.api.net.verification;
 
 import java.io.Serializable;
 
-public class VerificationReceive implements Serializable
+public final class VerificationReceive implements Serializable
 {
     private static final long serialVersionUID = 1L;
     private final boolean success;
