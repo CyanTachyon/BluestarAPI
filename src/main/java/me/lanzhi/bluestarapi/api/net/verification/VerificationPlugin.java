@@ -14,25 +14,32 @@ public class VerificationPlugin extends JavaPlugin
 {
     private Verification verification;
     private YamlFile keyFile;
-    private UUID key;
     public final boolean isSuccess()
     {
         return verification.isSuccess();
     }
 
-    public YamlFile getKeyFile()
+    public final YamlFile getKeyFile()
     {
         return keyFile;
     }
 
-    public UUID getKey()
+    public final UUID getKey()
     {
-        return key;
+        return verification.getKey();
     }
 
-    public void setKey(UUID key)
+    public final void setKey(UUID key)
     {
-        this.key=key;
+        verification.setKey(key);
+    }
+
+    public final void checkVerification() throws PluginVerificationException
+    {
+        if (!verification.isSuccess())
+        {
+            throw PluginVerificationException.EXCEPTION;
+        }
     }
 
     @Override
@@ -54,6 +61,7 @@ public class VerificationPlugin extends JavaPlugin
             System.out.println("创建配置文件失败");
         }
         keyFile=YamlFile.loadYamlFile(file);
+        UUID key;
         try
         {
             key=UUID.fromString(keyFile.getString("key"));

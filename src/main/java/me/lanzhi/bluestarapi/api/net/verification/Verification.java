@@ -39,6 +39,11 @@ public final class Verification
         message=new VerificationRequest(plugin.getName(),key);
     }
 
+    public UUID getKey()
+    {
+        return key;
+    }
+
     public Verification start()
     {
         if (isRun)
@@ -122,7 +127,10 @@ public final class Verification
             try
             {
                 outputStream.writeObject(message);
-                System.out.println("发送消息成功");
+                if (BluestarAPI.debug)
+                {
+                    System.out.println("发送消息成功");
+                }
             }
             catch (Exception e)
             {
@@ -130,14 +138,10 @@ public final class Verification
                 e.printStackTrace();
             }
             //延迟超过10秒卸载插件
-            if (Calendar.getInstance().getTime().getTime()-time>10000)
+            if (Calendar.getInstance().getTime().getTime()-time>10000&&isSuccess)
             {
                 Bukkit.getLogger().warning(ChatColor.RED+"["+plugin.getName()+"] 联网检测延迟过高,插件功能被停用.");
                 isSuccess=false;
-            }
-            else
-            {
-                isSuccess=true;
             }
         }
     }
@@ -157,7 +161,10 @@ public final class Verification
                 try
                 {
                     VerificationReceive mess=(VerificationReceive) inputStream.readObject();
-                    System.out.println("接收到反馈: "+mess.isSuccess()+","+mess.getTime());
+                    if (BluestarAPI.debug)
+                    {
+                        System.out.println("接收到反馈: "+mess.isSuccess()+","+mess.getTime());
+                    }
                     isSuccess=mess.isSuccess();
                     time=Math.max(time,mess.getTime());
                     isSuccess=true;
