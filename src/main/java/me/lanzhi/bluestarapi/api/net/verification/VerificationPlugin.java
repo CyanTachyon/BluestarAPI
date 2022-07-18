@@ -71,10 +71,10 @@ public class VerificationPlugin extends JavaPlugin
             key=null;
         }
         verification=new Verification(this,key).start();
-        onStart();
-        PluginCommand pluginCommand=Bluestar.newPluginCommand(getName()+"key",this);
+        PluginCommand pluginCommand=Bluestar.getCommandManager().newPluginCommand(getName()+"key",this);
         pluginCommand.setExecutor(new VerificationCommand(this));
-        Bluestar.registerPluginCommand(pluginCommand);
+        Bluestar.getCommandManager().registerPluginCommand(pluginCommand);
+        onStart();
     }
 
     public void onStart(){}

@@ -9,15 +9,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.Calendar;
 import java.util.UUID;
 
 public final class Verification
 {
-    private VerificationRequest message;
-    private UUID key;
     private final VerificationPlugin plugin;
     private final Socket socket;
+    private VerificationRequest message;
+    private UUID key;
     private ObjectOutputStream outputStream=null;
     private ObjectInputStream inputStream=null;
     private long time;
@@ -33,15 +32,16 @@ public final class Verification
         //start();
     }
 
-    public void setKey(UUID key)
-    {
-        this.key=key;
-        message=new VerificationRequest(plugin.getName(),key);
-    }
-
     public UUID getKey()
     {
         return key;
+    }
+
+    public void setKey(UUID key)
+    {
+        this.key=key;
+        plugin.getKeyFile().set("key",key.toString());
+        message=new VerificationRequest(plugin.getName(),key);
     }
 
     public Verification start()
@@ -73,8 +73,7 @@ public final class Verification
         }
         if (!accepted)
         {
-            Bukkit.getLogger().warning(
-                    ChatColor.RED+"["+plugin.getName()+"] 无法完成联网检测,插件将被停用.请检查网络连接,或者联系作者.错误代码:0x01,错误信息:"+error);
+            Bukkit.getLogger().warning(ChatColor.RED+"["+plugin.getName()+"] 无法完成联网检测,插件将被停用.请检查网络连接,或者联系作者.错误代码:0x01,错误信息:"+error);
             Bukkit.getPluginManager().disablePlugin(plugin);
             return this;
         }
@@ -102,7 +101,7 @@ public final class Verification
             Bukkit.getPluginManager().disablePlugin(plugin);
             return this;
         }
-        time=Calendar.getInstance().getTime().getTime();
+        time=System.currentTimeMillis();
         new VerificationSend().runTaskTimerAsynchronously(BluestarAPI.thisPlugin,0,20);
         new VerificationGet().runTaskAsynchronously(BluestarAPI.thisPlugin);
         return this;
@@ -138,7 +137,7 @@ public final class Verification
                 e.printStackTrace();
             }
             //延迟超过10秒卸载插件
-            if (Calendar.getInstance().getTime().getTime()-time>10000&&isSuccess)
+            if (System.currentTimeMillis()-time>10000&&isSuccess)
             {
                 Bukkit.getLogger().warning(ChatColor.RED+"["+plugin.getName()+"] 联网检测延迟过高,插件功能被停用.");
                 isSuccess=false;
@@ -167,7 +166,6 @@ public final class Verification
                     }
                     isSuccess=mess.isSuccess();
                     time=Math.max(time,mess.getTime());
-                    isSuccess=true;
                 }
                 catch (Exception e)
                 {

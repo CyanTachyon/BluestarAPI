@@ -23,9 +23,9 @@ public final class BluestarAPI extends JavaPlugin
         thisPlugin=this;
         ConfigurationSerialization.registerClass(AutoSerialize.class,nameOfAutoSerialize);
         System.out.println("BluestarAPI已加载");
-        PluginCommand command=Bluestar.newPluginCommand("bluestarapidebug",this);
+        PluginCommand command=Bluestar.getCommandManager().newPluginCommand("bluestarapidebug",this);
         command.setExecutor(this);
-        Bluestar.registerPluginCommand(command);
+        Bluestar.getCommandManager().registerPluginCommand(command);
     }
 
     @Override
