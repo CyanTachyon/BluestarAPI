@@ -11,6 +11,7 @@ import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import javax.xml.crypto.dsig.spec.XSLTTransformParameterSpec;
 import java.util.Random;
 
 public class BluestarManager
@@ -24,6 +25,16 @@ public class BluestarManager
 
     private final Random random=new Random();
     private CoreProtectAPI coreProtect=null;
+
+    public void CoreLogRemoval(String playerName,Location location,Material type,BlockData data)
+    {
+        coreProtect.logRemoval(playerName,location,type,data);
+    }
+
+    public void CoreLogPlacement(String playerName,Location location,Material type,BlockData data)
+    {
+        coreProtect.logPlacement(playerName,location,type,data);
+    }
 
     public void setBlock(Location location,Material block,String playerName)
     {
