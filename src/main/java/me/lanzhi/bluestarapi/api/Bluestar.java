@@ -55,43 +55,43 @@ public final class Bluestar
     }
 
     @Deprecated
-    public void setBlock(Location location,Material block,String playerName)
+    public static void setBlock(Location location,Material block,String playerName)
     {
         mainManager.setBlock(location,block,playerName);
     }
 
     @Deprecated
-    public <T extends Event> T callEvent(T event)
+    public static  <T extends Event> T callEvent(T event)
     {
         return mainManager.callEvent(event);
     }
 
     @Deprecated
-    public int randomInt(int bound)
+    public static int randomInt(int bound)
     {
         return mainManager.randomInt(bound);
     }
 
     @Deprecated
-    public int randomInt()
+    public static int randomInt()
     {
         return mainManager.randomInt();
     }
 
     @Deprecated
-    public long randomLong()
+    public static long randomLong()
     {
         return mainManager.randomLong();
     }
 
     @Deprecated
-    public double randomDouble()
+    public static double randomDouble()
     {
         return mainManager.randomDouble();
     }
 
     @Deprecated
-    public void useCommand(CommandSender sender,String cmd,Plugin plugin)
+    public static void useCommand(CommandSender sender,String cmd,Plugin plugin)
     {
         commandManager.useCommand(sender,cmd,plugin);
     }
