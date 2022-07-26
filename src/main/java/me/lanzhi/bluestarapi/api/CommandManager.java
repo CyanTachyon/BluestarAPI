@@ -14,6 +14,11 @@ import java.lang.reflect.InvocationTargetException;
 
 public class CommandManager
 {
+    public static void upData()
+    {
+        Bluestar.setCommandManager(new CommandManager());
+    }
+
     private final Constructor<PluginCommand> constructor;
 
     CommandManager()
@@ -30,11 +35,6 @@ public class CommandManager
             e.printStackTrace();
         }
         constructor=constructor1;
-    }
-
-    public static void upData()
-    {
-        Bluestar.setCommandManager(new CommandManager());
     }
 
     public void useCommand(CommandSender sender,String cmd,Plugin plugin)

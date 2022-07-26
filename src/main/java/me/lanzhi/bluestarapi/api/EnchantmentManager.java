@@ -8,6 +8,10 @@ import java.util.Map;
 
 public class EnchantmentManager
 {
+    public static void upData()
+    {
+        Bluestar.setEnchantmentManager(new EnchantmentManager());
+    }
     private final Field acceptRegisterEnchantment;
     private final Map<NamespacedKey, Enchantment> enchantmentByKey;
     private final Map<String, Enchantment> enchantmentByName;

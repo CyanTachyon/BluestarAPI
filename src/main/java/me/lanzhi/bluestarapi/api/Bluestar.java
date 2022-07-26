@@ -41,16 +41,28 @@ public final class Bluestar
 
     public static BluestarManager getMainManager()
     {
+        if (mainManager==null)
+        {
+            BluestarManager.upData();
+        }
         return mainManager;
     }
 
     public static CommandManager getCommandManager()
     {
+        if (commandManager==null)
+        {
+            CommandManager.upData();
+        }
         return commandManager;
     }
 
     public static EnchantmentManager getEnchantmentManager()
     {
+        if (enchantmentManager==null)
+        {
+            EnchantmentManager.upData();
+        }
         return enchantmentManager;
     }
 
