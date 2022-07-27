@@ -15,6 +15,11 @@ public final class GradientColor
         this.end=end;
     }
 
+    public GradientColor(String start,String end)
+    {
+        this(new RGBColor(start),new RGBColor(end));
+    }
+
     public static String colorText(RGBColor start,RGBColor end,String message)
     {
         if (message==null||message.isEmpty())
@@ -34,6 +39,11 @@ public final class GradientColor
             builder.append(color).append(message.charAt((int) i));
         }
         return builder.toString();
+    }
+
+    public static String colorText(String start,String end,String message)
+    {
+        return colorText(new RGBColor(start),new RGBColor(end),message);
     }
 
     public String colorText(String message)
@@ -65,6 +75,7 @@ public final class GradientColor
 
     public static String setColor(String message)
     {
+        message=RGBColor.setRandomColor(message);
         Matcher matcher=gradient.matcher(message);
         StringBuilder builder=new StringBuilder();
         while (matcher.find())

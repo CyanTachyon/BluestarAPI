@@ -10,6 +10,7 @@ public final class RGBColor
 {
     private final static int MASK=0xff;
     private static final Pattern hex=Pattern.compile("#([0-9A-Fa-f]{6})");
+    private static final Pattern random=Pattern.compile("<random>");
     private final int r;
     private final int g;
     private final int b;
@@ -38,6 +39,11 @@ public final class RGBColor
         this.r=r&MASK;
         this.g=g&MASK;
         this.b=b&MASK;
+    }
+
+    public RGBColor(String color)
+    {
+        this(Integer.parseInt(color,16));
     }
 
     /**
@@ -166,6 +172,7 @@ public final class RGBColor
      */
     public static String setColor(String message)
     {
+        message=setRandomColor(message);
         StringBuilder stringBuilder=new StringBuilder();
         Matcher matcher=hex.matcher(message);
         while (matcher.find())
@@ -174,6 +181,18 @@ public final class RGBColor
         }
         matcher.appendTail(stringBuilder);
         return ChatColor.translateAlternateColorCodes('&',stringBuilder.toString());
+    }
+
+    public static String setRandomColor(String message)
+    {
+        StringBuilder stringBuilder=new StringBuilder();
+        Matcher matcher=random.matcher(message);
+        while (matcher.find())
+        {
+            matcher.appendReplacement(stringBuilder,random().getHexColor());
+        }
+        matcher.appendTail(stringBuilder);
+        return stringBuilder.toString();
     }
 
     /**
