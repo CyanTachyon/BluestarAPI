@@ -1,10 +1,7 @@
 package me.lanzhi.bluestarapi.api;
 
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandMap;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.PluginCommand;
+import org.bukkit.command.*;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -49,13 +46,13 @@ public class CommandManager
         }.runTask(plugin);
     }
 
-    public CommandMap getCommandMap()
+    public SimpleCommandMap getCommandMap()
     {
         try
         {
             Field field=Bukkit.getServer().getClass().getDeclaredField("commandMap");
             field.setAccessible(true);
-            return (CommandMap) field.get(Bukkit.getServer());
+            return (SimpleCommandMap) field.get(Bukkit.getServer());
         }
         catch (Exception e)
         {
@@ -73,7 +70,7 @@ public class CommandManager
         {
             return constructor.newInstance(name,plugin);
         }
-        catch (InstantiationException|IllegalAccessException|InvocationTargetException e)
+        catch (Exception e)
         {
             e.printStackTrace();
             return null;
@@ -95,5 +92,12 @@ public class CommandManager
     public boolean registerPluginCommand(PluginCommand command)
     {
         return registerCommand(command.getPlugin().getName(),command);
+    }
+
+    public boolean registerPluginCommand(String command,Plugin plugin,CommandExecutor executor)
+    {
+        PluginCommand pluginCommand=newPluginCommand(command,plugin);
+        pluginCommand.setExecutor(executor);
+        return registerPluginCommand(pluginCommand);
     }
 }

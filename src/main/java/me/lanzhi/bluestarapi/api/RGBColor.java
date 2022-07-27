@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 public final class RGBColor
 {
     private final static int MASK=0xff;
-    private static final Pattern hex=Pattern.compile("#([0-9A-Fa-fK-Ok-oRr]{6})");
+    private static final Pattern hex=Pattern.compile("#([0-9A-Fa-f]{6})");
     private final int r;
     private final int g;
     private final int b;
