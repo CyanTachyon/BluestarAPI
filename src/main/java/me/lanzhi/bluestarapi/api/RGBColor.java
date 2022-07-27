@@ -71,7 +71,13 @@ public final class RGBColor
      */
     public static String getHexRed(int color)
     {
-        return Integer.toHexString(getRed(color));
+        StringBuilder builder=new StringBuilder(Integer.toHexString(getRed(color)));
+        //补全为2位
+        if (builder.length()==1)
+        {
+            builder.insert(0,'0');
+        }
+        return builder.toString();
     }
 
     /**
@@ -79,7 +85,13 @@ public final class RGBColor
      */
     public static String getHexGreen(int color)
     {
-        return Integer.toHexString(getGreen(color));
+        StringBuilder builder=new StringBuilder(Integer.toHexString(getGreen(color)));
+        //补全为2位
+        if (builder.length()==1)
+        {
+            builder.insert(0,'0');
+        }
+        return builder.toString();
     }
 
     /**
@@ -87,7 +99,13 @@ public final class RGBColor
      */
     public static String getHexBlue(int color)
     {
-        return Integer.toHexString(getBlue(color));
+        StringBuilder builder=new StringBuilder(Integer.toHexString(getBlue(color)));
+        //补全为2位
+        if (builder.length()==1)
+        {
+            builder.insert(0,'0');
+        }
+        return builder.toString();
     }
 
     /**
@@ -111,7 +129,7 @@ public final class RGBColor
      */
     public static String getHexColor(int r,int g,int b)
     {
-        return Integer.toHexString(getColor(r,g,b));
+        return getHexColor(getColor(r,g,b));
     }
 
     /**
@@ -200,7 +218,7 @@ public final class RGBColor
      */
     public String getHexRed()
     {
-        return Integer.toHexString(r);
+        return getHexRed(getColor());
     }
 
     /**
@@ -209,7 +227,7 @@ public final class RGBColor
      */
     public String getHexGreen()
     {
-        return Integer.toHexString(g);
+        return getHexGreen(getColor());
     }
 
     /**
@@ -218,7 +236,7 @@ public final class RGBColor
      */
     public String getHexBlue()
     {
-        return Integer.toHexString(b);
+        return getHexBlue(getColor());
     }
 
     /**

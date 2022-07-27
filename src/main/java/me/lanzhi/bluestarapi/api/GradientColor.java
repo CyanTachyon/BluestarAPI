@@ -29,7 +29,9 @@ public final class GradientColor
         for (long i=0;i<message.length();i++)
         {
             double x=i/(double) (message.length()-1);
-            builder.append(new RGBColor((int) (r*x),(int) (g*x),(int) (b*x))).append(message.charAt((int) i));
+            RGBColor color=new RGBColor(start.getRed()+(int) (r*x),start.getGreen()+(int) (g*x),start.getBlue()+(int) (b*x));
+            //System.out.println(color.getRed()+" "+color.getGreen()+" "+color.getBlue());
+            builder.append(color).append(message.charAt((int) i));
         }
         return builder.toString();
     }
