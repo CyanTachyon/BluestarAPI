@@ -1,39 +1,71 @@
 package me.lanzhi.bluestarapi.api;
 
 import me.lanzhi.bluestarapi.BluestarAPI;
+import me.lanzhi.bluestarapi.api.player.ChatInformation;
+import me.lanzhi.bluestarapi.api.player.InformationGetter;
+import me.lanzhi.bluestarapi.api.player.SmithInformation;
 import net.coreprotect.CoreProtect;
 import net.coreprotect.CoreProtectAPI;
+import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.SmithingInventory;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import javax.xml.crypto.dsig.spec.XSLTTransformParameterSpec;
+import java.lang.management.PlatformLoggingMXBean;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BluestarManager
 {
+    private final Random random=new Random();
+
+    private final Map<Player,InformationGetter>getters=new HashMap<>();
+    private final ReadWriteLock gettersLock=new ReentrantReadWriteLock();
+
+    private CoreProtectAPI coreProtect=null;
+
+    BluestarManager()
+    {
+    }
+
     public static void upData()
     {
         Bluestar.setMainManager(new BluestarManager());
     }
 
-    BluestarManager(){}
-
-    private final Random random=new Random();
-    private CoreProtectAPI coreProtect=null;
-
     public void CoreLogRemoval(String playerName,Location location,Material type,BlockData data)
     {
-        coreProtect.logRemoval(playerName,location,type,data);
+        if (coreProtect==null)
+        {
+            coreProtect=getCoreProtect();
+        }
+        if (coreProtect!=null)
+        {
+            coreProtect.logRemoval(playerName,location,type,data);
+        }
     }
 
     public void CoreLogPlacement(String playerName,Location location,Material type,BlockData data)
     {
-        coreProtect.logPlacement(playerName,location,type,data);
+        if (coreProtect==null)
+        {
+            coreProtect=getCoreProtect();
+        }
+        if (coreProtect!=null)
+        {
+            coreProtect.logPlacement(playerName,location,type,data);
+        }
     }
 
     public void setBlock(Location location,Material block,String playerName)
@@ -98,6 +130,86 @@ public class BluestarManager
     public double randomDouble()
     {
         return random.nextDouble();
+    }
+
+    public boolean addInformationGetter(InformationGetter getter)
+    {
+        try
+        {
+            gettersLock.readLock().lock();
+            if (getters.containsKey(getter.getPlayer()))
+            {
+                return false;
+            }
+        }
+        finally
+        {
+            gettersLock.readLock().unlock();
+        }
+        try
+        {
+            gettersLock.writeLock().lock();
+            getters.put(getter.getPlayer(),getter);
+            getter.getPlayer().spigot().sendMessage(getter.getTips().toArray(new BaseComponent[0]));
+            if (getter instanceof SmithInformation)
+            {
+                SmithInformation smith=(SmithInformation)getter;
+                Player player=smith.getPlayer();
+                SmithingInventory inventory=(SmithingInventory) Bukkit.createInventory(player,InventoryType.SMITHING,smith.getTitle());
+                ItemStack itemStack=smith.getItem();
+                if (itemStack==null||itemStack.getType()==Material.AIR)
+                {
+                    itemStack=new ItemStack(Material.PAPER);
+                }
+                inventory.setItem(0,itemStack);
+                smith.setSmithUI(inventory);
+                player.openInventory(inventory);
+            }
+        }
+        finally
+        {
+            gettersLock.writeLock().unlock();
+        }
+        return true;
+    }
+
+    public boolean removeInformationGetter(InformationGetter getter)
+    {
+        try
+        {
+            gettersLock.readLock().lock();
+            if (!getters.containsKey(getter.getPlayer()))
+            {
+                return false;
+            }
+        }
+        finally
+        {
+            gettersLock.readLock().unlock();
+        }
+        try
+        {
+            gettersLock.writeLock().lock();
+            getters.remove(getter.getPlayer());
+        }
+        finally
+        {
+            gettersLock.writeLock().unlock();
+        }
+        return true;
+    }
+
+    public InformationGetter getInformationGetter(Player player)
+    {
+        try
+        {
+            gettersLock.readLock().lock();
+            return getters.get(player);
+        }
+        finally
+        {
+            gettersLock.readLock().unlock();
+        }
     }
 
     private CoreProtectAPI getCoreProtect()
