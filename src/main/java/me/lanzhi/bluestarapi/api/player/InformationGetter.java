@@ -12,5 +12,4 @@ public interface InformationGetter extends Cloneable
     public void quit(boolean b);
 
     public List<BaseComponent> getTips();
-
 }

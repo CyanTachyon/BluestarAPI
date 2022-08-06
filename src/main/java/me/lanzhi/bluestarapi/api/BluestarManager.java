@@ -1,9 +1,8 @@
 package me.lanzhi.bluestarapi.api;
 
 import me.lanzhi.bluestarapi.BluestarAPI;
-import me.lanzhi.bluestarapi.api.player.ChatInformation;
 import me.lanzhi.bluestarapi.api.player.InformationGetter;
-import me.lanzhi.bluestarapi.api.player.SmithInformation;
+import me.lanzhi.bluestarapi.api.player.AnvilInformation;
 import net.coreprotect.CoreProtect;
 import net.coreprotect.CoreProtectAPI;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -14,12 +13,12 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.SmithingInventory;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.lang.management.PlatformLoggingMXBean;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -151,18 +150,18 @@ public class BluestarManager
             gettersLock.writeLock().lock();
             getters.put(getter.getPlayer(),getter);
             getter.getPlayer().spigot().sendMessage(getter.getTips().toArray(new BaseComponent[0]));
-            if (getter instanceof SmithInformation)
+            if (getter instanceof AnvilInformation)
             {
-                SmithInformation smith=(SmithInformation)getter;
+                AnvilInformation smith=(AnvilInformation)getter;
                 Player player=smith.getPlayer();
-                SmithingInventory inventory=(SmithingInventory) Bukkit.createInventory(player,InventoryType.SMITHING,smith.getTitle());
+                AnvilInventory inventory=(AnvilInventory) Bukkit.createInventory(player,InventoryType.ANVIL,smith.getTitle());
                 ItemStack itemStack=smith.getItem();
-                if (itemStack==null||itemStack.getType()==Material.AIR)
+                if (itemStack==null||itemStack.getType().isAir())
                 {
                     itemStack=new ItemStack(Material.PAPER);
                 }
                 inventory.setItem(0,itemStack);
-                smith.setSmithUI(inventory);
+                smith.setAnvilUI(inventory);
                 player.openInventory(inventory);
             }
         }

@@ -3,11 +3,13 @@ package me.lanzhi.bluestarapi.listener;
 import me.lanzhi.bluestarapi.api.Bluestar;
 import me.lanzhi.bluestarapi.api.player.ChatInformation;
 import me.lanzhi.bluestarapi.api.player.InformationGetter;
-import me.lanzhi.bluestarapi.api.player.SmithInformation;
+import me.lanzhi.bluestarapi.api.player.AnvilInformation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.inventory.SmithItemEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -32,19 +34,22 @@ public class InfoGetterListener implements Listener
     }
 
     @EventHandler
-    public void onPlayerSmith(SmithItemEvent event)
+    public void onPlayerAnvil(InventoryClickEvent event)
     {
         if (!(event.getWhoClicked() instanceof Player))
         {
             return;
         }
         InformationGetter getter=Bluestar.getMainManager().getInformationGetter((Player) event.getWhoClicked());
-        if(getter instanceof SmithInformation&&event.getInventory()==((SmithInformation) getter).getSmithUI())
+        if(getter instanceof AnvilInformation&&event.getInventory()==((AnvilInformation) getter).getAnvilUI())
         {
             event.setCancelled(true);
-            Bluestar.getMainManager().removeInformationGetter(getter);
-            ((SmithInformation) getter).smith(""+event.getInventory().getResult().getItemMeta().getDisplayName());
-            event.getWhoClicked().closeInventory();
+            if (event.getSlot()==2)
+            {
+                Bluestar.getMainManager().removeInformationGetter(getter);
+                ((AnvilInformation) getter).anvil(event.getInventory().getItem(2).getItemMeta().getDisplayName());
+                event.getWhoClicked().closeInventory();
+            }
         }
     }
 
@@ -57,7 +62,7 @@ public class InfoGetterListener implements Listener
         }
         Player player=(Player) event.getPlayer();
         InformationGetter getter=Bluestar.getMainManager().getInformationGetter(player);
-        if (getter instanceof SmithInformation&&event.getInventory()==((SmithInformation) getter).getSmithUI())
+        if (getter instanceof AnvilInformation&&event.getInventory()==((AnvilInformation) getter).getAnvilUI())
         {
             Bluestar.getMainManager().removeInformationGetter(getter);
             getter.quit(true);
