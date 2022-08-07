@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.AnvilInventory;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.SmithingInventory;
 import org.bukkit.plugin.Plugin;
@@ -154,7 +155,7 @@ public class BluestarManager
             {
                 AnvilInformation smith=(AnvilInformation)getter;
                 Player player=smith.getPlayer();
-                AnvilInventory inventory=(AnvilInventory) Bukkit.createInventory(player,InventoryType.ANVIL,smith.getTitle());
+                Inventory inventory=Bukkit.createInventory(player,InventoryType.ANVIL,smith.getTitle());
                 ItemStack itemStack=smith.getItem();
                 if (itemStack==null||itemStack.getType().isAir())
                 {
