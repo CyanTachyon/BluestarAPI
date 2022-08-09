@@ -27,6 +27,11 @@ import java.util.stream.Stream;
 
 public final class PlayerSignInput
 {
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
     private final InputListener action;
     private final List<String> lines;
     private final Plugin plugin;
@@ -174,6 +179,10 @@ public final class PlayerSignInput
         private List<String> lines=new ArrayList<>(Arrays.asList("","","",""));
         private UUID uuid=null;
         private Plugin plugin;
+
+        private Builder()
+        {
+        }
 
         public Builder action(InputListener listener)
         {

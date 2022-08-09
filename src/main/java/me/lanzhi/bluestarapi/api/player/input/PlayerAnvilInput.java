@@ -12,6 +12,11 @@ import java.util.function.Consumer;
 
 public final class PlayerAnvilInput
 {
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
     private final AnvilGUI anvilGUI;
 
     public PlayerAnvilInput(AnvilGUI anvilGUI)
