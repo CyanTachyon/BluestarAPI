@@ -2,17 +2,10 @@ package me.lanzhi.bluestarapi;
 
 import me.lanzhi.bluestarapi.api.Bluestar;
 import me.lanzhi.bluestarapi.api.config.AutoSerialize;
-import me.lanzhi.bluestarapi.listener.InfoGetterListener;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.block.Biome;
-import org.bukkit.block.Block;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +26,6 @@ public final class BluestarAPI extends JavaPlugin
         PluginCommand command=Bluestar.getCommandManager().newPluginCommand("bluestarapidebug",this);
         command.setExecutor(this);
         Bluestar.getCommandManager().registerPluginCommand(command);
-        Bukkit.getPluginManager().registerEvents(new InfoGetterListener(),this);
 
     }
 
