@@ -7,11 +7,12 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -77,6 +78,11 @@ public final class PlayerChatInput<T> implements Listener
         this.onDisconnect=onDisconnect;
     }
 
+    public static <U>Builder<U> builder(Plugin plugin,Player player)
+    {
+        return new Builder<>(plugin,player);
+    }
+
     private static void addPlayer(UUID player)
     {
         players.add(player);
@@ -106,6 +112,15 @@ public final class PlayerChatInput<T> implements Listener
         }
         e.setCancelled(true);
         Bukkit.getScheduler().runTask(main,()->runEventOnMainThread(e.getMessage()));
+    }
+
+    @EventHandler
+    public void onPluginDisable(PluginDisableEvent event)
+    {
+        if (event.getPlugin()==this.main)
+        {
+            end(EndReason.CUSTOM);
+        }
     }
 
     private void runEventOnMainThread(String message)
@@ -259,7 +274,7 @@ public final class PlayerChatInput<T> implements Listener
     }
 
 
-    public static class PlayerChatInputBuilder<U>
+    public static class Builder<U>
     {
 
         private EnumMap<EndReason, PlayerChatInput<?>> chainAfter;
@@ -285,7 +300,7 @@ public final class PlayerChatInput<T> implements Listener
         private Plugin main;
 
 
-        public PlayerChatInputBuilder(@NotNull Plugin main,@NotNull Player player)
+        public Builder(@NotNull Plugin main,@NotNull Player player)
         {
             this.main=main;
             this.player=player;
@@ -326,77 +341,77 @@ public final class PlayerChatInput<T> implements Listener
         }
 
 
-        public PlayerChatInputBuilder<U> onInvalidInput(@NotNull BiFunction<Player, String, Boolean> onInvalidInput)
+        public Builder<U> onInvalidInput(@NotNull BiFunction<Player, String, Boolean> onInvalidInput)
         {
             this.onInvalidInput=onInvalidInput;
             return this;
         }
 
 
-        public PlayerChatInputBuilder<U> isValidInput(@NotNull BiFunction<Player, String, Boolean> isValidInput)
+        public Builder<U> isValidInput(@NotNull BiFunction<Player, String, Boolean> isValidInput)
         {
             this.isValidInput=isValidInput;
             return this;
         }
 
 
-        public PlayerChatInputBuilder<U> setValue(@NotNull BiFunction<Player, String, U> setValue)
+        public Builder<U> setValue(@NotNull BiFunction<Player, String, U> setValue)
         {
             this.setValue=setValue;
             return this;
         }
 
 
-        public PlayerChatInputBuilder<U> onFinish(@NotNull BiConsumer<Player, U> onFinish)
+        public Builder<U> onFinish(@NotNull BiConsumer<Player, U> onFinish)
         {
             this.onFinish=onFinish;
             return this;
         }
 
 
-        public PlayerChatInputBuilder<U> onCancel(@NotNull Consumer<Player> onCancel)
+        public Builder<U> onCancel(@NotNull Consumer<Player> onCancel)
         {
             this.onCancel=onCancel;
             return this;
         }
 
 
-        public PlayerChatInputBuilder<U> invalidInputMessage(@Nullable String invalidInputMessage)
+        public Builder<U> invalidInputMessage(@Nullable String invalidInputMessage)
         {
             this.invalidInputMessage=invalidInputMessage;
             return this;
         }
 
 
-        public PlayerChatInputBuilder<U> sendValueMessage(@Nullable String sendValueMessage)
+        public Builder<U> sendValueMessage(@Nullable String sendValueMessage)
         {
             this.sendValueMessage=sendValueMessage;
             return this;
         }
 
 
-        public PlayerChatInputBuilder<U> toCancel(@NotNull String cancel)
+        public Builder<U> toCancel(@NotNull String cancel)
         {
             this.cancel=cancel;
             return this;
         }
 
 
-        public PlayerChatInputBuilder<U> defaultValue(@Nullable U def)
+        public Builder<U> defaultValue(@Nullable U def)
         {
             this.value=def;
             return this;
         }
 
 
-        public PlayerChatInputBuilder<U> repeat(boolean repeat)
+        public Builder<U> repeat(boolean repeat)
         {
             this.repeat=repeat;
             return this;
         }
 
 
-        public PlayerChatInputBuilder<U> chainAfter(@NotNull PlayerChatInput<?> toChain,@NotNull EndReason... after)
+        public Builder<U> chainAfter(@NotNull PlayerChatInput<?> toChain,@NotNull EndReason... after)
         {
             if (this.chainAfter==null)
             {
@@ -414,21 +429,21 @@ public final class PlayerChatInput<T> implements Listener
         }
 
 
-        public PlayerChatInputBuilder<U> onExpire(@NotNull Consumer<Player> onExpire)
+        public Builder<U> onExpire(@NotNull Consumer<Player> onExpire)
         {
             this.onExpire=onExpire;
             return this;
         }
 
 
-        public PlayerChatInputBuilder<U> onExpireMessage(@Nullable String message)
+        public Builder<U> onExpireMessage(@Nullable String message)
         {
             this.whenExpire=message;
             return this;
         }
 
 
-        public PlayerChatInputBuilder<U> expiresAfter(int ticks)
+        public Builder<U> expiresAfter(int ticks)
         {
             if (ticks>0)
             {
@@ -438,7 +453,7 @@ public final class PlayerChatInput<T> implements Listener
         }
 
 
-        public PlayerChatInputBuilder<U> onPlayerDiconnect(@NotNull Runnable onDisconnect)
+        public Builder<U> onPlayerDiconnect(@NotNull Runnable onDisconnect)
         {
             this.onDisconnect=onDisconnect;
             return this;

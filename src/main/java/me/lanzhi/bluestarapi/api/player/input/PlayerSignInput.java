@@ -16,6 +16,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
@@ -165,6 +166,17 @@ public final class PlayerSignInput
         public void onLeave(PlayerQuitEvent e)
         {
             if (e.getPlayer().getUniqueId().equals(PlayerSignInput.this.uuid))
+            {
+                ProtocolLibrary.getProtocolManager().removePacketListener(PlayerSignInput.this.packetListener);
+                HandlerList.unregisterAll(this);
+                PlayerSignInput.this.sign.getBlock().setType(Material.AIR);
+            }
+        }
+
+        @EventHandler
+        public void onPluginDisable(PluginDisableEvent event)
+        {
+            if (event.getPlugin()==PlayerSignInput.this.plugin)
             {
                 ProtocolLibrary.getProtocolManager().removePacketListener(PlayerSignInput.this.packetListener);
                 HandlerList.unregisterAll(this);
