@@ -34,6 +34,7 @@ public final class BluestarAPI extends JavaPlugin
         command.setExecutor(this);
         Bluestar.getCommandManager().registerPluginCommand(command);
         Bukkit.getPluginManager().registerEvents(new InfoGetterListener(),this);
+
     }
 
     @Override

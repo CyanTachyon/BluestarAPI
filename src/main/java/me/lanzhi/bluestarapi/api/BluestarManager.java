@@ -1,8 +1,6 @@
 package me.lanzhi.bluestarapi.api;
 
 import me.lanzhi.bluestarapi.BluestarAPI;
-import me.lanzhi.bluestarapi.api.player.InformationGetter;
-import me.lanzhi.bluestarapi.api.player.AnvilInformation;
 import net.coreprotect.CoreProtect;
 import net.coreprotect.CoreProtectAPI;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -30,7 +28,6 @@ public class BluestarManager
 {
     private final Random random=new Random();
 
-    private final Map<Player,InformationGetter>getters=new HashMap<>();
     private final ReadWriteLock gettersLock=new ReentrantReadWriteLock();
 
     private CoreProtectAPI coreProtect=null;
@@ -130,86 +127,6 @@ public class BluestarManager
     public double randomDouble()
     {
         return random.nextDouble();
-    }
-
-    public boolean addInformationGetter(InformationGetter getter)
-    {
-        try
-        {
-            gettersLock.readLock().lock();
-            if (getters.containsKey(getter.getPlayer()))
-            {
-                return false;
-            }
-        }
-        finally
-        {
-            gettersLock.readLock().unlock();
-        }
-        try
-        {
-            gettersLock.writeLock().lock();
-            getters.put(getter.getPlayer(),getter);
-            getter.getPlayer().spigot().sendMessage(getter.getTips().toArray(new BaseComponent[0]));
-            if (getter instanceof AnvilInformation)
-            {
-                AnvilInformation smith=(AnvilInformation)getter;
-                Player player=smith.getPlayer();
-                Inventory inventory=Bukkit.createInventory(player,InventoryType.ANVIL,smith.getTitle());
-                ItemStack itemStack=smith.getItem();
-                if (itemStack==null||itemStack.getType().isAir())
-                {
-                    itemStack=new ItemStack(Material.PAPER);
-                }
-                inventory.setItem(0,itemStack);
-                smith.setAnvilUI(inventory);
-                player.openInventory(inventory);
-            }
-        }
-        finally
-        {
-            gettersLock.writeLock().unlock();
-        }
-        return true;
-    }
-
-    public boolean removeInformationGetter(InformationGetter getter)
-    {
-        try
-        {
-            gettersLock.readLock().lock();
-            if (!getters.containsKey(getter.getPlayer()))
-            {
-                return false;
-            }
-        }
-        finally
-        {
-            gettersLock.readLock().unlock();
-        }
-        try
-        {
-            gettersLock.writeLock().lock();
-            getters.remove(getter.getPlayer());
-        }
-        finally
-        {
-            gettersLock.writeLock().unlock();
-        }
-        return true;
-    }
-
-    public InformationGetter getInformationGetter(Player player)
-    {
-        try
-        {
-            gettersLock.readLock().lock();
-            return getters.get(player);
-        }
-        finally
-        {
-            gettersLock.readLock().unlock();
-        }
     }
 
     private CoreProtectAPI getCoreProtect()
