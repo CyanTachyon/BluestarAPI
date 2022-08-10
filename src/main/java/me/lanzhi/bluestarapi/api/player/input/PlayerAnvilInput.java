@@ -71,6 +71,11 @@ public final class PlayerAnvilInput
         this.openInventory();
     }
 
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
     public Plugin getPlugin()
     {
         return plugin;
@@ -221,7 +226,7 @@ public final class PlayerAnvilInput
         private ItemStack itemLeft;
         private ItemStack itemRight;
 
-        public Builder()
+        private Builder()
         {
         }
 
