@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,7 +34,7 @@ public final class PlayerSignInput
         return new Builder();
     }
 
-    private final InputListener action;
+    private final Consumer<InputEvent> action;
     private final List<String> lines;
     private final Plugin plugin;
     private final UUID uuid;
@@ -41,7 +42,7 @@ public final class PlayerSignInput
     private LeaveListener listener;
     private Sign sign;
 
-    public PlayerSignInput(InputListener action,List<String> withLines,UUID uuid,Plugin plugin)
+    public PlayerSignInput(Consumer<InputEvent> action,List<String> withLines,UUID uuid,Plugin plugin)
     {
         this.lines=withLines;
         this.plugin=plugin;
@@ -146,7 +147,7 @@ public final class PlayerSignInput
 
                         PlayerSignInput.this.sign.getBlock().setType(Material.AIR);
 
-                        PlayerSignInput.this.action.onSignClose(new InputEvent(event.getPlayer(),lines));
+                        PlayerSignInput.this.action.accept(new InputEvent(event.getPlayer(),lines));
                     });
                 }
             }
@@ -187,7 +188,7 @@ public final class PlayerSignInput
 
     public static final class Builder
     {
-        private InputListener action=event -> {};
+        private Consumer<InputEvent> action=event -> {};
         private List<String> lines=new ArrayList<>(Arrays.asList("","","",""));
         private UUID uuid=null;
         private Plugin plugin;
@@ -196,7 +197,7 @@ public final class PlayerSignInput
         {
         }
 
-        public Builder action(InputListener listener)
+        public Builder action(Consumer<InputEvent> listener)
         {
             if (listener!=null)
             {
@@ -258,11 +259,6 @@ public final class PlayerSignInput
         {
             return lines;
         }
-    }
-
-    public static interface InputListener
-    {
-        void onSignClose(InputEvent event);
     }
 
 }

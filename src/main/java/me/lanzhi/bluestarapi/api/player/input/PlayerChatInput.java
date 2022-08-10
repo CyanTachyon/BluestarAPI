@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 public final class PlayerChatInput<T> implements Listener
 {
 
-    private static List<UUID> players=new ArrayList<UUID>();
+    private static List<UUID> players=new ArrayList<>();
     private EnumMap<EndReason, PlayerChatInput<?>> chainAfter;
     private BiFunction<Player, String, Boolean> onInvalidInput;
     private BiFunction<Player, String, Boolean> isValidInput;
