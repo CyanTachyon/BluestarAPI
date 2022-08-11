@@ -1,5 +1,6 @@
 package me.lanzhi.bluestarapi.api.player.input;
 
+import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -76,11 +77,13 @@ public final class PlayerChatInput<T> implements Listener
         this.onExpire=onExpire;
         this.onExpireMessage=whenExpireMessage;
         this.onDisconnect=onDisconnect;
+
+        this.start();
     }
 
-    public static <U>Builder<U> builder(Plugin plugin,Player player)
+    public static <U> Builder<U> builder()
     {
-        return new Builder<>(plugin,player);
+        return new Builder<>();
     }
 
     private static void addPlayer(UUID player)
@@ -178,10 +181,8 @@ public final class PlayerChatInput<T> implements Listener
         return value;
     }
 
-    @Nullable
-    public void start()
+    private void start()
     {
-
         if (isInputing(player.getUniqueId()))
         {
             throw new IllegalAccessError("Can't ask for input to a player that is already inputing");
@@ -257,20 +258,7 @@ public final class PlayerChatInput<T> implements Listener
 
     public static enum EndReason
     {
-
-
-        PLAYER_CANCELLS,
-
-        FINISH,
-
-        RUN_OUT_OF_TIME,
-
-        PLAYER_DISCONECTS,
-
-        INVALID_INPUT,
-
-        CUSTOM;
-
+        PLAYER_CANCELLS,FINISH,RUN_OUT_OF_TIME,PLAYER_DISCONECTS,INVALID_INPUT,CUSTOM;
     }
 
 
@@ -285,7 +273,6 @@ public final class PlayerChatInput<T> implements Listener
         private Consumer<Player> onCancel;
         private Consumer<Player> onExpire;
         private Runnable onDisconnect;
-        private Player player;
 
         private String invalidInputMessage;
         private String sendValueMessage;
@@ -297,31 +284,18 @@ public final class PlayerChatInput<T> implements Listener
         private int expiresAfter;
         private boolean repeat;
 
-        private Plugin main;
+        private Plugin plugin;
 
-
-        public Builder(@NotNull Plugin main,@NotNull Player player)
+        public Builder()
         {
-            this.main=main;
-            this.player=player;
-
             invalidInputMessage="That is not a valid input";
             sendValueMessage="Send in the chat the value";
             whenExpire="You ran out of time to answer";
             cancel="cancel";
 
-            onInvalidInput=(p,mes)->
-            {
-                return true;
-            };
-            isValidInput=(p,mes)->
-            {
-                return true;
-            };
-            setValue=(p,mes)->
-            {
-                return value;
-            };
+            onInvalidInput=(p,mes)->true;
+            isValidInput=(p,mes)->true;
+            setValue=(p,mes)->value;
             onFinish=(p,val)->
             {
             };
@@ -336,10 +310,14 @@ public final class PlayerChatInput<T> implements Listener
             };
 
             expiresAfter=-1;
-
             repeat=true;
         }
 
+        public Builder<U> plugin(@NotNull Plugin plugin)
+        {
+            this.plugin=plugin;
+            return this;
+        }
 
         public Builder<U> onInvalidInput(@NotNull BiFunction<Player, String, Boolean> onInvalidInput)
         {
@@ -460,25 +438,28 @@ public final class PlayerChatInput<T> implements Listener
         }
 
 
-        public PlayerChatInput<U> build()
+        public PlayerChatInput<U> open(@NotNull Player player)
         {
-            return new PlayerChatInput<U>(main,
-                                          player,
-                                          value,
-                                          invalidInputMessage,
-                                          sendValueMessage,
-                                          isValidInput,
-                                          setValue,
-                                          onFinish,
-                                          onCancel,
-                                          cancel,
-                                          onInvalidInput,
-                                          repeat,
-                                          chainAfter,
-                                          expiresAfter,
-                                          onExpire,
-                                          whenExpire,
-                                          onDisconnect);
+
+            Validate.notNull(plugin,"Plugin cannot be null");
+            Validate.notNull(player,"Player cannot be null");
+            return new PlayerChatInput<>(plugin,
+                                         player,
+                                         value,
+                                         invalidInputMessage,
+                                         sendValueMessage,
+                                         isValidInput,
+                                         setValue,
+                                         onFinish,
+                                         onCancel,
+                                         cancel,
+                                         onInvalidInput,
+                                         repeat,
+                                         chainAfter,
+                                         expiresAfter,
+                                         onExpire,
+                                         whenExpire,
+                                         onDisconnect);
         }
     }
 

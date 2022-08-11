@@ -18,36 +18,38 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class PlayerSignInput
 {
-    public static Builder builder()
-    {
-        return new Builder();
-    }
-
-    private final Consumer<InputEvent> action;
+    private final BiConsumer<Player, List<String>> action;
     private final List<String> lines;
     private final Plugin plugin;
     private final UUID uuid;
     private PacketAdapter packetListener;
     private LeaveListener listener;
     private Sign sign;
-
-    public PlayerSignInput(Consumer<InputEvent> action,List<String> withLines,UUID uuid,Plugin plugin)
+    public PlayerSignInput(BiConsumer<Player, List<String>> action,List<String> withLines,UUID uuid,Plugin plugin)
     {
         this.lines=withLines;
         this.plugin=plugin;
         this.action=action;
         this.uuid=uuid;
+
+        this.open();
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
     }
 
     public void open()
@@ -78,12 +80,13 @@ public final class PlayerSignInput
         {
             material=Material.OAK_WALL_SIGN;
         }
-        while (!player.getWorld().getBlockAt(x_start,
-                                             y_start,
-                                             z_start).getType().equals(Material.AIR)&&!player.getWorld().getBlockAt(
-                x_start,
-                y_start,
-                z_start).getType().equals(material))
+        while (!player.getWorld().getBlockAt(x_start,y_start,z_start).getType().equals(Material.AIR)&&!player.getWorld()
+                                                                                                             .getBlockAt(
+                                                                                                                     x_start,
+                                                                                                                     y_start,
+                                                                                                                     z_start)
+                                                                                                             .getType()
+                                                                                                             .equals(material))
         {
             y_start--;
             if (y_start==1)
@@ -105,7 +108,8 @@ public final class PlayerSignInput
         this.sign.update(false,false);
 
 
-        PacketContainer openSign=ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.OPEN_SIGN_EDITOR);
+        PacketContainer openSign=ProtocolLibrary.getProtocolManager()
+                                                .createPacket(PacketType.Play.Server.OPEN_SIGN_EDITOR);
 
         BlockPosition position=new BlockPosition(x_start,y_start,z_start);
 
@@ -147,7 +151,7 @@ public final class PlayerSignInput
 
                         PlayerSignInput.this.sign.getBlock().setType(Material.AIR);
 
-                        PlayerSignInput.this.action.accept(new InputEvent(event.getPlayer(),lines));
+                        PlayerSignInput.this.action.accept(event.getPlayer(),lines);
                     });
                 }
             }
@@ -157,8 +161,55 @@ public final class PlayerSignInput
 
     private String getLine(PacketEvent event,int line)
     {
-        return Bukkit.getVersion().contains("1.8")?((WrappedChatComponent[]) event.getPacket().getChatComponentArrays().read(
-                0))[line].getJson().replaceAll("\"",""):((String[]) event.getPacket().getStringArrays().read(0))[line];
+        return Bukkit.getVersion().contains("1.8")?((WrappedChatComponent[]) event.getPacket()
+                                                                                  .getChatComponentArrays()
+                                                                                  .read(0))[line].getJson()
+                                                                                                 .replaceAll("\"",
+                                                                                                             ""):((String[]) event.getPacket()
+                                                                                                                                  .getStringArrays()
+                                                                                                                                  .read(0))[line];
+    }
+
+    public static final class Builder
+    {
+        private BiConsumer<Player, List<String>> action=(player,list)->
+        {
+        };
+        private List<String> lines=new ArrayList<>(Arrays.asList("","","",""));
+        private Plugin plugin;
+
+        private Builder()
+        {
+        }
+
+        public Builder action(BiConsumer<Player, List<String>> listener)
+        {
+            if (listener!=null)
+            {
+                action=listener;
+            }
+            return this;
+        }
+
+        public Builder lines(List<String> list)
+        {
+            if (list!=null)
+            {
+                lines=list;
+            }
+            return this;
+        }
+
+        public Builder plugin(Plugin plugin)
+        {
+            this.plugin=plugin;
+            return this;
+        }
+
+        public PlayerSignInput open(@NotNull Player player)
+        {
+            return new PlayerSignInput(action,lines,player.getUniqueId(),plugin);
+        }
     }
 
     private class LeaveListener implements Listener
@@ -185,80 +236,4 @@ public final class PlayerSignInput
             }
         }
     }
-
-    public static final class Builder
-    {
-        private Consumer<InputEvent> action=event -> {};
-        private List<String> lines=new ArrayList<>(Arrays.asList("","","",""));
-        private UUID uuid=null;
-        private Plugin plugin;
-
-        private Builder()
-        {
-        }
-
-        public Builder action(Consumer<InputEvent> listener)
-        {
-            if (listener!=null)
-            {
-                action=listener;
-            }
-            return this;
-        }
-
-        public Builder lines(List<String> list)
-        {
-            if (list!=null)
-            {
-                lines=list;
-            }
-            return this;
-        }
-
-        public Builder player(Player player)
-        {
-            this.uuid=player.getUniqueId();
-            return this;
-        }
-
-        public Builder player(UUID uuid)
-        {
-            this.uuid=uuid;
-            return this;
-        }
-
-        public Builder plugin(Plugin plugin)
-        {
-            this.plugin=plugin;
-            return this;
-        }
-
-        public PlayerSignInput build()
-        {
-            return new PlayerSignInput(action,lines,uuid,plugin);
-        }
-    }
-
-    public static final class InputEvent
-    {
-        private final Player player;
-        private final List<String> lines;
-
-        private InputEvent(Player player,List<String> lines)
-        {
-            this.player=player;
-            this.lines=lines;
-        }
-
-        public Player getPlayer()
-        {
-            return player;
-        }
-
-        public List<String> getLines()
-        {
-            return lines;
-        }
-    }
-
 }
