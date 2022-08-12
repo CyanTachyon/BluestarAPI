@@ -235,7 +235,7 @@ public final class PlayerAnvilInput
         {
             try
             {
-                return (PlayerAnvilInput.Builder)super.clone();
+                return (PlayerAnvilInput.Builder) super.clone();
             }
             catch (Exception e)
             {
@@ -350,11 +350,25 @@ public final class PlayerAnvilInput
                 return;
             }
 
-            if (event.getRawSlot()>=3&&event.getAction()!=InventoryAction.MOVE_TO_OTHER_INVENTORY&&PlayerAnvilInput.this.prohibitAnyClick&&event.getAction()!=InventoryAction.COLLECT_TO_CURSOR)
+            if (event.getClickedInventory()==inventory)
             {
+                if (PlayerAnvilInput.this.prohibitAnyClick)
+                {
+                    event.setCancelled(true);
+                }
+                if (event.getAction()==InventoryAction.MOVE_TO_OTHER_INVENTORY)
+                {
+                    event.setCancelled(true);
+                }
+                if (event.getAction()==InventoryAction.COLLECT_TO_CURSOR)
+                {
+                    event.setCancelled(true);
+                }
                 return;
             }
+
             event.setCancelled(true);
+
             Player clicker=(Player) event.getWhoClicked();
             if (event.getRawSlot()==2)
             {

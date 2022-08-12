@@ -35,13 +35,13 @@ public class ChestGui
     private final Map<Integer, GuiItem> items;
     private final boolean prohibitAnyClick;
     private final boolean preventClose;
-    private final BiConsumer<ChestGui, Boolean> onClose;
-    private boolean closed=false;
+    private final BiConsumer<ChestGui, CloseAction> onClose;
+    private boolean isOpen=false;
     private int page;
     private Inventory inventory;
     private GuiListener listener;
 
-    private ChestGui(Plugin plugin,int size,String title,Player player,GuiItem emptyItem,ItemStack bottomItem,ItemStack closeButton,ItemStack turnLeftButton,ItemStack turnRightButton,Map<Integer, GuiItem> items,boolean prohibitAnyClick,boolean preventClose,BiConsumer<ChestGui, Boolean> onClose)
+    private ChestGui(Plugin plugin,int size,String title,Player player,GuiItem emptyItem,ItemStack bottomItem,ItemStack closeButton,ItemStack turnLeftButton,ItemStack turnRightButton,Map<Integer, GuiItem> items,boolean prohibitAnyClick,boolean preventClose,BiConsumer<ChestGui, CloseAction> onClose)
     {
         this.plugin=plugin;
         this.size=size*9;
@@ -68,7 +68,7 @@ public class ChestGui
         int maxPage1=0;
         if (maxEntry!=null)
         {
-            maxPage1=(int) Math.ceil((double) maxEntry.getKey()/this.size);
+            maxPage1=(int) Math.ceil((double) maxEntry.getKey()/(this.size-9));
         }
         if (maxPage1==0)
         {
@@ -76,7 +76,8 @@ public class ChestGui
         }
         this.maxPage=maxPage1;
 
-        openGui(true);
+        init();
+        openGui();
     }
 
     public static Builder builder()
@@ -112,16 +113,6 @@ public class ChestGui
     public int getPage()
     {
         return page;
-    }
-
-    private GuiItem getItem(int index)
-    {
-        GuiItem item=ChestGui.this.items.get(page*(size-9)+index);
-        if (item==null)
-        {
-            return emptyItem;
-        }
-        return item;
     }
 
     private void setPage(int page)
@@ -166,43 +157,46 @@ public class ChestGui
         }
     }
 
+    private GuiItem getItem(int index)
+    {
+        GuiItem item=ChestGui.this.items.get(page*(size-9)+index);
+        if (item==null)
+        {
+            return emptyItem;
+        }
+        return item;
+    }
+
     public Inventory getInventory()
     {
         return inventory;
     }
 
-    public void open()
+    private void init()
     {
-        if (closed)
-        {
-            throw new AssertionError("Gui is closed");
-        }
-        openGui(false);
+        inventory=player.getServer().createInventory(player,size,title);
+        setPage(0);
     }
 
-    private void openGui(boolean first)
+    private void openGui()
     {
-        if (first)
+        if (!plugin.isEnabled())
         {
-            inventory=player.getServer().createInventory(player,size,title);
-            setPage(0);
-            listener=new GuiListener();
-            plugin.getServer().getPluginManager().registerEvents(listener,plugin);
+            return;
         }
+        listener=new GuiListener();
+        plugin.getServer().getPluginManager().registerEvents(listener,plugin);
         player.openInventory(inventory);
     }
 
-    private void closeGui(boolean send,boolean temp)
+    private void closeGui(boolean send)
     {
+        HandlerList.unregisterAll(listener);
         if (send)
         {
             player.closeInventory();
         }
-        if (!temp)
-        {
-            closed=true;
-            HandlerList.unregisterAll(listener);
-        }
+        isOpen=false;
     }
 
     public static class Builder implements Cloneable
@@ -219,7 +213,7 @@ public class ChestGui
         private ItemStack turnLeft;
         private ItemStack turnRight;
         private Plugin plugin;
-        private BiConsumer<ChestGui, Boolean> onClose;
+        private BiConsumer<ChestGui, CloseAction> onClose;
 
         private Builder()
         {
@@ -230,7 +224,9 @@ public class ChestGui
             this.turnLeft=new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
             this.turnRight=new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
             this.emptyItem=GuiItem.EMPTY;
-            this.onClose=(gui,b)->{};
+            this.onClose=(gui,b)->
+            {
+            };
 
             ItemMeta meta=bottomItem.getItemMeta();
             assert meta!=null;
@@ -318,7 +314,7 @@ public class ChestGui
             return this;
         }
 
-        public Builder onClose(BiConsumer<ChestGui, Boolean> onClose)
+        public Builder onClose(BiConsumer<ChestGui, CloseAction> onClose)
         {
             this.onClose=onClose;
             return this;
@@ -335,7 +331,9 @@ public class ChestGui
             return new ChestGui(plugin,
                                 size,
                                 title,
-                                player,emptyItem,bottomItem,
+                                player,
+                                emptyItem,
+                                bottomItem,
                                 closeButton,
                                 turnLeft,
                                 turnRight,
@@ -362,6 +360,14 @@ public class ChestGui
             }
             return clone;
         }
+    }
+
+    public enum CloseAction
+    {
+        FORCED,
+        PLUGIN,
+        PLAYER,
+        TEMPORARY
     }
 
     public static class Response
@@ -420,7 +426,8 @@ public class ChestGui
         {
             if (event.getPlugin()==plugin)
             {
-                ChestGui.this.closeGui(true,false);
+                ChestGui.this.closeGui(true);
+                onClose.accept(ChestGui.this,CloseAction.FORCED);
             }
         }
 
@@ -429,7 +436,8 @@ public class ChestGui
         {
             if (event.getPlayer().equals(player))
             {
-                closeGui(false,false);
+                closeGui(false);
+                onClose.accept(ChestGui.this,CloseAction.FORCED);
             }
         }
 
@@ -446,7 +454,8 @@ public class ChestGui
             }
             else
             {
-                closeGui(false,false);
+                onClose.accept(ChestGui.this,CloseAction.PLAYER);
+                closeGui(false);
             }
         }
 
@@ -471,12 +480,15 @@ public class ChestGui
                 Response response=item.getOnClick().apply(ChestGui.this,event.getClick());
                 if (response.getInput()!=null)
                 {
-                    ChestGui.this.closeGui(true,true);
-                    response.getInput().clone().onClose(anvilInput -> openGui(false)).open(player);
+                    ChestGui.this.closeGui(true);
+                    response.getInput().clone().preventClose(true).onClose(anvilInput->openGui()).open(player);
+                    onClose.accept(ChestGui.this,CloseAction.TEMPORARY);
+                    return;
                 }
                 if (response.getClose())
                 {
-                    ChestGui.this.closeGui(true,false);
+                    ChestGui.this.closeGui(true);
+                    onClose.accept(ChestGui.this,CloseAction.PLUGIN);
                 }
                 if (response.getBuilder()!=null)
                 {
@@ -496,7 +508,7 @@ public class ChestGui
             }
             if (event.getSlot()==size-5&&!preventClose)
             {
-                ChestGui.this.closeGui(true,false);
+                ChestGui.this.closeGui(true);
             }
         }
     }
