@@ -454,8 +454,8 @@ public class ChestGui
             }
             else
             {
-                onClose.accept(ChestGui.this,CloseAction.PLAYER);
                 closeGui(false);
+                onClose.accept(ChestGui.this,CloseAction.PLAYER);
             }
         }
 
@@ -481,8 +481,8 @@ public class ChestGui
                 if (response.getInput()!=null)
                 {
                     ChestGui.this.closeGui(true);
-                    response.getInput().clone().preventClose(true).onClose(anvilInput->openGui()).open(player);
                     onClose.accept(ChestGui.this,CloseAction.TEMPORARY);
+                    response.getInput().clone().preventClose(true).onClose(anvilInput->openGui()).open(player);
                     return;
                 }
                 if (response.getClose())
@@ -509,6 +509,7 @@ public class ChestGui
             if (event.getSlot()==size-5&&!preventClose)
             {
                 ChestGui.this.closeGui(true);
+                onClose.accept(ChestGui.this,CloseAction.PLAYER);
             }
         }
     }

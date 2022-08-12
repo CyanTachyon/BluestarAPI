@@ -350,7 +350,7 @@ public final class PlayerAnvilInput
                 return;
             }
 
-            if (event.getClickedInventory()==inventory)
+            if (event.getClickedInventory()!=inventory)
             {
                 if (PlayerAnvilInput.this.prohibitAnyClick)
                 {
@@ -447,7 +447,7 @@ public final class PlayerAnvilInput
                 PlayerAnvilInput.this.closeInventory(false);
                 if (PlayerAnvilInput.this.preventClose)
                 {
-                    Bukkit.getScheduler().runTask(PlayerAnvilInput.this.plugin,PlayerAnvilInput.this::openInventory);
+                    openInventory();
                 }
             }
 
