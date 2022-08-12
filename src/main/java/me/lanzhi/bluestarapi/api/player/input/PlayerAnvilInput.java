@@ -212,7 +212,7 @@ public final class PlayerAnvilInput
         }
     }
 
-    public static class Builder
+    public static class Builder implements Cloneable
     {
         private Consumer<PlayerAnvilInput> closeListener;
         private boolean preventClose=false;
@@ -228,6 +228,20 @@ public final class PlayerAnvilInput
 
         private Builder()
         {
+        }
+
+        @Override
+        public PlayerAnvilInput.Builder clone()
+        {
+            try
+            {
+                return (PlayerAnvilInput.Builder)super.clone();
+            }
+            catch (Exception e)
+            {
+
+                throw new AssertionError(e);
+            }
         }
 
         public PlayerAnvilInput.Builder prohibitAnyClick(boolean b)
@@ -336,8 +350,7 @@ public final class PlayerAnvilInput
                 return;
             }
 
-            if (event.getRawSlot()>=3&&!event.getAction()
-                                             .equals(InventoryAction.MOVE_TO_OTHER_INVENTORY)&&!PlayerAnvilInput.this.prohibitAnyClick)
+            if (event.getRawSlot()>=3&&event.getAction()!=InventoryAction.MOVE_TO_OTHER_INVENTORY&&PlayerAnvilInput.this.prohibitAnyClick&&event.getAction()!=InventoryAction.COLLECT_TO_CURSOR)
             {
                 return;
             }
