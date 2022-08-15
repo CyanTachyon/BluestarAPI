@@ -18,6 +18,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 public class ChestGui
@@ -186,6 +187,7 @@ public class ChestGui
         }
         listener=new GuiListener();
         plugin.getServer().getPluginManager().registerEvents(listener,plugin);
+        setPage(page);
         player.openInventory(inventory);
     }
 
@@ -219,10 +221,20 @@ public class ChestGui
         {
             this.title="Chest";
             this.size=6;
-            this.bottomItem=new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
-            this.closeButton=new ItemStack(Material.RED_STAINED_GLASS_PANE);
-            this.turnLeft=new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
-            this.turnRight=new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+            try
+            {
+                this.bottomItem=new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+                this.closeButton=new ItemStack(Material.RED_STAINED_GLASS_PANE);
+                this.turnLeft=new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+                this.turnRight=new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+            }
+            catch (Exception e)
+            {
+                this.bottomItem=new ItemStack(Objects.requireNonNull(Material.getMaterial("STAINED_GLASS_PANE")),1,(short)15);
+                this.closeButton=new ItemStack(Objects.requireNonNull(Material.getMaterial("STAINED_GLASS_PANE")),1,(short)14);
+                this.turnLeft=new ItemStack(Objects.requireNonNull(Material.getMaterial("STAINED_GLASS_PANE")),1,(short)13);
+                this.turnRight=new ItemStack(Objects.requireNonNull(Material.getMaterial("STAINED_GLASS_PANE")),1,(short)13);
+            }
             this.emptyItem=GuiItem.EMPTY;
             this.onClose=(gui,b)->
             {
