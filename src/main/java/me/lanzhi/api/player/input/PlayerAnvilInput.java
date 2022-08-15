@@ -447,10 +447,9 @@ public final class PlayerAnvilInput
                 PlayerAnvilInput.this.closeInventory(false);
                 if (PlayerAnvilInput.this.preventClose)
                 {
-                    openInventory();
+                    Bukkit.getScheduler().runTask(PlayerAnvilInput.this.plugin,PlayerAnvilInput.this::openInventory);
                 }
             }
-
         }
     }
 }
