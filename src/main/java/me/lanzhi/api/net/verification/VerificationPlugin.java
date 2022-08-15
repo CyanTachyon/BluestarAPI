@@ -1,7 +1,7 @@
-package me.lanzhi.bluestarapi.api.net.verification;
+package me.lanzhi.api.net.verification;
 
-import me.lanzhi.bluestarapi.api.Bluestar;
-import me.lanzhi.bluestarapi.api.config.YamlFile;
+import me.lanzhi.api.Bluestar;
+import me.lanzhi.api.config.YamlFile;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 

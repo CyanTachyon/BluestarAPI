@@ -6,7 +6,7 @@
 
     <groupId>me.lanzhi</groupId>
     <artifactId>BluestarAPI</artifactId>
-    <version>2.6.5</version>
+    <version>3.0.0</version>
     <packaging>jar</packaging>
 
     <name>BluestarAPI</name>
@@ -30,7 +30,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -42,6 +42,22 @@
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <relocations>
+                        <relocation>
+                            <pattern>de.tr7zw.changeme.nbtapi</pattern>
+                            <shadedPattern>me.lanzhi.api.nbt</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>de.tr7zw.annotations</pattern>
+                            <shadedPattern>me.lanzhi.api.annotations</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>net.wesjd.anvilgui</pattern>
+                            <shadedPattern>me.lanzhi.bluestarapi.anvilgui</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
             </plugin>
         </plugins>
         <resources>

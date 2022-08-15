@@ -1,4 +1,4 @@
-package me.lanzhi.bluestarapi.api;
+package me.lanzhi.api;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;

@@ -1,4 +1,4 @@
-package me.lanzhi.bluestarapi.api.player.input;
+package me.lanzhi.api.player.input;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;

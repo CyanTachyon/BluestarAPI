@@ -1,4 +1,4 @@
-package me.lanzhi.bluestarapi.api.player.input;
+package me.lanzhi.api.player.input;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;

@@ -1,8 +1,7 @@
-package me.lanzhi.bluestarapi.api;
+package me.lanzhi.api;
 
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;

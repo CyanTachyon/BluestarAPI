@@ -1,4 +1,4 @@
-package me.lanzhi.bluestarapi.api.player.gui;
+package me.lanzhi.api.player.gui;
 
 import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;

@@ -1,25 +1,16 @@
-package me.lanzhi.bluestarapi.api;
+package me.lanzhi.api;
 
 import me.lanzhi.bluestarapi.BluestarAPI;
 import net.coreprotect.CoreProtect;
 import net.coreprotect.CoreProtectAPI;
-import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.AnvilInventory;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.SmithingInventory;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;

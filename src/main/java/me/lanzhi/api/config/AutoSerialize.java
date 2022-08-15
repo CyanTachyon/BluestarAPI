@@ -1,4 +1,4 @@
-package me.lanzhi.bluestarapi.api.config;
+package me.lanzhi.api.config;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

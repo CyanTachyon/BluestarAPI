@@ -1,4 +1,4 @@
-package me.lanzhi.bluestarapi.api;
+package me.lanzhi.api;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
@@ -7,7 +7,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 
 public class CommandManager
 {

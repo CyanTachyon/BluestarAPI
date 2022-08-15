@@ -1,4 +1,4 @@
-package me.lanzhi.bluestarapi.api;
+package me.lanzhi.api;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

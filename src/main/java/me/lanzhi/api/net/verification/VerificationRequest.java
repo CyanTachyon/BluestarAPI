@@ -1,4 +1,4 @@
-package me.lanzhi.bluestarapi.api.net.verification;
+package me.lanzhi.api.net.verification;
 
 import java.io.Serializable;
 import java.util.UUID;

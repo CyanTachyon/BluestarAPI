@@ -1,4 +1,4 @@
-package me.lanzhi.bluestarapi.api.net.verification;
+package me.lanzhi.api.net.verification;
 
 import me.lanzhi.bluestarapi.BluestarAPI;
 import org.bukkit.Bukkit;

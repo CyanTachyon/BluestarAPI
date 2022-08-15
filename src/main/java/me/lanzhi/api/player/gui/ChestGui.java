@@ -1,6 +1,6 @@
-package me.lanzhi.bluestarapi.api.player.gui;
+package me.lanzhi.api.player.gui;
 
-import me.lanzhi.bluestarapi.api.player.input.PlayerAnvilInput;
+import me.lanzhi.api.player.input.PlayerAnvilInput;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

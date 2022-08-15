@@ -1,4 +1,4 @@
-package me.lanzhi.bluestarapi.api.config;
+package me.lanzhi.api.config;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;

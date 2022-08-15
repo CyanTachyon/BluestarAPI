@@ -1,7 +1,7 @@
 package me.lanzhi.bluestarapi;
 
-import me.lanzhi.bluestarapi.api.Bluestar;
-import me.lanzhi.bluestarapi.api.config.AutoSerialize;
+import me.lanzhi.api.Bluestar;
+import me.lanzhi.api.config.AutoSerialize;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
@@ -10,7 +10,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
-import static me.lanzhi.bluestarapi.api.config.AutoSerialize.nameOfAutoSerialize;
+import static me.lanzhi.api.config.AutoSerialize.nameOfAutoSerialize;
 
 public final class BluestarAPI extends JavaPlugin
 {
