@@ -1,8 +1,8 @@
 package me.lanzhi.api.net.verification;
 
-import me.lanzhi.bluestarapi.BluestarAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.ObjectInputStream;
@@ -102,8 +102,8 @@ public final class Verification
             return this;
         }
         time=System.currentTimeMillis();
-        new VerificationSend().runTaskTimerAsynchronously(BluestarAPI.thisPlugin,0,20);
-        new VerificationGet().runTaskAsynchronously(BluestarAPI.thisPlugin);
+        new VerificationSend().runTaskTimerAsynchronously(JavaPlugin.getProvidingPlugin(Verification.class),0,20);
+        new VerificationGet().runTaskAsynchronously(JavaPlugin.getProvidingPlugin(Verification.class));
         return this;
     }
 
@@ -126,10 +126,6 @@ public final class Verification
             try
             {
                 outputStream.writeObject(message);
-                if (BluestarAPI.debug)
-                {
-                    System.out.println("发送消息成功");
-                }
             }
             catch (Exception e)
             {
@@ -160,10 +156,6 @@ public final class Verification
                 try
                 {
                     VerificationReceive mess=(VerificationReceive) inputStream.readObject();
-                    if (BluestarAPI.debug)
-                    {
-                        System.out.println("接收到反馈: "+mess.isSuccess()+","+mess.getTime());
-                    }
                     isSuccess=mess.isSuccess();
                     time=Math.max(time,mess.getTime());
                 }

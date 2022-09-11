@@ -6,7 +6,7 @@ import org.bukkit.enchantments.Enchantment;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-public class EnchantmentManager
+public final class EnchantmentManager
 {
     public static void upData()
     {
@@ -56,17 +56,9 @@ public class EnchantmentManager
         }
     }
 
-    public boolean closeEnchantmentRegistrations()
+    public void closeEnchantmentRegistrations()
     {
-        try
-        {
-            Enchantment.stopAcceptingRegistrations();
-            return true;
-        }
-        catch (Throwable e)
-        {
-            return false;
-        }
+        Enchantment.stopAcceptingRegistrations();
     }
 
     public boolean registerEnchantment(Enchantment enchantment)
@@ -82,12 +74,16 @@ public class EnchantmentManager
 
     public Enchantment removeEnchantment(NamespacedKey key)
     {
-        return enchantmentByKey.remove(key);
+        Enchantment enchantment=enchantmentByKey.remove(key);
+        enchantmentByName.values().remove(enchantment);
+        return enchantment;
     }
 
     public Enchantment removeEnchantment(String name)
     {
-        return enchantmentByName.remove(name);
+        Enchantment enchantment=enchantmentByName.remove(name);
+        enchantmentByKey.values().remove(enchantment);
+        return enchantment;
     }
 
     public Enchantment getEnchantment(NamespacedKey key)

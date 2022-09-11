@@ -1,5 +1,6 @@
 package me.lanzhi.api.config;
 
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,9 +28,7 @@ public final class YamlFile extends YamlConfiguration
     @NotNull
     public static YamlFile loadYamlFile(@NotNull File file)
     {
-        YamlFile yamlFile=new YamlFile(file);
-        yamlFile.reload();
-        return yamlFile;
+        return new YamlFile(file).reload();
     }
 
     @NotNull
@@ -43,18 +42,16 @@ public final class YamlFile extends YamlConfiguration
         catch (IOException e)
         {
             System.out.println("§4[BluestarAPI]创建文件时出错:"+file.getName());
+            e.printStackTrace();
         }
         try
         {
             this.load(file);
         }
-        catch (IOException e)
+        catch (IOException|InvalidConfigurationException e)
         {
             System.out.println("§4[BluestarAPI]加载文件时出错:"+file.getName());
-        }
-        catch (org.bukkit.configuration.InvalidConfigurationException e)
-        {
-            System.out.println("§4[BluestarAPI]加载文件时出错:"+file.getName());
+            e.printStackTrace();
         }
         return this;
     }

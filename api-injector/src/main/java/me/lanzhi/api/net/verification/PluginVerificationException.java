@@ -3,7 +3,7 @@ package me.lanzhi.api.net.verification;
 /**
  * @author Lanzhi
  */
-public class PluginVerificationException extends Exception
+public final class PluginVerificationException extends Exception
 {
     public static final PluginVerificationException EXCEPTION= new PluginVerificationException();
     private PluginVerificationException()

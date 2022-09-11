@@ -149,7 +149,7 @@ public final class RGBColor
     /**
      * 用16进制的颜色获取彩色文本比如说传入#ffffff或ffffff,可以获取到的内容将会让后面显示白色
      * @param hexColor 16进制的颜色
-     * @return
+     * @return 颜色代码
      */
     public static String toColorCode(String hexColor)
     {
@@ -183,6 +183,11 @@ public final class RGBColor
         return ChatColor.translateAlternateColorCodes('&',stringBuilder.toString());
     }
 
+    /**
+     * 加上随机颜色
+     * @param message 原信息
+     * @return 加上随机颜色后的
+     */
     public static String setRandomColor(String message)
     {
         StringBuilder stringBuilder=new StringBuilder();

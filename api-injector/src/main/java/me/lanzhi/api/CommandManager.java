@@ -8,7 +8,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
-public class CommandManager
+public final class CommandManager
 {
     public static void upData()
     {

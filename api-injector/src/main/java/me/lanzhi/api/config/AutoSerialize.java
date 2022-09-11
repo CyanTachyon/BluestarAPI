@@ -2,7 +2,9 @@ package me.lanzhi.api.config;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -11,13 +13,24 @@ import java.util.Map;
 
 final public class AutoSerialize implements AutoSerializeInterface
 {
-    public final static String nameOfAutoSerialize="BluestarAPI.AutoSerialize";
+    public final static String nameOfAutoSerialize;
+    static
+    {
+        nameOfAutoSerialize=JavaPlugin.getProvidingPlugin(AutoSerialize.class).getName()+".AutoSerialize";
+        register();
+    }
+
+    public static void register()
+    {
+        ConfigurationSerialization.unregisterClass(AutoSerialize.class);
+        ConfigurationSerialization.registerClass(AutoSerialize.class,nameOfAutoSerialize);
+    }
+
     private final static HashMap<String, Class<? extends AutoSerializeInterface>> classNames=new HashMap<>();
 
     public static AutoSerializeInterface deserialize(Map<String, Object> map)
     {
         String clazzName=(String) map.get("class");
-        //System.out.println("反序列化: "+clazzName);
         Class<? extends AutoSerializeInterface> clazz;
         clazz=classNames.get(clazzName);
         if (clazz==null)

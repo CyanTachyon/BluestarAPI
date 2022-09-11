@@ -1,5 +1,7 @@
 package me.lanzhi.api;
 
+import org.bukkit.ChatColor;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,12 +33,34 @@ public final class GradientColor
         r=end.getRed()-start.getRed();
         g=end.getGreen()-start.getGreen();
         b=end.getBlue()-start.getBlue();
-        for (long i=0;i<message.length();i++)
+        message=ChatColor.translateAlternateColorCodes('&',message);
+        double len=ChatColor.stripColor(message).length()-1;
+        StringBuilder p=new StringBuilder();
+        for (int i=0,j=0;i<message.length();i++)
         {
-            double x=i/(double) (message.length()-1);
+            if (message.charAt(i)==ChatColor.COLOR_CHAR&&i!=message.length()-1)
+            {
+                ChatColor c=ChatColor.getByChar(message.charAt(i+1));
+                if (c==ChatColor.RESET)
+                {
+                    p=new StringBuilder();
+                    i++;
+                    continue;
+                }
+                else if (c!=null)
+                {
+                    if (c.isFormat())
+                    {
+                        p.append(c);
+                    }
+                    i++;
+                    continue;
+                }
+            }
+            double x=j/len;
             RGBColor color=new RGBColor(start.getRed()+(int) (r*x),start.getGreen()+(int) (g*x),start.getBlue()+(int) (b*x));
-            //System.out.println(color.getRed()+" "+color.getGreen()+" "+color.getBlue());
-            builder.append(color).append(message.charAt((int) i));
+            builder.append(color).append(p).append(message.charAt(i));
+            j++;
         }
         return builder.toString();
     }

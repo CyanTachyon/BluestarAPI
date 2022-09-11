@@ -1,6 +1,5 @@
 package me.lanzhi.api;
 
-import me.lanzhi.bluestarapi.BluestarAPI;
 import net.coreprotect.CoreProtect;
 import net.coreprotect.CoreProtectAPI;
 import org.bukkit.Bukkit;
@@ -9,13 +8,14 @@ import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Random;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class BluestarManager
+public final class BluestarManager
 {
     private final Random random=new Random();
 
@@ -91,7 +91,7 @@ public class BluestarManager
                     }
                 }
             }
-        }.runTaskAsynchronously(BluestarAPI.thisPlugin);
+        }.runTaskAsynchronously(JavaPlugin.getProvidingPlugin(BluestarManager.class));
     }
 
     public <T extends Event> T callEvent(T event)
