@@ -1,7 +1,11 @@
 package me.lanzhi.api;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,8 +19,36 @@ public final class RGBColor
     private final int g;
     private final int b;
 
+    private static final Map<RGBColor, ChatColor> toChatColor=new HashMap<>();
+    private static final Map<net.md_5.bungee.api.ChatColor, RGBColor> fromChatColor=new HashMap<>();
+
+    static
+    {
+        toChatColor.put(new RGBColor(0x000000),ChatColor.BLACK);
+        toChatColor.put(new RGBColor(0x0000AA),ChatColor.DARK_BLUE);
+        toChatColor.put(new RGBColor(0x00AA00),ChatColor.DARK_GREEN);
+        toChatColor.put(new RGBColor(0x00AAAA),ChatColor.DARK_AQUA);
+        toChatColor.put(new RGBColor(0xAA0000),ChatColor.DARK_RED);
+        toChatColor.put(new RGBColor(0xAA00AA),ChatColor.DARK_PURPLE);
+        toChatColor.put(new RGBColor(0xFFAA00),ChatColor.GOLD);
+        toChatColor.put(new RGBColor(0xAAAAAA),ChatColor.GRAY);
+        toChatColor.put(new RGBColor(0x555555),ChatColor.DARK_GRAY);
+        toChatColor.put(new RGBColor(0x5555FF),ChatColor.BLUE);
+        toChatColor.put(new RGBColor(0x55FF55),ChatColor.GREEN);
+        toChatColor.put(new RGBColor(0x55FFFF),ChatColor.AQUA);
+        toChatColor.put(new RGBColor(0xFF5555),ChatColor.RED);
+        toChatColor.put(new RGBColor(0xFF55FF),ChatColor.LIGHT_PURPLE);
+        toChatColor.put(new RGBColor(0xFFFF55),ChatColor.YELLOW);
+        toChatColor.put(new RGBColor(0xFFFFFF),ChatColor.WHITE);
+        for (Map.Entry<RGBColor, ChatColor> entry: toChatColor.entrySet())
+        {
+            fromChatColor.put(entry.getValue().asBungee(),entry.getKey());
+        }
+    }
+
     /**
      * 通过颜色数字获得RGBChat类对象(其实是比如说0xffffff转10进制的那个数)
+     *
      * @param color 颜色
      */
     public RGBColor(int color)
@@ -39,6 +71,40 @@ public final class RGBColor
         this.r=r&MASK;
         this.g=g&MASK;
         this.b=b&MASK;
+    }
+
+    public RGBColor(ChatColor color)
+    {
+        this(fromChatColor.get(color.asBungee()).getColor());
+    }
+
+    public RGBColor(net.md_5.bungee.api.ChatColor chatColor)
+    {
+        this(fromChatColor.get(chatColor).getColor());
+    }
+
+    public RGBColor(Color color)
+    {
+        if (color==null)
+        {
+            r=g=b=0;
+            return;
+        }
+        r=color.getRed();
+        g=color.getGreen();
+        b=color.getBlue();
+    }
+
+    public RGBColor(java.awt.Color color)
+    {
+        if (color==null)
+        {
+            r=g=b=0;
+            return;
+        }
+        r=color.getRed();
+        g=color.getGreen();
+        b=color.getBlue();
     }
 
     public RGBColor(String color)
@@ -283,15 +349,40 @@ public final class RGBColor
 
     /**
      * 转换为颜色染色符号
+     *
      * @return 颜色染色符号
      */
     public String toColorCode()
     {
-        return toColorCode(getHexColor());
+        String[] p=Bukkit.getServer().getClass().getPackage().getName().split("\\.");
+        int version=Integer.parseInt(p[p.length-1].split("_")[1]);
+        if (version>=16)
+        {
+            return toColorCode(getHexColor());
+        }
+        RGBColor c=null;
+        for (Map.Entry<RGBColor, ChatColor> entry: toChatColor.entrySet())
+        {
+            if (this.getDifference(entry.getKey())<this.getDifference(c))
+            {
+                c=entry.getKey();
+            }
+        }
+        return ""+toChatColor.get(c);
+    }
+
+    public int getDifference(RGBColor other)
+    {
+        if (other==null)
+        {
+            return 3*0xFF;
+        }
+        return Math.abs(other.r-r)+Math.abs(other.g-g)+Math.abs(other.b-b);
     }
 
     /**
      * 转换为颜色染色符号,方便使用,例如"hello "+new RGBColor(100,125,255)+"world"
+     *
      * @return 颜色染色符号
      */
     @Override
