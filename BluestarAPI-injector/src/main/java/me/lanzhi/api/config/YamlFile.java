@@ -1,5 +1,6 @@
 package me.lanzhi.api.config;
 
+import me.lanzhi.api.reflect.Accessor;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -19,7 +20,7 @@ public final class YamlFile extends YamlConfiguration
 
     public YamlFile(@NotNull File file)
     {
-        this(file,false,null,JavaPlugin.getProvidingPlugin(Thread.currentThread().getStackTrace()[1].getClass()));
+        this(file,false,null,JavaPlugin.getProvidingPlugin(Accessor.getCallerClass()));
     }
 
     public YamlFile(@NotNull File file,boolean autoReload)
@@ -30,7 +31,7 @@ public final class YamlFile extends YamlConfiguration
             {
                 yamlFile.reload();
             }
-        },JavaPlugin.getProvidingPlugin(Thread.currentThread().getStackTrace()[1].getClass()));
+        },JavaPlugin.getProvidingPlugin(Accessor.getCallerClass()));
     }
 
     public YamlFile(@NotNull File file,boolean autoReload,String message)
@@ -42,15 +43,12 @@ public final class YamlFile extends YamlConfiguration
                 yamlFile.reload();
                 Bukkit.getLogger().info(message);
             }
-        },JavaPlugin.getProvidingPlugin(Thread.currentThread().getStackTrace()[1].getClass()));
+        },JavaPlugin.getProvidingPlugin(Accessor.getCallerClass()));
     }
 
     public YamlFile(@NotNull File file,boolean autoReload,BiConsumer<YamlFile, Event> biConsumer)
     {
-        this(file,
-             autoReload,
-             biConsumer,
-             JavaPlugin.getProvidingPlugin(Thread.currentThread().getStackTrace()[1].getClass()));
+        this(file,autoReload,biConsumer,JavaPlugin.getProvidingPlugin(Accessor.getCallerClass()));
     }
 
     private YamlFile(@NotNull File file,boolean autoReload,BiConsumer<YamlFile, Event> biConsumer,Plugin plugin)
@@ -109,7 +107,7 @@ public final class YamlFile extends YamlConfiguration
             {
                 yamlFile.reload();
             }
-        },JavaPlugin.getProvidingPlugin(Thread.currentThread().getStackTrace()[1].getClass())).reload();
+        },JavaPlugin.getProvidingPlugin(Accessor.getCallerClass())).reload();
     }
 
     @NotNull
@@ -122,7 +120,7 @@ public final class YamlFile extends YamlConfiguration
                 yamlFile.reload();
                 Bukkit.getLogger().info(message);
             }
-        },JavaPlugin.getProvidingPlugin(Thread.currentThread().getStackTrace()[1].getClass())).reload();
+        },JavaPlugin.getProvidingPlugin(Accessor.getCallerClass())).reload();
     }
 
     @NotNull
