@@ -59,6 +59,23 @@ public final class ConstructorAccessor<T>
         }
     }
 
+    public static <T> ConstructorAccessor<T> getDeclaredConstructor(Class<T> c,Class<?>... classes)
+    {
+        if (c==null)
+        {
+            return null;
+        }
+        classes=classes==null?new Class[0]:classes;
+        try
+        {
+            return new ConstructorAccessor<>(c.getDeclaredConstructor(classes));
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+    }
+
     public T invoke(Object... args) throws Throwable
     {
         if (constructorAccessor==null)
