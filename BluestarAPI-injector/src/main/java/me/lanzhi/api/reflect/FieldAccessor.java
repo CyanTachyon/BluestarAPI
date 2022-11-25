@@ -17,7 +17,7 @@ public final class FieldAccessor
     {
         if (field==null)
         {
-            this.field=field;
+            this.field=null;
             this.setter=null;
             this.getter=null;
             this.staticField=false;
@@ -26,7 +26,7 @@ public final class FieldAccessor
         boolean staticField=Modifier.isStatic(field.getModifiers());
         MethodHandle getter=null;
         MethodHandle setter=null;
-        if (field.getDeclaringClass().equals(Accessor.class)||field.getDeclaringClass().equals(FieldAccessor.class))
+        if (field.getDeclaringClass().getPackage().equals(this.getClass().getPackage()))
         {
             this.field=field;
             this.setter=null;
@@ -60,7 +60,6 @@ public final class FieldAccessor
         }
         catch (Exception e)
         {
-            e.printStackTrace();
         }
         this.field=field;
         this.staticField=staticField;
@@ -68,52 +67,40 @@ public final class FieldAccessor
         this.setter=setter;
     }
 
-
-    public Object get(Object instance)
+    public static FieldAccessor getField(Class<?> c,String field)
     {
-        if (getter==null)
+        if (c==null||field==null)
         {
             return null;
         }
         try
         {
-            if (this.staticField)
-            {
-                return this.setter.invokeExact();
-            }
-            else
-            {
-                return this.setter.invokeExact(instance);
-            }
+            return new FieldAccessor(c.getDeclaredField(field));
         }
-        catch (Throwable e)
+        catch (NoSuchFieldException e)
         {
-            throw new AssertionError(e);
+            return null;
         }
     }
 
-    public void set(Object instance,Object value)
+    public static FieldAccessor getDeclaredField(Class<?> c,String field)
     {
-        if (setter==null)
+        if (c==null||field==null)
         {
-            return;
+            return null;
         }
-        try
+        for (Class<?> clazz: Accessor.getAllSuperClass(c))
         {
-            if (this.staticField)
+            try
             {
-                this.setter.invokeExact(value);
+                return new FieldAccessor(clazz.getDeclaredField(field));
             }
-            else
+            catch (Exception e)
             {
-                this.setter.invokeExact(instance,value);
+                continue;
             }
-
         }
-        catch (Throwable e)
-        {
-            throw new AssertionError(e);
-        }
+        return null;
     }
 
     public Field getField()
@@ -124,5 +111,51 @@ public final class FieldAccessor
     public boolean isStaticField()
     {
         return staticField;
+    }
+
+    public Object get(Object instance) throws Throwable
+    {
+        if (getter==null)
+        {
+            if (!Accessor.isVisibility(field.getDeclaringClass()))
+            {
+                return null;
+            }
+            field.setAccessible(true);
+            Object o=field.get(instance);
+            field.setAccessible(false);
+            return o;
+        }
+        if (this.staticField)
+        {
+            return this.setter.invokeExact();
+        }
+        else
+        {
+            return this.setter.invokeExact(instance);
+        }
+    }
+
+    public void set(Object instance,Object value) throws Throwable
+    {
+        if (setter==null)
+        {
+            if (!Accessor.isVisibility(field.getDeclaringClass()))
+            {
+                return;
+            }
+            field.setAccessible(true);
+            field.set(instance,value);
+            field.setAccessible(false);
+            return;
+        }
+        if (this.staticField)
+        {
+            this.setter.invokeExact(value);
+        }
+        else
+        {
+            this.setter.invokeExact(instance,value);
+        }
     }
 }

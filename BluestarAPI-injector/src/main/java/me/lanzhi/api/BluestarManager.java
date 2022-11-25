@@ -12,14 +12,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Random;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public final class BluestarManager
 {
     private final Random random=new Random();
-
-    private final ReadWriteLock gettersLock=new ReentrantReadWriteLock();
 
     private CoreProtectAPI coreProtect=null;
 

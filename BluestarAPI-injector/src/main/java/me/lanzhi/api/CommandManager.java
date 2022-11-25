@@ -1,12 +1,11 @@
 package me.lanzhi.api;
 
+import me.lanzhi.api.reflect.ConstructorAccessor;
+import me.lanzhi.api.reflect.FieldAccessor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 
 public final class CommandManager
 {
@@ -15,22 +14,13 @@ public final class CommandManager
         Bluestar.setCommandManager(new CommandManager());
     }
 
-    private final Constructor<PluginCommand> constructor;
+    private final ConstructorAccessor<PluginCommand> constructor;
+    private final FieldAccessor commandMap;
 
     CommandManager()
     {
-        Constructor<PluginCommand> constructor1;
-        try
-        {
-            constructor1=PluginCommand.class.getDeclaredConstructor(String.class,Plugin.class);
-            constructor1.setAccessible(true);
-        }
-        catch (NoSuchMethodException e)
-        {
-            constructor1=null;
-            e.printStackTrace();
-        }
-        constructor=constructor1;
+        constructor=ConstructorAccessor.getConstructor(PluginCommand.class,String.class,Plugin.class);
+        commandMap=FieldAccessor.getDeclaredField(Bukkit.getServer().getClass(),"commandMap");
     }
 
     public void useCommand(CommandSender sender,String cmd,Plugin plugin)
@@ -49,11 +39,9 @@ public final class CommandManager
     {
         try
         {
-            Field field=Bukkit.getServer().getClass().getDeclaredField("commandMap");
-            field.setAccessible(true);
-            return (SimpleCommandMap) field.get(Bukkit.getServer());
+            return (SimpleCommandMap) commandMap.get(Bukkit.getServer());
         }
-        catch (Exception e)
+        catch (Throwable e)
         {
             return null;
         }
@@ -61,15 +49,11 @@ public final class CommandManager
 
     public PluginCommand newPluginCommand(String name,Plugin plugin)
     {
-        if (constructor==null)
-        {
-            return null;
-        }
         try
         {
-            return constructor.newInstance(name,plugin);
+            return constructor.invoke(name,plugin);
         }
-        catch (Exception e)
+        catch (Throwable e)
         {
             e.printStackTrace();
             return null;
@@ -96,6 +80,7 @@ public final class CommandManager
     public boolean registerPluginCommand(String command,Plugin plugin,CommandExecutor executor)
     {
         PluginCommand pluginCommand=newPluginCommand(command,plugin);
+        assert pluginCommand!=null;
         pluginCommand.setExecutor(executor);
         return registerPluginCommand(pluginCommand);
     }

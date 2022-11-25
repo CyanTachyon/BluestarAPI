@@ -1,4 +1,4 @@
-package me.lanzhi.api;
+package me.lanzhi.api.player.chat;
 
 import org.bukkit.ChatColor;
 

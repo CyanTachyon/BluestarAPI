@@ -8,7 +8,6 @@ public final class BluestarAPI extends JavaPlugin
     public void onEnable()
     {
         System.out.println("BluestarAPI已加载");
-
     }
 
     @Override

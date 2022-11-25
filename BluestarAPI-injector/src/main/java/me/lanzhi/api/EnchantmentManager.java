@@ -1,9 +1,9 @@
 package me.lanzhi.api;
 
+import me.lanzhi.api.reflect.FieldAccessor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 
-import java.lang.reflect.Field;
 import java.util.Map;
 
 public final class EnchantmentManager
@@ -12,24 +12,21 @@ public final class EnchantmentManager
     {
         Bluestar.setEnchantmentManager(new EnchantmentManager());
     }
-    private final Field acceptRegisterEnchantment;
-    private final Map<NamespacedKey, Enchantment> enchantmentByKey;
+
+    private final FieldAccessor acceptRegisterEnchantment;
+    private final Map<NamespacedKey,Enchantment> enchantmentByKey;
     private final Map<String, Enchantment> enchantmentByName;
 
     public EnchantmentManager()
     {
         try
         {
-            acceptRegisterEnchantment=Enchantment.class.getDeclaredField("acceptingNew");
-            Field byKey=Enchantment.class.getDeclaredField("byKey");
-            byKey.setAccessible(true);
-            enchantmentByKey=(Map<NamespacedKey, Enchantment>) byKey.get(null);
-            byKey.setAccessible(false);
+            acceptRegisterEnchantment=FieldAccessor.getDeclaredField(Enchantment.class,"acceptingNew");
+            FieldAccessor byKey=FieldAccessor.getDeclaredField(Enchantment.class,"byKey");
+            enchantmentByKey=(Map<NamespacedKey,Enchantment>) byKey.get(null);
 
-            Field byName=Enchantment.class.getDeclaredField("byName");
-            byName.setAccessible(true);
-            enchantmentByName=(Map<String, Enchantment>) byName.get(null);
-            byName.setAccessible(false);
+            FieldAccessor byName=FieldAccessor.getDeclaredField(Enchantment.class,"byName");
+            enchantmentByName=(Map<String,Enchantment>) byName.get(null);
         }
         catch (Throwable e)
         {
@@ -45,9 +42,7 @@ public final class EnchantmentManager
         }
         try
         {
-            acceptRegisterEnchantment.setAccessible(true);
             acceptRegisterEnchantment.set(null,true);
-            acceptRegisterEnchantment.setAccessible(false);
             return true;
         }
         catch (Throwable e)

@@ -1,0 +1,131 @@
+package me.lanzhi.api.util;
+
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.ListIterator;
+
+public class LinkedList<E> extends FastDeque<E> implements List<E>
+{
+    @Override
+    public boolean addAll(int index,@NotNull Collection<? extends E> c) throws IndexOutOfBoundsException
+    {
+        if (index>size()||index<0)
+        {
+            throw new IndexOutOfBoundsException(
+                    "Can not invoke LinkedList.addAll(),because \"index\" is out of range(0~size)");
+        }
+        if (index==size())
+        {
+            return addAll(c);
+        }
+        QueIterator iterator=super.iterator();
+        while (index-->0)
+        {
+            iterator.next();
+        }
+        for (E e: c)
+        {
+            iterator.add(e);
+        }
+        return true;
+    }
+
+    @Override
+    public E get(int index) throws IndexOutOfBoundsException
+    {
+        if (index>=size()||index<0)
+        {
+            throw new IndexOutOfBoundsException(
+                    "Can not invoke LinkedList.get(),because \"index\" is out of range(0~size)");
+        }
+        QueIterator iterator=super.iterator();
+
+        while (index-->0)
+        {
+            iterator.next();
+        }
+        return iterator.next();
+    }
+
+    @Override
+    public E set(int index,E element) throws IndexOutOfBoundsException
+    {
+        if (index>=size()||index<0)
+        {
+            throw new IndexOutOfBoundsException(
+                    "Can not invoke LinkedList.get(),because \"index\" is out of range(0~size)");
+        }
+        QueIterator iterator=super.iterator();
+
+        while (index-->=0)
+        {
+            iterator.next();
+        }
+        return super.set(iterator,element);
+    }
+
+    @Override
+    public void add(int index,E element) throws IndexOutOfBoundsException
+    {
+        addAll(index,Collections.singletonList(element));
+    }
+
+    @Override
+    public E remove(int index) throws IndexOutOfBoundsException
+    {
+        if (index>=size()||index<0)
+        {
+            throw new IndexOutOfBoundsException(
+                    "Can not invoke LinkedList.get(),because \"index\" is out of range(0~size)");
+        }
+        QueIterator iterator=super.iterator();
+
+        while (index-->0)
+        {
+            iterator.next();
+        }
+        E e=iterator.next();
+        iterator.remove();
+        return e;
+    }
+
+    @NotNull
+    @Override
+    public ListIterator<E> listIterator()
+    {
+        return super.iterator();
+    }
+
+    @NotNull
+    @Override
+    public ListIterator<E> listIterator(int index)
+    {
+        ListIterator<E> iterator=listIterator();
+        while (index-->0)
+        {
+            iterator.next();
+        }
+        return iterator;
+    }
+
+    @NotNull
+    @Override
+    public LinkedList<E> subList(int fromIndex,int toIndex) throws IndexOutOfBoundsException
+    {
+        if (fromIndex<0||toIndex>size()||fromIndex>toIndex)
+        {
+            throw new IndexOutOfBoundsException("Can not invoke LinkedList.subList(),because \"index\" is out of range");
+        }
+        LinkedList<E> list=new LinkedList<>();
+        ListIterator<E> iterator=list.listIterator(fromIndex);
+        toIndex-=fromIndex;
+        while (toIndex-->0)
+        {
+            list.addLast(iterator.next());
+        }
+        return list;
+    }
+}
