@@ -19,7 +19,7 @@ public final class CommandManager
 
     CommandManager()
     {
-        constructor=ConstructorAccessor.getConstructor(PluginCommand.class,String.class,Plugin.class);
+        constructor=ConstructorAccessor.getDeclaredConstructor(PluginCommand.class,String.class,Plugin.class);
         commandMap=FieldAccessor.getDeclaredField(Bukkit.getServer().getClass(),"commandMap");
     }
 
