@@ -91,11 +91,7 @@ public final class YamlFile extends YamlConfiguration
     @NotNull
     public static YamlFile loadYamlFile(@NotNull File file)
     {
-        return new YamlFile(file,
-                            false,
-                            null,
-                            JavaPlugin.getProvidingPlugin(Thread.currentThread()
-                                                                .getStackTrace()[1].getClass())).reload();
+        return new YamlFile(file,false,null,JavaPlugin.getProvidingPlugin(Accessor.getCallerClass())).reload();
     }
 
     @NotNull
@@ -129,8 +125,7 @@ public final class YamlFile extends YamlConfiguration
         return new YamlFile(file,
                             autoReload,
                             biConsumer,
-                            JavaPlugin.getProvidingPlugin(Thread.currentThread()
-                                                                .getStackTrace()[1].getClass())).reload();
+                            JavaPlugin.getProvidingPlugin(Accessor.getCallerClass())).reload();
     }
 
     @NotNull

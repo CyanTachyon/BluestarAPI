@@ -1,5 +1,6 @@
 package me.lanzhi.api.player.gui;
 
+import me.lanzhi.api.player.input.PlayerAnvilInput;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -22,7 +23,7 @@ public class GuiItem implements Cloneable
 
             {
                 super.setItem(new ItemStack(Material.AIR));
-                super.setOnClick((gui,type)->ChestGui.Response.nothing());
+                super.setOnClick((gui,type)->Response.nothing());
             }
 
             @Override
@@ -32,7 +33,7 @@ public class GuiItem implements Cloneable
             }
 
             @Override
-            public GuiItem setOnClick(BiFunction<ChestGui, ClickType, ChestGui.Response> onClick)
+            public GuiItem setOnClick(BiFunction<Gui,ClickType,Response> onClick)
             {
                 return this;
             }
@@ -58,12 +59,12 @@ public class GuiItem implements Cloneable
     }
 
     private ItemStack item;
-    private BiFunction<ChestGui, ClickType, ChestGui.Response> onClick;
+    private BiFunction<Gui,ClickType,Response> onClick;
 
     public GuiItem()
     {
         item=new ItemStack(Material.AIR);
-        onClick=(gui,type)->ChestGui.Response.nothing();
+        onClick=(gui,type)->Response.nothing();
     }
 
     public ItemStack getItem()
@@ -77,12 +78,12 @@ public class GuiItem implements Cloneable
         return this;
     }
 
-    public BiFunction<ChestGui, ClickType, ChestGui.Response> getOnClick()
+    public BiFunction<Gui,ClickType,Response> getOnClick()
     {
         return onClick;
     }
 
-    public GuiItem setOnClick(BiFunction<ChestGui, ClickType, ChestGui.Response> onClick)
+    public GuiItem setOnClick(BiFunction<Gui,ClickType,Response> onClick)
     {
         this.onClick=onClick;
         return this;
@@ -123,5 +124,54 @@ public class GuiItem implements Cloneable
     public String toString()
     {
         return "GuiItem { Item:"+item+", OnClick:"+onClick+" }";
+    }
+
+    public static class Response
+    {
+        private final boolean close;
+        private final GuiBuilder<?> builder;
+        private final PlayerAnvilInput.Builder input;
+
+        private Response(boolean close,GuiBuilder<?> builder,PlayerAnvilInput.Builder input)
+        {
+            this.close=close;
+            this.builder=builder;
+            this.input=input;
+        }
+
+        public static Response open(GuiBuilder<?> other)
+        {
+            return new Response(true,other,null);
+        }
+
+        public static Response input(PlayerAnvilInput.Builder input)
+        {
+            return new Response(false,null,input);
+        }
+
+        public static Response close()
+        {
+            return new Response(true,null,null);
+        }
+
+        public static Response nothing()
+        {
+            return new Response(false,null,null);
+        }
+
+        public boolean getClose()
+        {
+            return close;
+        }
+
+        public GuiBuilder<?> getBuilder()
+        {
+            return builder;
+        }
+
+        public PlayerAnvilInput.Builder getInput()
+        {
+            return input;
+        }
     }
 }

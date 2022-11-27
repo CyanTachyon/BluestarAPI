@@ -1,5 +1,7 @@
 package me.lanzhi.api.reflect;
 
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 import sun.misc.Unsafe;
 
 import java.io.*;
@@ -49,9 +51,34 @@ public final class Accessor
         }
     }
 
+    public static Plugin getCallerPlugin(int x)
+    {
+        return JavaPlugin.getProvidingPlugin(getCallerClass(x+1));
+    }
+
+    public static Plugin getCallerPlugin()
+    {
+        return getCallerPlugin(1);
+    }
+
+    public static Class<?> getCallerClass(int x)
+    {
+        return getClass(getCaller(x+1).getClassName());
+    }
+
     public static Class<?> getCallerClass()
     {
-        return getClass(Thread.currentThread().getStackTrace()[2].getClassName());
+        return getCallerClass(1);
+    }
+
+    public static StackTraceElement getCaller()
+    {
+        return getCaller(1);
+    }
+
+    public static StackTraceElement getCaller(int x)
+    {
+        return Thread.currentThread().getStackTrace()[x+2];
     }
 
     public static boolean isVisibility(Class<?> clazz)
