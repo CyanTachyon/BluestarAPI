@@ -1,5 +1,6 @@
 package me.lanzhi.api.player.gui;
 
+import me.lanzhi.api.reflect.Accessor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -29,15 +30,14 @@ public class PageGui implements Gui<PageGui>
 
     private PageGui(Plugin plugin,int size,String title,Player player,GuiItem emptyItem,ItemStack bottomItem,ItemStack closeButton,ItemStack turnLeftButton,ItemStack turnRightButton,Map<Integer,GuiItem> items,boolean prohibitAnyClick,boolean preventClose,BiConsumer<PageGui,GuiCloseAction> onClose)
     {
-        chestGui=new ChestGui(plugin,
-                              size,
-                              title,
-                              player,
-                              emptyItem,
-                              prohibitAnyClick,
-                              preventClose,
-                              (chestGui1,guiCloseAction)->PageGui.this.getOnClose().accept(this,guiCloseAction),
-                              new GuiItem[6][9]);
+        chestGui=ChestGui.builder(plugin)
+                .setSize(size)
+                .title(title)
+                .emptyItem(emptyItem)
+                .prohibitAnyClick(prohibitAnyClick)
+                .preventClose(preventClose)
+                .onClose((chestGui1,guiCloseAction)->PageGui.this.getOnClose().accept(this,guiCloseAction))
+                .make(player);
         this.items=items;
         this.onClose=onClose;
         this.page=0;
@@ -80,7 +80,12 @@ public class PageGui implements Gui<PageGui>
 
     public static Builder builder()
     {
-        return new Builder();
+        return new Builder(Accessor.getCallerPlugin());
+    }
+
+    public static Builder builder(Plugin plugin)
+    {
+        return new Builder(plugin);
     }
 
     public Plugin getPlugin()
@@ -291,7 +296,7 @@ public class PageGui implements Gui<PageGui>
         private Plugin plugin;
         private BiConsumer<PageGui,GuiCloseAction> onClose;
 
-        private Builder()
+        private Builder(Plugin plugin)
         {
             this.title="Chest";
             this.size=6;
@@ -341,6 +346,7 @@ public class PageGui implements Gui<PageGui>
             assert meta!=null;
             meta.setDisplayName("下一页");
             turnRight.setItemMeta(meta);
+            plugin(plugin);
         }
 
         public Builder title(String title)
@@ -470,7 +476,7 @@ public class PageGui implements Gui<PageGui>
         @Override
         public Builder clone()
         {
-            Builder clone=new Builder();
+            Builder clone=new Builder(plugin);
             clone.title=this.title;
             clone.size=this.size;
             clone.bottomItem=this.bottomItem.clone();

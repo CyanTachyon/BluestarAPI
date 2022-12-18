@@ -1,4 +1,4 @@
-package me.lanzhi.api.util;
+package me.lanzhi.api.util.collection;
 
 import me.lanzhi.api.reflect.MethodAccessor;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +15,12 @@ public class FastDeque<E> implements Deque<E>, Cloneable, Serializable
     public FastDeque()
     {
         clear();
+    }
+
+    public FastDeque(Collection<E> collection)
+    {
+        this();
+        addAll(collection);
     }
 
     @Override
@@ -345,24 +351,107 @@ public class FastDeque<E> implements Deque<E>, Cloneable, Serializable
         return new QueIterator();
     }
 
+    private static final class Node<E> implements Serializable
+    {
+        private E vault;
+        private Node<E> previous;
+        private Node<E> next;
+
+        public Node(E vault,Node<E> previous,Node<E> next)
+        {
+            this.vault=vault;
+            this.previous=previous;
+            this.next=next;
+        }
+
+        public Node()
+        {
+            this(null,null,null);
+        }
+
+        public E getVault()
+        {
+            return vault;
+        }
+
+        public E setVault(E vault)
+        {
+            E v=this.vault;
+            this.vault=vault;
+            return v;
+        }
+
+        public Node<E> getPrevious()
+        {
+            return previous;
+        }
+
+        public void setPrevious(Node<E> previous)
+        {
+            this.previous=previous;
+        }
+
+        public Node<E> getNext()
+        {
+            return next;
+        }
+
+        public void setNext(Node<E> next)
+        {
+            this.next=next;
+        }
+
+        public void insertBefore(E e)
+        {
+            Node<E> node=new Node<>(e,getPrevious(),this);
+            if (getPrevious()!=null)
+            {
+                getPrevious().setNext(node);
+            }
+            setPrevious(node);
+        }
+
+        public void insertAfter(E e)
+        {
+            Node<E> node=new Node<>(e,this,getNext());
+            if (getNext()!=null)
+            {
+                getNext().setPrevious(node);
+            }
+            setNext(node);
+        }
+
+        public void remove()
+        {
+            if (getPrevious()!=null)
+            {
+                getPrevious().setNext(getNext());
+            }
+            if (getNext()!=null)
+            {
+                getNext().setPrevious(getPrevious());
+            }
+        }
+    }
+
     @NotNull
     @Override
-    public Object @NotNull [] toArray()
+    public E @NotNull [] toArray()
     {
-        Object[] array=new Object[size];
+        E[] array=(E[]) new Object[size];
         int i=0;
         for (E e: this)
         {
-            array[i]=e;
+            array[i++]=e;
         }
         return array;
     }
 
     @NotNull
     @Override
-    public <T> T @NotNull [] toArray(@NotNull T @NotNull [] a)
+    public <T> T[] toArray(@NotNull T[] a)
     {
-        Object[] objects=toArray();
+        E[] objects=toArray();
         if (a.length<size)
         {
             return (T[]) Arrays.copyOf(objects,size,a.getClass());
@@ -563,88 +652,7 @@ public class FastDeque<E> implements Deque<E>, Cloneable, Serializable
         return Arrays.toString(objects);
     }
 
-    private static final class Node<E>
-    {
-        private E vault;
-        private Node<E> previous;
-        private Node<E> next;
 
-        public Node(E vault,Node<E> previous,Node<E> next)
-        {
-            this.vault=vault;
-            this.previous=previous;
-            this.next=next;
-        }
-
-        public Node()
-        {
-            this(null,null,null);
-        }
-
-        public E getVault()
-        {
-            return vault;
-        }
-
-        public E setVault(E vault)
-        {
-            E v=this.vault;
-            this.vault=vault;
-            return v;
-        }
-
-        public Node<E> getPrevious()
-        {
-            return previous;
-        }
-
-        public void setPrevious(Node<E> previous)
-        {
-            this.previous=previous;
-        }
-
-        public Node<E> getNext()
-        {
-            return next;
-        }
-
-        public void setNext(Node<E> next)
-        {
-            this.next=next;
-        }
-
-        public void insertBefore(E e)
-        {
-            Node<E> node=new Node<>(e,getPrevious(),this);
-            if (getPrevious()!=null)
-            {
-                getPrevious().setNext(node);
-            }
-            setPrevious(node);
-        }
-
-        public void insertAfter(E e)
-        {
-            Node<E> node=new Node<>(e,this,getNext());
-            if (getNext()!=null)
-            {
-                getNext().setPrevious(node);
-            }
-            setNext(node);
-        }
-
-        public void remove()
-        {
-            if (getPrevious()!=null)
-            {
-                getPrevious().setNext(getNext());
-            }
-            if (getNext()!=null)
-            {
-                getNext().setPrevious(getPrevious());
-            }
-        }
-    }
 
     public class QueIterator implements ListIterator<E>
     {

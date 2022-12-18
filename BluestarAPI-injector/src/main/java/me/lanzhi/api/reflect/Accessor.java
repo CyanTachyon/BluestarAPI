@@ -1,10 +1,10 @@
 package me.lanzhi.api.reflect;
 
+
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import sun.misc.Unsafe;
 
-import java.io.*;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.*;
@@ -86,136 +86,9 @@ public final class Accessor
         return !clazz.getPackage().equals(Accessor.class.getPackage());
     }
 
-    public static <T> T newInstance(T o)
+    public static <T> T newInstance(Class<T> type) throws Throwable
     {
-        Class<?> type=o.getClass();
-        try
-        {
-            return (T) ConstructorAccessor.getConstructor(type).invoke();
-        }
-        catch (Throwable e)
-        {
-        }
-        try
-        {
-            return (T) type.newInstance();
-        }
-        catch (Throwable e)
-        {
-        }
-
-        Object oo=null;
-        try
-        {
-            oo=MethodAccessor.getDeclaredMethod(type,"clone").invoke(o);
-        }
-        catch (Throwable e)
-        {
-        }
-        if (oo!=null&&oo.getClass()==o.getClass())
-        {
-            return (T) oo;
-        }
-
-
-        for (Constructor<?> constructor: type.getDeclaredConstructors())
-        {
-            try
-            {
-                return (T) new ConstructorAccessor<>(constructor).invoke(new Object[constructor.getExceptionTypes().length]);
-            }
-            catch (Throwable e)
-            {
-            }
-        }
-        for (Method method: type.getDeclaredMethods())
-        {
-            if (Modifier.isStatic(method.getModifiers())&&
-                method.getReturnType()==type&&
-                method.getParameterTypes().length==0)
-            {
-                try
-                {
-                    return (T) new MethodAccessor(method).invoke(null);
-                }
-                catch (Throwable e)
-                {
-                }
-            }
-        }
-        for (Method method: type.getDeclaredMethods())
-        {
-            if (Modifier.isStatic(method.getModifiers())&&method.getReturnType()==type)
-            {
-                try
-                {
-                    return (T) new MethodAccessor(method).invoke(null,new Object[method.getParameterTypes().length]);
-                }
-                catch (Throwable e)
-                {
-                }
-            }
-        }
-        return null;
-    }
-
-    public static <T> T newInstance(Class<T> type)
-    {
-        try
-        {
-            return ConstructorAccessor.getConstructor(type).invoke();
-        }
-        catch (Throwable e)
-        {
-        }
-
-        try
-        {
-            return type.newInstance();
-        }
-        catch (Throwable e)
-        {
-        }
-        for (Constructor<?> constructor: type.getDeclaredConstructors())
-        {
-            try
-            {
-                return (T) new ConstructorAccessor<>(constructor).invoke(new Object[constructor.getExceptionTypes().length]);
-            }
-            catch (Throwable e)
-            {
-            }
-        }
-
-        for (Method method: type.getDeclaredMethods())
-        {
-            if (Modifier.isStatic(method.getModifiers())&&
-                method.getReturnType()==type&&
-                method.getParameterTypes().length==0)
-            {
-                try
-                {
-                    return (T) new MethodAccessor(method).invoke(null);
-                }
-                catch (Throwable e)
-                {
-                }
-            }
-        }
-        for (Method method: type.getDeclaredMethods())
-        {
-            if (Modifier.isStatic(method.getModifiers())&&method.getReturnType()==type)
-            {
-                try
-                {
-                    return (T) new MethodAccessor(method).invoke(null,new Object[method.getParameterTypes().length]);
-                }
-                catch (Throwable e)
-                {
-                }
-            }
-        }
-        return null;
+        return Objects.requireNonNull(ConstructorAccessor.getOrCreateConstructor(type)).invoke();
     }
 
     public static List<Class<?>> getAllSuperClass(Class<?> type)
@@ -304,28 +177,15 @@ public final class Accessor
                type.equals(Character.class)||
                type.equals(Float.class)||
                type.equals(Double.class)||
-               type.equals(Byte.class);
+               type.equals(Void.class)||
+               type.equals(Byte.class)||
+               type.isEnum()||
+               type==Class.class||
+               type==Method.class||
+               type==Constructor.class;
     }
 
-    public static <T extends Serializable> T cloneObject(T o)
-    {
-        try
-        {
-            ByteArrayOutputStream bo=new ByteArrayOutputStream();
-            ObjectOutputStream oo=new ObjectOutputStream(bo);
-            oo.writeObject(o);
-
-            ByteArrayInputStream bi=new ByteArrayInputStream(bo.toByteArray());
-            ObjectInputStream oi=new ObjectInputStream(bi);
-            return (T) oi.readObject();
-        }
-        catch (Exception e)
-        {
-            return null;
-        }
-    }
-
-    public static Object cloneObject(Object o)
+    public static <T> T cloneObject(T o) throws Throwable
     {
         if (null==o)
         {
@@ -335,7 +195,7 @@ public final class Accessor
         return cloneObject(o,map);
     }
 
-    private static Object cloneObject(Object o,Map<Object,Object> map)
+    private static <T> T cloneObject(T o,Map<Object,Object> map) throws Throwable
     {
         if (o==null)
         {
@@ -345,33 +205,26 @@ public final class Accessor
         {
             return o;
         }
-        Object newInstance=null;
-        newInstance=map.get(o);
+        Object newInstance=map.get(o);
         if (newInstance!=null)
         {
-            return newInstance;
-        }
-        if (o.getClass().isArray())
-        {
-            return cloneArray(o,map);
+            return (T) newInstance;
         }
 
-        if (o instanceof Serializable)
+        if (o.getClass().isArray())
         {
-            newInstance=cloneObject((Serializable) o);
-            map.put(o,newInstance);
+            newInstance=cloneArray(o,map);
         }
         else
         {
-            Class<?> type=o.getClass();
-            newInstance=newInstance(o);
-            map.put(o,newInstance);
-            cloneFields(o,newInstance,map);
+            newInstance=newInstance(o.getClass());
         }
-        return newInstance;
+        map.put(o,newInstance);
+        cloneFields(o,newInstance,map);
+        return (T) newInstance;
     }
 
-    private static Object cloneArray(Object o,Map<Object,Object> map)
+    private static Object cloneArray(Object o,Map<Object,Object> map) throws Throwable
     {
         if (null==o)
         {
@@ -413,15 +266,11 @@ public final class Accessor
         }
     }
 
-    public static <T> T objectCopy(T a,T b)
+    public static <T> T objectCopy(T o,T newObject)
     {
-        if (Serializable.class.isAssignableFrom(getBothSuperClass(a.getClass(),b.getClass())))
-        {
-            return (T) cloneObject((Serializable) b);
-        }
         Map<Object,Object> map=new HashMap<>();
-        map.put(a,b);
-        cloneFields(a,b,map);
-        return a;
+        map.put(o,newObject);
+        cloneFields(o,newObject,map);
+        return o;
     }
 }

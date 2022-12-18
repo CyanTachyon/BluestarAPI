@@ -5,7 +5,7 @@
     <parent>
         <artifactId>BluestarAPI</artifactId>
         <groupId>me.lanzhi</groupId>
-        <version>3.2.0</version>
+        <version>3.2.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -27,31 +27,6 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>com.github.github</groupId>
-                <artifactId>site-maven-plugin</artifactId>
-                <version>0.12</version>
-                <configuration>
-                    <message>Maven artifacts for ${project.version}</message>
-                    <noJekyll>true</noJekyll>
-                    <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory><!--本地jar地址-->
-                    <branch>refs/heads/main</branch><!--分支的名称-->
-                    <merge>true</merge>
-                    <includes>
-                        <include>**/*</include>
-                    </includes>
-                    <repositoryName>maven-repository</repositoryName><!--对应github上创建的仓库名称 name-->
-                    <repositoryOwner>lanzhi6</repositoryOwner><!--github 仓库所有者即登录用户名-->
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>site</goal>
-                        </goals>
-                        <phase>deploy</phase>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -143,7 +118,7 @@
         <dependency>
             <groupId>de.tr7zw</groupId>
             <artifactId>item-nbt-api</artifactId>
-            <version>2.10.0</version>
+            <version>2.11.1</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>

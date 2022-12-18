@@ -1,4 +1,4 @@
-package me.lanzhi.api.util;
+package me.lanzhi.api.util.collection;
 
 import org.jetbrains.annotations.NotNull;
 

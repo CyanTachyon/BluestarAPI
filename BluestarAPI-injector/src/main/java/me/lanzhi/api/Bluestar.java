@@ -12,6 +12,10 @@ public final class Bluestar
     private static CommandManager commandManager=null;
     private static EnchantmentManager enchantmentManager=null;
 
+    private Bluestar()
+    {
+    }
+
     public static void setCommandManager(CommandManager commandManager)
     {
         if (Bluestar.commandManager!=null)

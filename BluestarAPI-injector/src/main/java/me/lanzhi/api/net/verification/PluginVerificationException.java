@@ -5,8 +5,7 @@ package me.lanzhi.api.net.verification;
  */
 public final class PluginVerificationException extends Exception
 {
-    public static final PluginVerificationException EXCEPTION= new PluginVerificationException();
-    private PluginVerificationException()
+    public PluginVerificationException()
     {
         super("联网验证状态错误");
     }
