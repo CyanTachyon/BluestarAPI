@@ -1,4 +1,4 @@
-package me.lanzhi.api.util;
+package me.lanzhi.api.util.collection;
 
 import me.lanzhi.api.reflect.MethodAccessor;
 import org.jetbrains.annotations.NotNull;

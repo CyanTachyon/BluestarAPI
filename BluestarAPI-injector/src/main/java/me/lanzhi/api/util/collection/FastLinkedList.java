@@ -1,14 +1,21 @@
-package me.lanzhi.api.util;
+package me.lanzhi.api.util.collection;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
-public class LinkedList<E> extends FastDeque<E> implements List<E>
+public class FastLinkedList<E> extends FastDeque<E> implements List<E>
 {
+    public FastLinkedList()
+    {
+        super();
+    }
+
+    public FastLinkedList(Collection<E> collection)
+    {
+        super(collection);
+    }
+
     @Override
     public boolean addAll(int index,@NotNull Collection<? extends E> c) throws IndexOutOfBoundsException
     {
@@ -111,15 +118,22 @@ public class LinkedList<E> extends FastDeque<E> implements List<E>
         return iterator;
     }
 
+    public static <E> FastLinkedList<E> createList(E... o)
+    {
+        FastLinkedList<E> list=new FastLinkedList<>(Arrays.asList(o));
+        return list;
+    }
+
     @NotNull
     @Override
-    public LinkedList<E> subList(int fromIndex,int toIndex) throws IndexOutOfBoundsException
+    public FastLinkedList<E> subList(int fromIndex,int toIndex) throws IndexOutOfBoundsException
     {
         if (fromIndex<0||toIndex>size()||fromIndex>toIndex)
         {
-            throw new IndexOutOfBoundsException("Can not invoke LinkedList.subList(),because \"index\" is out of range");
+            throw new IndexOutOfBoundsException("Can not invoke LinkedList.subList(),because \"index\" is out of " +
+                                                "range");
         }
-        LinkedList<E> list=new LinkedList<>();
+        FastLinkedList<E> list=new FastLinkedList<>();
         ListIterator<E> iterator=list.listIterator(fromIndex);
         toIndex-=fromIndex;
         while (toIndex-->0)

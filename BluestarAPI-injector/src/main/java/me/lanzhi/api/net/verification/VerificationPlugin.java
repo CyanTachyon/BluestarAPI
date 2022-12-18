@@ -38,7 +38,7 @@ public class VerificationPlugin extends JavaPlugin
     {
         if (!verification.isSuccess())
         {
-            throw PluginVerificationException.EXCEPTION;
+            throw new PluginVerificationException();
         }
     }
 

@@ -31,7 +31,8 @@ public class ChestGui implements Gui<ChestGui>
     private Inventory inventory;
     private GuiListener listener;
 
-    public ChestGui(Plugin plugin,int size,String title,Player player,GuiItem emptyItem,boolean prohibitAnyClick,boolean preventClose,BiConsumer<ChestGui,GuiCloseAction> onClose,GuiItem[][] items)
+    private ChestGui(Plugin plugin,int size,String title,Player player,GuiItem emptyItem,boolean prohibitAnyClick,
+                     boolean preventClose,BiConsumer<ChestGui,GuiCloseAction> onClose,GuiItem[][] items)
     {
         this.plugin=plugin;
         this.size=size;
@@ -98,12 +99,12 @@ public class ChestGui implements Gui<ChestGui>
         return this;
     }
 
-    public Builder builder()
+    public static Builder builder()
     {
         return builder(Accessor.getCallerPlugin());
     }
 
-    public Builder builder(Plugin plugin)
+    public static Builder builder(Plugin plugin)
     {
         return new Builder(plugin);
     }
