@@ -5,12 +5,14 @@ import me.lanzhi.api.util.function.SupplierWithThrow;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.util.Objects;
 
 public class KeyObjectInputStream extends ObjectInputStream
 {
     private final KeyInputStream stream;
+    private IOStreamKey defaultKey=IOStreamKey.EmptyKey;
 
-    public KeyObjectInputStream(KeyInputStream stream) throws IOException
+    private KeyObjectInputStream(KeyInputStream stream) throws IOException
     {
         super(stream);
         this.stream=stream;
@@ -21,11 +23,35 @@ public class KeyObjectInputStream extends ObjectInputStream
         return new KeyObjectInputStream(new KeyInputStream(in));
     }
 
+    public static KeyObjectInputStream create(InputStream in,IOStreamKey baseKey) throws IOException
+    {
+        return new KeyObjectInputStream(new KeyInputStream(in,baseKey));
+    }
+
+    public IOStreamKey defaultKey()
+    {
+        return defaultKey;
+    }
+
+    public KeyObjectInputStream defaultKey(IOStreamKey defaultKey)
+    {
+        if (!Objects.isNull(defaultKey))
+        {
+            this.defaultKey=defaultKey;
+        }
+        else
+        {
+            this.defaultKey=IOStreamKey.EmptyKey;
+        }
+        stream.key(defaultKey);
+        return this;
+    }
+
     public Object readObject(IOStreamKey key) throws IOException, ClassNotFoundException
     {
         if (key==null)
         {
-            key=IOStreamKey.EmptyKey;
+            key=defaultKey;
         }
         stream.key(key);
         try
@@ -34,7 +60,7 @@ public class KeyObjectInputStream extends ObjectInputStream
         }
         finally
         {
-            stream.key(IOStreamKey.EmptyKey);
+            stream.key(defaultKey);
         }
     }
 
@@ -47,7 +73,7 @@ public class KeyObjectInputStream extends ObjectInputStream
     {
         if (key==null)
         {
-            key=IOStreamKey.EmptyKey;
+            key=defaultKey;
         }
         stream.key(key);
         try
@@ -56,7 +82,7 @@ public class KeyObjectInputStream extends ObjectInputStream
         }
         finally
         {
-            stream.key(IOStreamKey.EmptyKey);
+            stream.key(defaultKey);
         }
     }
 

@@ -10,7 +10,7 @@ public interface SupplierWithThrow<T>
         }
         catch (Throwable throwable)
         {
-            throw RunAndThrow.check(throwable,eClass);
+            throw RunWithThrow.check(throwable,eClass);
         }
     }
 

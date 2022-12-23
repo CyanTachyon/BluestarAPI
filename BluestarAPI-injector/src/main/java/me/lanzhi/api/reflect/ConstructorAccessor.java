@@ -6,7 +6,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 
-import static me.lanzhi.api.reflect.Accessor.LOOKUP;
+import static me.lanzhi.api.reflect.ReflectAccessor.LOOKUP;
 
 public final class ConstructorAccessor<T>
 {
@@ -15,7 +15,7 @@ public final class ConstructorAccessor<T>
 
     public ConstructorAccessor(Constructor<T> constructor)
     {
-        if (constructor==null||!Accessor.isVisibility(constructor.getDeclaringClass()))
+        if (constructor==null||!ReflectAccessor.isVisibility(constructor.getDeclaringClass()))
         {
             this.constructor=null;
             constructorAccessor=null;
@@ -87,7 +87,7 @@ public final class ConstructorAccessor<T>
             return res;
         }
         ConstructorAccessor<?> accessor;
-        for (Class<?> c: Accessor.getAllSuperClass(type))
+        for (Class<?> c: ReflectAccessor.getAllSuperClass(type))
         {
             accessor=getDeclaredConstructor(c);
             if (accessor!=null)
@@ -118,7 +118,7 @@ public final class ConstructorAccessor<T>
     {
         if (constructorAccessor==null)
         {
-            if (!Accessor.isVisibility(constructor.getDeclaringClass()))
+            if (!ReflectAccessor.isVisibility(constructor.getDeclaringClass()))
             {
                 return null;
             }

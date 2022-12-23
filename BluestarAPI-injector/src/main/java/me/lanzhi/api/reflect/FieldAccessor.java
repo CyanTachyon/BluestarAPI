@@ -4,7 +4,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import static me.lanzhi.api.reflect.Accessor.*;
+import static me.lanzhi.api.reflect.ReflectAccessor.*;
 
 public final class FieldAccessor
 {
@@ -89,7 +89,7 @@ public final class FieldAccessor
         {
             return null;
         }
-        for (Class<?> clazz: Accessor.getAllSuperClass(c))
+        for (Class<?> clazz: ReflectAccessor.getAllSuperClass(c))
         {
             try
             {
@@ -117,7 +117,7 @@ public final class FieldAccessor
     {
         if (getter==null)
         {
-            if (!Accessor.isVisibility(field.getDeclaringClass()))
+            if (!ReflectAccessor.isVisibility(field.getDeclaringClass()))
             {
                 return null;
             }
@@ -140,7 +140,7 @@ public final class FieldAccessor
     {
         if (setter==null)
         {
-            if (!Accessor.isVisibility(field.getDeclaringClass()))
+            if (!ReflectAccessor.isVisibility(field.getDeclaringClass()))
             {
                 return;
             }

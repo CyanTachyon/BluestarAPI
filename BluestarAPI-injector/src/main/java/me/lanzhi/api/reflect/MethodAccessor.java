@@ -1,12 +1,15 @@
 package me.lanzhi.api.reflect;
 
+import me.lanzhi.api.util.collection.FastLinkedList;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.List;
 
-import static me.lanzhi.api.reflect.Accessor.LOOKUP;
+import static me.lanzhi.api.reflect.ReflectAccessor.LOOKUP;
 
 public final class MethodAccessor
 {
@@ -16,7 +19,7 @@ public final class MethodAccessor
 
     public MethodAccessor(Method method)
     {
-        if (method==null||!Accessor.isVisibility(method.getDeclaringClass()))
+        if (method==null||!ReflectAccessor.isVisibility(method.getDeclaringClass()))
         {
             this.method=null;
             this.methodHandle=null;
@@ -76,25 +79,45 @@ public final class MethodAccessor
             return null;
         }
         classes=classes==null?new Class[0]:classes;
-        for (Class<?> clazz: Accessor.getAllSuperClass(c))
+        for (Class<?> clazz: ReflectAccessor.getAllSuperClass(c))
         {
             try
             {
                 return new MethodAccessor(clazz.getDeclaredMethod(name,classes));
             }
-            catch (Exception e)
+            catch (Exception ignored)
             {
-                continue;
             }
         }
         return null;
+    }
+
+    public static List<MethodAccessor> getDeclaredMethods(Class<?> c)
+    {
+        List<MethodAccessor> list=new FastLinkedList<>();
+        for (Method method: c.getDeclaredMethods())
+        {
+            list.add(new MethodAccessor(method));
+        }
+        c=c.getSuperclass();
+        for (Class<?> clazz: ReflectAccessor.getAllSuperClass(c))
+        {
+            for (Method method:clazz.getDeclaredMethods())
+            {
+                if (!Modifier.isStatic(method.getModifiers()))
+                {
+                    list.add(new MethodAccessor(method));
+                }
+            }
+        }
+        return list;
     }
 
     public Object invoke(Object target,Object... args) throws Throwable
     {
         if (methodHandle==null)
         {
-            if (!Accessor.isVisibility(method.getDeclaringClass()))
+            if (!ReflectAccessor.isVisibility(method.getDeclaringClass()))
             {
                 return null;
             }

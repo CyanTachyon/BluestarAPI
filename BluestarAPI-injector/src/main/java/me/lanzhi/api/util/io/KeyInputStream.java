@@ -7,10 +7,17 @@ public class KeyInputStream extends InputStream
 {
     private final InputStream stream;
     private IOStreamKey key=IOStreamKey.EmptyKey;
+    private final IOStreamKey baseKey;
 
     public KeyInputStream(InputStream stream)
     {
+        this(stream,IOStreamKey.EmptyKey);
+    }
+
+    public KeyInputStream(InputStream stream,IOStreamKey baseKey)
+    {
         this.stream=stream;
+        this.baseKey=baseKey!=null?baseKey:IOStreamKey.EmptyKey;
     }
 
     public KeyInputStream key(IOStreamKey key)
@@ -19,14 +26,33 @@ public class KeyInputStream extends InputStream
         return this;
     }
 
+    public IOStreamKey key()
+    {
+        return key;
+    }
+
     @Override
     public final int read() throws IOException
     {
+        var key=getKey();
         byte[] bytes=new byte[key.encryptNum()];
         if (stream.read(bytes)!=key.encryptNum())
         {
             throw new IOException("读取字节并进行解密失败");
         }
         return key.decrypt(bytes);
+    }
+
+    private final IOStreamKey getKey()
+    {
+        if (key==null||key==IOStreamKey.EmptyKey)
+        {
+            return baseKey;
+        }
+        if (baseKey==null||baseKey==IOStreamKey.EmptyKey)
+        {
+            return key;
+        }
+        return IOAccessor.plusKeys(key,baseKey);
     }
 }

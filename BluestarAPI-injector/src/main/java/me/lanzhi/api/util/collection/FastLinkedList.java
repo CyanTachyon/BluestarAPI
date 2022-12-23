@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class FastLinkedList<E> extends FastDeque<E> implements List<E>
+public class FastLinkedList<E> extends LinkedDeque<E> implements List<E>
 {
     public FastLinkedList()
     {
@@ -118,10 +118,10 @@ public class FastLinkedList<E> extends FastDeque<E> implements List<E>
         return iterator;
     }
 
+    @SafeVarargs
     public static <E> FastLinkedList<E> createList(E... o)
     {
-        FastLinkedList<E> list=new FastLinkedList<>(Arrays.asList(o));
-        return list;
+        return new FastLinkedList<>(Arrays.asList(o));
     }
 
     @NotNull

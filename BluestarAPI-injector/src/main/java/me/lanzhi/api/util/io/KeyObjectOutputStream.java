@@ -1,14 +1,16 @@
 package me.lanzhi.api.util.io;
 
-import me.lanzhi.api.util.function.RunAndThrow;
+import me.lanzhi.api.util.function.RunWithThrow;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.util.Objects;
 
 public class KeyObjectOutputStream extends ObjectOutputStream
 {
     private final KeyOutputStream stream;
+    private IOStreamKey defaultKey=IOStreamKey.EmptyKey;
 
     private KeyObjectOutputStream(KeyOutputStream stream) throws IOException
     {
@@ -21,16 +23,40 @@ public class KeyObjectOutputStream extends ObjectOutputStream
         return new KeyObjectOutputStream(new KeyOutputStream(stream));
     }
 
+    public static KeyObjectOutputStream create(OutputStream stream,IOStreamKey baseKey) throws IOException
+    {
+        return new KeyObjectOutputStream(new KeyOutputStream(stream,baseKey));
+    }
+
+    public IOStreamKey defaultKey()
+    {
+        return defaultKey;
+    }
+
+    public KeyObjectOutputStream defaultKey(IOStreamKey defaultKey)
+    {
+        if (!Objects.isNull(defaultKey))
+        {
+            this.defaultKey=defaultKey;
+        }
+        else
+        {
+            this.defaultKey=IOStreamKey.EmptyKey;
+        }
+        stream.key(defaultKey);
+        return this;
+    }
+
     public void writeObject(Object o,IOStreamKey key) throws IOException
     {
         runWithKey(()->super.writeObject(o),key);
     }
 
-    private void runWithKey(RunAndThrow function,IOStreamKey key) throws IOException
+    private void runWithKey(RunWithThrow function,IOStreamKey key) throws IOException
     {
         if (key==null)
         {
-            key=IOStreamKey.EmptyKey;
+            key=defaultKey;
         }
         stream.key(key);
         try
@@ -39,7 +65,7 @@ public class KeyObjectOutputStream extends ObjectOutputStream
         }
         finally
         {
-            stream.key(IOStreamKey.EmptyKey);
+            stream.key(defaultKey);
         }
     }
 

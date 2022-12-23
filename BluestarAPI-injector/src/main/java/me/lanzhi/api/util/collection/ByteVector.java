@@ -216,6 +216,14 @@ public class ByteVector implements Collection<Byte>, RandomAccess, Cloneable, ja
         this.data=bytes;
     }
 
+    @Override
+    public ByteVector clone()
+    {
+        var clone=new ByteVector();
+        clone.put(data);
+        return clone;
+    }
+
     private final static class Itr implements Iterator<Byte>
     {
         private final ByteVector bytes;
