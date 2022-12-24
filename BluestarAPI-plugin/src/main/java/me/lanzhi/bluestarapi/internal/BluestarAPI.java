@@ -1,4 +1,4 @@
-package me.lanzhi.bluestarapi;
+package me.lanzhi.bluestarapi.internal;
 
 import org.bukkit.plugin.java.JavaPlugin;
 

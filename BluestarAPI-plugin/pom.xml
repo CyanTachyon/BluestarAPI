@@ -34,6 +34,18 @@
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <relocations>
+                        <relocation>
+                            <pattern>me.lanzhi.api.internal</pattern>
+                            <shadedPattern>me.lanzhi.bluestarapi.internal</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>me.lanzhi.api</pattern>
+                            <shadedPattern>me.lanzhi.bluestarapi</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
             </plugin>
         </plugins>
         <resources>
@@ -49,7 +61,7 @@
             <groupId>me.lanzhi</groupId>
             <artifactId>BluestarAPI-Bukkit-injector</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
             <optional>true</optional>
         </dependency>
         <dependency>

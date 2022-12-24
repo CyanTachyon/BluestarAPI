@@ -1,6 +1,6 @@
 name: BluestarAPI
 version: '${project.version}'
-main: me.lanzhi.bluestarapi.BluestarAPI
+main: me.lanzhi.bluestarapi.internal.BluestarAPI
 api-version: 1.13
 softdepend:
   - CoreProtect

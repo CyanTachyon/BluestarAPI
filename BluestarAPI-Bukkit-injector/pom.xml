@@ -42,15 +42,15 @@
                         </relocation>
                         <relocation>
                             <pattern>de.tr7zw.annotations</pattern>
-                            <shadedPattern>me.lanzhi.api.annotations</shadedPattern>
+                            <shadedPattern>me.lanzhi.api.internal.annotations</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>net.wesjd.anvilgui</pattern>
-                            <shadedPattern>me.lanzhi.api.anvilgui</shadedPattern>
+                            <shadedPattern>me.lanzhi.api.internal.anvilgui</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>javassist</pattern>
-                            <shadedPattern>me.lanzhi.api.javassist</shadedPattern>
+                            <shadedPattern>me.lanzhi.api.internal.javassist</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>

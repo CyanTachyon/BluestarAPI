@@ -28,9 +28,8 @@ public class BluestarUtils
 
     public static byte randomByte()
     {
-        var x=new byte[1];
-        randomBytes(x);
-        return x[0];
+        int x=randomInt();
+        return (byte) ((x&0xff)^(x>>8&0xff)^(x>>16&0xff)^(x>>24&0xff));
     }
 
     public static void randomBytes(byte[] bytes)
