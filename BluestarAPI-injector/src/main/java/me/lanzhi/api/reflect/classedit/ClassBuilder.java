@@ -147,12 +147,12 @@ public class ClassBuilder
         return new FieldBuilder(ctField);
     }
 
-    public MethodBuilder createMethod(Class<?> retuenType,String name,Class<?>... parameterTypes)
+    public MethodBuilder createMethod(Class<?> retuenType,String name,Class<?>... parameterTypes) throws CannotCompileException
     {
-        return createMethod(retuenType,name,false,parameterTypes);
+        return createMethod(retuenType,name,";",parameterTypes);
     }
 
-    public MethodBuilder createMethod(Class<?> returnType,String name,boolean defaultCode,Class<?>... parameters)
+    public MethodBuilder createMethod(Class<?> returnType,String name,String body,Class<?>... parameters) throws CannotCompileException
     {
         var ctClasses=toCtClass(parameters);
         try
@@ -160,16 +160,16 @@ public class ClassBuilder
             var pool=ClassPool.getDefault();
             CtClass ctClass1=returnType!=null?pool.getCtClass(returnType.getName()):CtClass.voidType;
             CtMethod ctMethod=new CtMethod(ctClass1,name,ctClasses,ctClass);
-            if (returnType!=null&&defaultCode)
+            if (body!=null)
             {
-                ctMethod.setBody("return null;");
-            }
-            else if (defaultCode)
-            {
-                ctMethod.setBody(";");
+                ctMethod.setBody(body);
             }
             ctClass.addMethod(ctMethod);
             return new MethodBuilder(ctMethod);
+        }
+        catch (CannotCompileException e)
+        {
+            throw e;
         }
         catch (Throwable e)
         {
@@ -177,14 +177,21 @@ public class ClassBuilder
         }
     }
 
-    public MethodBuilder createMethod(Class<?> retuenType,String name,String body,Class<?>... parameterTypes) throws CannotCompileException
+    public MethodBuilder createAbstractMethod(Class<?> returnType,String name,Class<?>... parameters)
     {
-        return createMethod(retuenType,name,true,parameterTypes).body(body);
-    }
-
-    public MethodBuilder createMethodDefault(Class<?> retuenType,String name,Class<?>... parameterTypes)
-    {
-        return createMethod(retuenType,name,true,parameterTypes);
+        var ctClasses=toCtClass(parameters);
+        try
+        {
+            var pool=ClassPool.getDefault();
+            CtClass ctClass1=returnType!=null?pool.getCtClass(returnType.getName()):CtClass.voidType;
+            CtMethod ctMethod=new CtMethod(ctClass1,name,ctClasses,ctClass);
+            ctClass.addMethod(ctMethod);
+            return new MethodBuilder(ctMethod).addModifier(Modifier.ABSTRACT);
+        }
+        catch (Throwable e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     public Class<?> build()
@@ -197,14 +204,7 @@ public class ClassBuilder
         try
         {
             var code=ctClass.toBytecode();
-            return (Class<?>) MethodAccessor.getMethod(ClassLoader.class,
-                                                       "defineClass",
-                                                       String.class,
-                                                       byte[].class,
-                                                       int.class,
-                                                       int.class,
-                                                       ProtectionDomain.class)
-                                            .invoke(loader,ctClass.getName(),code,0,code.length,null);
+            return (Class<?>) defineClassMethod.invoke(loader,ctClass.getName(),code,0,code.length,null);
         }
         catch (Throwable e)
         {

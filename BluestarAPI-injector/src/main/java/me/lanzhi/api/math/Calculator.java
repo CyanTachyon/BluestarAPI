@@ -54,10 +54,7 @@ public final class Calculator
 
     public Result calculator(String str)
     {
-        str=str.replace('（','(');
-        str=str.replace('）','(');
-        str=str.replace('×','*');
-        str=str.replace('÷','/');
+        str=str.replace('（','(').replace('）','(').replace('×','*').replace('÷','/');
         str=toDBC(str);
         StringBuilder s;
         Stack<Character> a=new Stack<>();
