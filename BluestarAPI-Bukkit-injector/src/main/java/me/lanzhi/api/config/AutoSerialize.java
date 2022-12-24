@@ -1,146 +1,39 @@
 package me.lanzhi.api.config;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 自动序列化的实现
+ * 继承此接口来进行自动序列化/反序列化
  */
-final class AutoSerialize implements AutoSerializeInterface
+public interface AutoSerialize extends ConfigurationSerializable
 {
-    public final static String nameOfAutoSerialize;
-    private final static HashMap<String, Class<? extends AutoSerializeInterface>> classNames=new HashMap<>();
-
-    static
+    public static void registerClass(Class<? extends AutoSerialize> clazz)
     {
-        nameOfAutoSerialize=JavaPlugin.getProvidingPlugin(AutoSerialize.class).getName()+".AutoSerialize";
-        register();
+        AutoSerializeImpl.registerClass(clazz);
     }
 
-    private AutoSerialize()
-    {}
-
-    public static void register()
+    public static AutoSerialize deserialize(Map<String,Object> map)
     {
-        ConfigurationSerialization.unregisterClass(AutoSerialize.class);
-        ConfigurationSerialization.registerClass(AutoSerialize.class,nameOfAutoSerialize);
+        return AutoSerializeImpl.deserialize(map);
     }
 
-    public static AutoSerializeInterface deserialize(Map<String, Object> map)
+    public static Map<String,Object> serialize(AutoSerialize object)
     {
-        String clazzName=(String) map.get("class");
-        Class<? extends AutoSerializeInterface> clazz;
-        clazz=classNames.get(clazzName);
-        if (clazz==null)
-        {
-            Bukkit.getLogger().warning(ChatColor.RED+"反序列化失败,未找到类: \""+clazzName+"\"");
-            return null;
-        }
-        AutoSerializeInterface object;
-        try
-        {
-            object=clazz.newInstance();
-        }
-        catch (Throwable e)
-        {
-            System.out.println(ChatColor.RED+"新建对象失败");
-            throw new RuntimeException(e);
-        }
-        Field[] fields=clazz.getDeclaredFields();
-        for (Field field: fields)
-        {
-            field.setAccessible(true);
-            try
-            {
-                if (field.isAnnotationPresent(SpecialSerialize.class))
-                {
-                    SpecialSerialize specialSerialize=field.getAnnotation(SpecialSerialize.class);
-                    if (specialSerialize.deserialize().isEmpty())
-                    {
-                        continue;
-                    }
-                    Method serializeMethod=clazz.getMethod(specialSerialize.serialize(),field.getType());
-                    Method deserializeMethod=clazz.getMethod(specialSerialize.deserialize(),serializeMethod.getReturnType());
-                    field.set(object,deserializeMethod.invoke(object,map.get(field.getName())));
-                }
-                else
-                {
-                    field.set(object,map.get(field.getName()));
-                }
-            }
-            catch (Throwable e)
-            {
-                Bukkit.getLogger().warning(ChatColor.RED+"变量 "+field.getName()+" 反序列化失败");
-            }
-        }
-        return object;
+        return AutoSerializeImpl.serialize(object);
     }
 
-    public static Map<String, Object> serialize(Object object)
-    {
-        return serialize(object,object.getClass());
-    }
-
-    public static Map<String, Object> serialize(Object object,Class<?> clazz)
-    {
-        HashMap<String, Object> map=new HashMap<>();
-        String clazzName=getClassName(clazz);
-        //System.out.println("序列化: "+clazzName);
-        map.put("class",clazzName);
-        map.put(ConfigurationSerialization.SERIALIZED_TYPE_KEY,AutoSerialize.nameOfAutoSerialize);
-        Field[] fields=clazz.getDeclaredFields();
-        for (Field field: fields)
-        {
-            field.setAccessible(true);
-            try
-            {
-                if (field.isAnnotationPresent(SpecialSerialize.class))
-                {
-                    SpecialSerialize specialSerialize=field.getAnnotation(SpecialSerialize.class);
-                    if (specialSerialize.serialize().isEmpty())
-                    {
-                        continue;
-                    }
-                    Method method=clazz.getMethod(specialSerialize.serialize(),field.getType());
-                    map.put(field.getName(),method.invoke(object,field.get(object)));
-                }
-                else
-                {
-                    map.put(field.getName(),field.get(object));
-                }
-            }
-            catch (Throwable e)
-            {
-                Bukkit.getLogger().warning(ChatColor.RED+"变量 "+field.getName()+" 序列化失败");
-            }
-        }
-        return map;
-    }
-
-    private static String getClassName(Class<?> clazz)
-    {
-        if (clazz.isAnnotationPresent(SerializeAs.class))
-        {
-            return clazz.getAnnotation(SerializeAs.class).value();
-        }
-        return clazz.getName();
-    }
-
-    public static void registerClass(Class<? extends AutoSerializeInterface> clazz)
-    {
-        classNames.put(getClassName(clazz),clazz);
-    }
-
+    /**
+     * 序列化,如果你重新了该方法,那所有自动序列化功能都不会生效
+     *
+     * @return 序列化结果
+     */
     @Override
-    public Map<String, Object> serialize()
+    default Map<String,Object> serialize()
     {
-        return new HashMap<>();
+        Class<? extends AutoSerialize> clazz=this.getClass();
+        AutoSerializeImpl.registerClass(clazz);
+        return AutoSerializeImpl.serialize(this,clazz);
     }
 }

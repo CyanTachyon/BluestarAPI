@@ -1,7 +1,7 @@
 package me.lanzhi.api.inventory;
 
 import com.google.common.collect.Multimap;
-import me.lanzhi.api.config.AutoSerializeInterface;
+import me.lanzhi.api.config.AutoSerialize;
 import me.lanzhi.api.reflect.FieldAccessor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ItemManager implements Cloneable, AutoSerializeInterface
+public class ItemManager implements Cloneable, AutoSerialize
 {
     private static final FieldAccessor meta=FieldAccessor.getDeclaredField(ItemStack.class,"meta");
     private final ItemStack itemStack;
