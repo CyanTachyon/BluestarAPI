@@ -287,7 +287,7 @@ public class ClassBuilder
     {
         public static TempClass create(String code) throws Throwable
         {
-            return create(code,randomClassName());
+            return create(randomClassName(),code);
         }
 
         public static TempClass create(String name,String code) throws Throwable
