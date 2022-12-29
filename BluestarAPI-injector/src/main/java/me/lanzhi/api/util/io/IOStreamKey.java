@@ -2,7 +2,9 @@ package me.lanzhi.api.util.io;
 
 import me.lanzhi.api.util.collection.ByteVector;
 
-public abstract class IOStreamKey
+import java.io.Serializable;
+
+public abstract class IOStreamKey implements Serializable
 {
     public static final IOStreamKey EmptyKey=new IOStreamKey(1)
     {
