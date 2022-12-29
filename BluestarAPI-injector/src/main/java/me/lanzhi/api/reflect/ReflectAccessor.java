@@ -24,8 +24,7 @@ public final class ReflectAccessor
         MethodHandles.Lookup lookup;
         try
         {
-            Class<Unsafe> unsafeClass=Unsafe.class;
-            Field theUnsafe=unsafeClass.getDeclaredField("theUnsafe");
+            Field theUnsafe=Unsafe.class.getDeclaredField("theUnsafe");
             theUnsafe.setAccessible(true);
             Unsafe unsafe=(Unsafe) theUnsafe.get(null);
             Field trustedLookup=MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
@@ -64,7 +63,7 @@ public final class ReflectAccessor
 
     public static Class<?> getCallerClass(int x)
     {
-        return getClass(getCaller(x+1).getClassName());
+        return getClass(getCaller(x).getClassName());
     }
 
     public static Class<?> getCallerClass()
@@ -79,20 +78,26 @@ public final class ReflectAccessor
 
     public static StackTraceElement getCaller(int x)
     {
+        return getCallers().get(x);
+    }
+
+    public static List<StackTraceElement> getCallers()
+    {
         var list=new ArrayList<StackTraceElement>();
         for (var o: Thread.currentThread().getStackTrace())
         {
-            if (o.getModuleName().equals("java.base")&&o.getClassName().startsWith("jdk.internal."))
+            //去掉反射调用和内部调用
+            String className=o.getClassName();
+            if (className.startsWith("java.lang.reflect.")||
+                className.startsWith("sun.reflect.")||
+                className.startsWith(ReflectAccessor.class.getPackageName())||
+                className.startsWith("jdk.internal."))
             {
                 continue;
             }
             list.add(o);
         }
-        if (x+2>=list.size())
-        {
-            return null;
-        }
-        return list.get(x+2);
+        return list;
     }
 
     public static boolean isVisibility(Class<?> clazz)

@@ -7,12 +7,12 @@ public final class BluestarAPI extends JavaPlugin
     @Override
     public void onEnable()
     {
-        System.out.println("BluestarAPI已加载");
+        this.getLogger().info("BluestarAPI is enabled!");
     }
 
     @Override
     public void onDisable()
     {
-        System.out.println("BluestarAPI已卸载");
+        this.getLogger().info("BluestarAPI is disabled!");
     }
 }

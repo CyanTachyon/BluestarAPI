@@ -1,20 +1,16 @@
 package me.lanzhi.api.reflect.classedit;
 
 import javassist.*;
-import me.lanzhi.api.reflect.MethodAccessor;
+import me.lanzhi.api.reflect.ClassLoaderAccessor;
+import me.lanzhi.api.reflect.ReflectAccessor;
 
-import java.security.ProtectionDomain;
+import java.util.UUID;
 
 public class ClassBuilder
 {
-    private final static MethodAccessor defineClassMethod=MethodAccessor.getMethod(ClassLoader.class,
-                                                                                   "defineClass",
-                                                                                   String.class,
-                                                                                   byte[].class,
-                                                                                   int.class,
-                                                                                   int.class,
-                                                                                   ProtectionDomain.class);
     private final CtClass ctClass;
+    private static final String tempClassesPackage=ClassBuilder.class.getPackageName()+".temp";
+    private Class<?> toClass;
 
     public ClassBuilder(ClassType type,String className)
     {
@@ -31,8 +27,8 @@ public class ClassBuilder
                 ctClass=pool.makeAnnotation(className);
                 break;
             }
-            default:
             case TYPE:
+            default:
             {
                 ctClass=pool.makeClass(className);
             }
@@ -68,35 +64,32 @@ public class ClassBuilder
         return this;
     }
 
+    public static void runCode(String code) throws Throwable
+    {
+        var x=TempClass.create(code);
+        x.run();
+    }
+
+    public static void runCode(String code,ClassLoader classLoader) throws Throwable
+    {
+        var x=TempClass.create(code);
+        x.run(classLoader);
+    }
+
+    private static String randomClassName()
+    {
+        return UUID.randomUUID().toString().replace("-","");
+    }
+
+    private static String createTempClassName(String name)
+    {
+        return tempClassesPackage+"."+name;
+    }
+
     public ClassBuilder superClass(Class<?> superClass) throws CannotCompileException
     {
-        ctClass.setSuperclass(ClassPool.getDefault().getOrNull(superClass.getName()));
+        ctClass.setSuperclass(toCtClass(superClass));
         return this;
-    }
-
-    public ClassBuilder addImplement(Class<?>... interfaces) throws CannotCompileException
-    {
-        for (var i: interfaces)
-        {
-            ctClass.addInterface(ClassPool.getDefault().getOrNull(i.getName()));
-        }
-        return this;
-    }
-
-    public ClassBuilder implement(Class<?>... interfaces) throws CannotCompileException
-    {
-        ctClass.setInterfaces(toCtClass(interfaces));
-        return this;
-    }
-
-    protected static CtClass[] toCtClass(Class<?>... parameters)
-    {
-        CtClass[] ctClasses=new CtClass[parameters.length];
-        for (int i=0;i<parameters.length;i++)
-        {
-            ctClasses[i]=toCtClass(parameters[i]);
-        }
-        return ctClasses;
     }
 
     protected static CtClass toCtClass(Class<?> type)
@@ -114,19 +107,89 @@ public class ClassBuilder
         return ctClass;
     }
 
+    public ClassBuilder superClass(CtClass superClass) throws CannotCompileException
+    {
+        ctClass.setSuperclass(superClass);
+        return this;
+    }
+
     public ClassBuilder clearImplement()
     {
         ctClass.setInterfaces(new CtClass[0]);
         return this;
     }
 
-    public ConstructorBuilder createConstructor(Class<?>... parameters)
+    public ClassBuilder addImplement(Object... interfaces)
+    {
+        for (var i: toCtClass(interfaces))
+        {
+            ctClass.addInterface(i);
+        }
+        return this;
+    }
+
+    protected static CtClass[] toCtClass(Object... parameters)
+    {
+        CtClass[] ctClasses=new CtClass[parameters.length];
+        for (int i=0;i<parameters.length;i++)
+        {
+            ctClasses[i]=toCtClass(parameters[i]);
+        }
+        return ctClasses;
+    }
+
+    protected static CtClass toCtClass(Object type)
+    {
+        if (type instanceof CtClass)
+        {
+            return (CtClass) type;
+        }
+        else if (type instanceof Class)
+        {
+            return toCtClass((Class<?>) type);
+        }
+        else if (type instanceof ClassBuilder)
+        {
+            return ((ClassBuilder) type).ctClass;
+        }
+        else if (type instanceof String)
+        {
+            CtClass ctClass1=ClassPool.getDefault().getOrNull((String) type);
+            if (ctClass1!=null)
+            {
+                return ctClass1;
+            }
+            Class<?> c=ReflectAccessor.getClass((String) type);
+            if (c!=null)
+            {
+                return toCtClass(c);
+            }
+        }
+        return CtClass.voidType;
+    }
+
+    public ClassBuilder implement(Object... interfaces)
+    {
+        ctClass.setInterfaces(toCtClass(interfaces));
+        return this;
+    }
+
+    public ConstructorBuilder createConstructor(Object... parameters)
+    {
+        return createConstructor(null,parameters);
+    }
+
+    public ConstructorBuilder createConstructor(String body,Object... parameters)
     {
         CtClass[] ctClasses=toCtClass(parameters);
         try
         {
             CtConstructor ctConstructor=new CtConstructor(ctClasses,ctClass);
             ctClass.addConstructor(ctConstructor);
+            if (body!=null)
+            {
+                ctConstructor.setBody(body);
+            }
             return new ConstructorBuilder(ctConstructor);
         }
         catch (Throwable e)
@@ -135,7 +198,12 @@ public class ClassBuilder
         }
     }
 
-    public FieldBuilder createField(String name,Class<?> type) throws CannotCompileException
+    public Class<?> build()
+    {
+        return build(this.getClass().getClassLoader());
+    }
+
+    public FieldBuilder createField(String name,Object type) throws CannotCompileException
     {
         if (type==null||type==void.class)
         {
@@ -147,19 +215,17 @@ public class ClassBuilder
         return new FieldBuilder(ctField);
     }
 
-    public MethodBuilder createMethod(Class<?> retuenType,String name,Class<?>... parameterTypes) throws CannotCompileException
+    public MethodBuilder createMethod(Object returnType,String name,Object... parameterTypes) throws CannotCompileException
     {
-        return createMethod(retuenType,name,";",parameterTypes);
+        return createMethod(returnType,name,";",parameterTypes);
     }
 
-    public MethodBuilder createMethod(Class<?> returnType,String name,String body,Class<?>... parameters) throws CannotCompileException
+    public MethodBuilder createMethod(Object returnType,String name,String body,Object... parameters) throws CannotCompileException
     {
         var ctClasses=toCtClass(parameters);
         try
         {
-            var pool=ClassPool.getDefault();
-            CtClass ctClass1=returnType!=null?pool.getCtClass(returnType.getName()):CtClass.voidType;
-            CtMethod ctMethod=new CtMethod(ctClass1,name,ctClasses,ctClass);
+            CtMethod ctMethod=new CtMethod(toCtClass(returnType),name,ctClasses,ctClass);
             if (body!=null)
             {
                 ctMethod.setBody(body);
@@ -177,14 +243,12 @@ public class ClassBuilder
         }
     }
 
-    public MethodBuilder createAbstractMethod(Class<?> returnType,String name,Class<?>... parameters)
+    public MethodBuilder createAbstractMethod(Object returnType,String name,Object... parameters)
     {
         var ctClasses=toCtClass(parameters);
         try
         {
-            var pool=ClassPool.getDefault();
-            CtClass ctClass1=returnType!=null?pool.getCtClass(returnType.getName()):CtClass.voidType;
-            CtMethod ctMethod=new CtMethod(ctClass1,name,ctClasses,ctClass);
+            CtMethod ctMethod=new CtMethod(toCtClass(returnType),name,ctClasses,ctClass);
             ctClass.addMethod(ctMethod);
             return new MethodBuilder(ctMethod).addModifier(Modifier.ABSTRACT);
         }
@@ -194,17 +258,17 @@ public class ClassBuilder
         }
     }
 
-    public Class<?> build()
-    {
-        return build(this.getClass().getClassLoader());
-    }
-
     public Class<?> build(ClassLoader loader)
     {
+        if (toClass!=null)
+        {
+            return toClass;
+        }
         try
         {
             var code=ctClass.toBytecode();
-            return (Class<?>) defineClassMethod.invoke(loader,ctClass.getName(),code,0,code.length,null);
+            var access=ClassLoaderAccessor.of(loader);
+            return toClass=access.defineClass(ctClass.getName(),code,0,code.length);
         }
         catch (Throwable e)
         {
@@ -217,5 +281,38 @@ public class ClassBuilder
         TYPE,
         INTERFACE,
         ANNOTATION
+    }
+
+    public interface TempClass
+    {
+        public static TempClass create(String code) throws Throwable
+        {
+            return create(code,randomClassName());
+        }
+
+        public static TempClass create(String name,String code) throws Throwable
+        {
+            if (name==null)
+            {
+                return create(code);
+            }
+            var builder=new ClassBuilder(ClassType.TYPE,createTempClassName(name)).implement(TempClass.class);
+            builder.createMethod(void.class,"run","{"+code+"}");
+            return builder.build(new ClassLoader(){})
+                          .asSubclass(TempClass.class)
+                          .getDeclaredConstructor()
+                          .newInstance();
+        }
+
+        default void run(ClassLoader classLoader)
+        {
+            if (classLoader!=null)
+            {
+                Thread.currentThread().setContextClassLoader(classLoader);
+            }
+            run();
+        }
+
+        void run();
     }
 }

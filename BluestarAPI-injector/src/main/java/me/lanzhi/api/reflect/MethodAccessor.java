@@ -26,7 +26,7 @@ public final class MethodAccessor
             this.staticMethod=false;
             return;
         }
-        MethodHandle unreflected=null;
+        MethodHandle unreflected;
         boolean staticMethod=Modifier.isStatic(method.getModifiers());
         try
         {

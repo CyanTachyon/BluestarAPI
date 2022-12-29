@@ -21,12 +21,17 @@ public final class YamlFile extends YamlConfiguration
     private long time=0;
     private boolean exists=true;
 
+    /**
+     * 创建一个YAML文件
+     *
+     * @param file 文件
+     */
     public YamlFile(@NotNull File file)
     {
         this(file,false,null,JavaPlugin.getProvidingPlugin(ReflectAccessor.getCallerClass()));
     }
 
-    private YamlFile(@NotNull File file,boolean autoReload,BiConsumer<YamlFile, Event> biConsumer,Plugin plugin)
+    private YamlFile(@NotNull File file,boolean autoReload,BiConsumer<YamlFile,Event> biConsumer,Plugin plugin)
     {
         this.file=file;
         try
