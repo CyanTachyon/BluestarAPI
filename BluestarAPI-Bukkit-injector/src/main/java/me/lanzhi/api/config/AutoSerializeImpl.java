@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * 自动序列化的实现
  */
-final class AutoSerializeImpl implements AutoSerialize
+public final class AutoSerializeImpl implements AutoSerialize
 {
     public final static String nameOfAutoSerialize;
     private final static HashMap<String,Class<? extends AutoSerialize>> classNames=new HashMap<>();

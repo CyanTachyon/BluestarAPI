@@ -36,9 +36,14 @@ public class KeyInputStream extends InputStream
     {
         var key=getKey();
         byte[] bytes=new byte[key.encryptNum()];
-        if (stream.read(bytes)!=key.encryptNum())
+        int read=stream.read(bytes);
+        if (read==-1)
         {
-            throw new IOException("读取字节并进行解密失败");
+            return -1;
+        }
+        else if (read!=key.encryptNum())
+        {
+            throw new IOException("Read "+read+" bytes, but "+key.encryptNum()+" bytes expected.");
         }
         return key.decrypt(bytes);
     }

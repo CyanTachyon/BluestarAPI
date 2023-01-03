@@ -12,6 +12,12 @@ public class ClassBuilder
     private static final String tempClassesPackage=ClassBuilder.class.getPackageName()+".temp";
     private Class<?> toClass;
 
+    static
+    {
+        ClassPool.getDefault().appendClassPath(new LoaderClassPath(ClassBuilder.class.getClassLoader()));
+        ClassPool.getDefault().appendClassPath(new LoaderClassPath(System.class.getClassLoader()));
+    }
+
     public ClassBuilder(ClassType type,String className)
     {
         final var pool=ClassPool.getDefault();
