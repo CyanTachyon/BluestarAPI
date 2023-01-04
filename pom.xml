@@ -6,7 +6,7 @@
 
     <groupId>me.lanzhi</groupId>
     <artifactId>BluestarAPI</artifactId>
-    <version>3.3.3</version>
+    <version>3.3.4</version>
     <modules>
         <module>BluestarAPI-Bukkit-injector</module>
         <module>BluestarAPI-plugin</module>
