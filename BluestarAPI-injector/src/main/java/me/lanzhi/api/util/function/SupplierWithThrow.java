@@ -1,5 +1,7 @@
 package me.lanzhi.api.util.function;
 
+import java.util.function.Supplier;
+
 public interface SupplierWithThrow<T>
 {
     default <E extends Throwable> T get(Class<E> eClass) throws E
@@ -15,4 +17,9 @@ public interface SupplierWithThrow<T>
     }
 
     T get() throws Throwable;
+
+    default Supplier<T> toSupplier()
+    {
+        return ()->get(RuntimeException.class);
+    }
 }

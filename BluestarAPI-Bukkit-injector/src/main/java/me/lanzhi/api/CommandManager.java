@@ -1,7 +1,6 @@
 package me.lanzhi.api;
 
 import me.lanzhi.api.reflect.ConstructorAccessor;
-import me.lanzhi.api.reflect.FieldAccessor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.plugin.Plugin;
@@ -10,14 +9,25 @@ import org.bukkit.scheduler.BukkitRunnable;
 public final class CommandManager
 {
     private final ConstructorAccessor<PluginCommand> constructor;
-    private final FieldAccessor commandMap;
+    private final SimpleCommandMap commandMap;
+
     CommandManager()
     {
         constructor=ConstructorAccessor.getDeclaredConstructor(PluginCommand.class,String.class,Plugin.class);
-        commandMap=FieldAccessor.getDeclaredField(Bukkit.getServer().getClass(),"commandMap");
+        var server=Bukkit.getServer();
+        SimpleCommandMap commandMap=null;
+        try
+        {
+            var method=server.getClass().getDeclaredMethod("getCommandMap");
+            commandMap=(SimpleCommandMap) method.invoke(server);
+        }
+        catch (Throwable ignored)
+        {
+        }
+        this.commandMap=commandMap;
     }
 
-    public static void upData()
+    public static void update()
     {
         Bluestar.setCommandManager(new CommandManager());
     }
@@ -32,6 +42,15 @@ public final class CommandManager
                 Bukkit.getServer().dispatchCommand(sender,cmd);
             }
         }.runTask(plugin);
+    }
+
+    public boolean registerPluginCommand(String command,Plugin plugin,CommandExecutor executor,String... alias)
+    {
+        PluginCommand pluginCommand=newPluginCommand(command,plugin);
+        assert pluginCommand!=null;
+        pluginCommand.setExecutor(executor);
+        pluginCommand.setAliases(java.util.Arrays.asList(alias));
+        return registerPluginCommand(pluginCommand);
     }
 
     public boolean registerPluginCommand(String command,Plugin plugin,CommandExecutor executor)
@@ -50,7 +69,6 @@ public final class CommandManager
         }
         catch (Throwable e)
         {
-            e.printStackTrace();
             return null;
         }
     }
@@ -62,25 +80,11 @@ public final class CommandManager
 
     public boolean registerCommand(String fallbackPrefix,Command command)
     {
-        try
-        {
-            return getCommandMap().register(fallbackPrefix,command);
-        }
-        catch (Throwable e)
-        {
-            return false;
-        }
+        return getCommandMap().register(fallbackPrefix,command);
     }
 
     public SimpleCommandMap getCommandMap()
     {
-        try
-        {
-            return (SimpleCommandMap) commandMap.get(Bukkit.getServer());
-        }
-        catch (Throwable e)
-        {
-            return null;
-        }
+        return commandMap;
     }
 }

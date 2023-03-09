@@ -1,6 +1,11 @@
 package me.lanzhi.api.net.dowloader;
 
 import me.lanzhi.api.util.collection.FastLinkedList;
+import me.lanzhi.api.util.quantity.DataRate;
+import me.lanzhi.api.util.quantity.DataSize;
+import me.lanzhi.api.util.quantity.Time;
+import me.lanzhi.api.util.quantity.Unit.DataSizeUnit;
+import me.lanzhi.api.util.quantity.Unit.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -89,31 +94,36 @@ public class MultiThreadDownload
             threadSpeed=new long[totalThread];
         }
 
-        public int getTotalThread()
+        public int totalThread()
         {
             return totalThread;
         }
 
-        public int getCurrentThread()
+        public int currentThread()
         {
             return currentThread;
         }
 
-        public long getTotalSize(int id)
+        public DataSize totalSize(int id)
         {
-            return threadTotalSize[id];
+            return new DataSize(threadTotalSize[id],DataSizeUnit.B);
         }
 
-        public long getCurrentSize(int id)
+        public DataSize currentSize(int id)
         {
-            return threadCurrentSize[id];
+            return new DataSize(threadCurrentSize[id],DataSizeUnit.B);
         }
 
-        public long speed(int id)
+        private void finish(int threadId)
         {
             synchronized (this)
             {
-                return threadSpeed[id];
+                threads[threadId]=null;
+                currentThread--;
+                if (currentThread==0)
+                {
+                    super.setFinished();
+                }
             }
         }
 
@@ -123,37 +133,6 @@ public class MultiThreadDownload
             {
                 threads[threadId]=thread;
                 threadTotalSize[threadId]=length;
-            }
-        }
-
-        private void finish(int threadId)
-        {
-            synchronized (this)
-            {
-                threads[threadId]=null;
-                currentThread--;
-            }
-        }
-
-        private void add(int threadId,int size)
-        {
-            synchronized (this)
-            {
-                threadCurrentSize[threadId]+=size;
-                threadSpeedData[threadId].add(Map.entry(System.currentTimeMillis(),(long) size));
-                threadSpeed[threadId]+=size;
-                super.add(size);
-                update(threadId);
-            }
-        }
-
-        private void update(int id)
-        {
-            long time=System.currentTimeMillis();
-            while (threadSpeedData[id].size()>0&&time-threadSpeedData[id].getFirst().getKey()>1000)
-            {
-                threadSpeed[id]-=threadSpeedData[id].getFirst().getValue();
-                threadSpeedData[id].removeFirst();
             }
         }
 
@@ -179,7 +158,57 @@ public class MultiThreadDownload
                         thread.interrupt();
                     }
                 }
-                super.errorCause(e);
+                super.error(e);
+            }
+        }
+
+        private void add(int threadId,int size)
+        {
+            synchronized (this)
+            {
+                threadCurrentSize[threadId]+=size;
+                threadSpeedData[threadId].add(Map.entry(System.currentTimeMillis(),(long) size));
+                threadSpeed[threadId]+=size;
+                super.add(size);
+                update(threadId);
+            }
+        }
+
+        private void update(int id)
+        {
+            long time=System.currentTimeMillis();
+            while (threadSpeedData[id].size()>0&&time-threadSpeedData[id].getFirst().getKey()>1000)
+            {
+                threadSpeed[id]-=threadSpeedData[id].getFirst().getValue();
+                threadSpeedData[id].removeFirst();
+            }
+        }
+
+        public final double progressPercent(int id)
+        {
+            return progress(id)*100.0;
+        }
+
+        public final double progress(int id)
+        {
+            return threadCurrentSize[id]*1.0/threadTotalSize[id];
+        }
+
+        public final Time remainingTime(int id)
+        {
+            return new Time(waitSize(id).size()/speed(id).rate(DataSizeUnit.B,TimeUnit.s),TimeUnit.s);
+        }
+
+        public final DataSize waitSize(int id)
+        {
+            return new DataSize(threadTotalSize[id]-threadCurrentSize[id],DataSizeUnit.B);
+        }
+
+        public DataRate speed(int id)
+        {
+            synchronized (this)
+            {
+                return new DataRate(threadSpeed[id],DataSizeUnit.B,TimeUnit.s);
             }
         }
     }

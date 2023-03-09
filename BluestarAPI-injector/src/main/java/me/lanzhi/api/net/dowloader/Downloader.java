@@ -1,8 +1,15 @@
 package me.lanzhi.api.net.dowloader;
 
 import me.lanzhi.api.util.collection.FastLinkedList;
+import me.lanzhi.api.util.quantity.DataRate;
+import me.lanzhi.api.util.quantity.DataSize;
+import me.lanzhi.api.util.quantity.Time;
+import me.lanzhi.api.util.quantity.Unit.DataRateUnit;
+import me.lanzhi.api.util.quantity.Unit.DataSizeUnit;
+import me.lanzhi.api.util.quantity.Unit.TimeUnit;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.AbstractMap;
 import java.util.Date;
@@ -67,6 +74,7 @@ public abstract class Downloader
         var file=createFileForDownload(serverPath,dirPath,timeOut);
         return download(serverPath,file.getAbsolutePath(),threadCount,timeOut);
     }
+
     private final long totalSize;
     private final long startTime;
 
@@ -108,6 +116,7 @@ public abstract class Downloader
         }
         return file;
     }
+
     private long speed=0;
     private long currentSize;
     private Throwable errorCause;
@@ -125,9 +134,16 @@ public abstract class Downloader
                 conn.setReadTimeout(timeOut);
             }
             String fileName=conn.getHeaderField("Content-Disposition");
-            if (fileName!=null&&fileName.indexOf("filename=")>0)
+            int x;
+            if (fileName!=null&&(x=fileName.indexOf("filename="))>0)
             {
-                return fileName.substring(fileName.indexOf("filename=")+9);
+                int y=fileName.indexOf(";",x);
+                if (y<0)
+                {
+                    y=fileName.length();
+                }
+                fileName=fileName.substring(x+9,y);
+                return fileName;
             }
 
             int index=conn.getURL().toString().lastIndexOf("/");
@@ -148,28 +164,50 @@ public abstract class Downloader
         return url.substring(index+1);
     }
 
-    public static Downloader downloadToDir(String serverPath,String dirPath,int threadCount)
+    public static Downloader downloadToDir(String serverPath,String dirPath,int threadCount) throws IOException
     {
         return downloadToDir(serverPath,dirPath,threadCount,-1);
     }
 
-    public final long currentSize()
+    protected void setFinished()
     {
-        return currentSize;
+        if (status()==Status.Running||status()==Status.Pause)
+        {
+            status=Status.Success;
+            this.data=new DownloadData(this);
+        }
     }
 
-    public final long totalSize()
-    {
-        return totalSize;
-    }
-
-    public final long speed()
+    protected final void error(Throwable cause)
     {
         synchronized (this)
         {
-            update();
-            return speed;
+            if (!running())
+            {
+                return;
+            }
+            errorCause=cause;
+            status(Status.Error);
         }
+    }
+
+    public final double progressPercent()
+    {
+        double progress=progress();
+        if (progress>=0)
+        {
+            return progress*100;
+        }
+        return -1;
+    }
+
+    public final double progress()
+    {
+        if (totalSize()!=null)
+        {
+            return currentSize().size()*1.0/totalSize().size();
+        }
+        return -1;
     }
 
     private final void update()
@@ -179,11 +217,6 @@ public abstract class Downloader
         {
             speed-=this.time.getFirst().getValue();
             this.time.removeFirst();
-        }
-        if (currentSize>=totalSize)
-        {
-            data=new DownloadData(this);
-            status(Status.Success);
         }
     }
 
@@ -247,17 +280,13 @@ public abstract class Downloader
         return new Date(startTime);
     }
 
-    protected final void errorCause(Throwable cause)
+    public final DataSize totalSize()
     {
-        synchronized (this)
+        if (totalSize>0)
         {
-            if (!running())
-            {
-                return;
-            }
-            errorCause=cause;
-            status(Status.Error);
+            return new DataSize(totalSize);
         }
+        return null;
     }
 
     public final boolean running()
@@ -286,6 +315,38 @@ public abstract class Downloader
         }
     }
 
+    public final DataSize currentSize()
+    {
+        return new DataSize(currentSize);
+    }
+
+    public final Time remainingTime()
+    {
+        if (waitSize()!=null)
+        {
+            return new Time((long) (waitSize().size()/speed().rate(new DataRateUnit(DataSizeUnit.B,TimeUnit.ms))));
+        }
+        return null;
+    }
+
+    public final DataSize waitSize()
+    {
+        if (totalSize()!=null)
+        {
+            return new DataSize(totalSize().size()-currentSize().size());
+        }
+        return null;
+    }
+
+    public final DataRate speed()
+    {
+        synchronized (this)
+        {
+            update();
+            return new DataRate(new DataSize(speed),TimeUnit.s);
+        }
+    }
+
     public enum Status
     {
         Running,
@@ -311,14 +372,14 @@ public abstract class Downloader
             return downloader.startTime();
         }
 
-        public long currentSize()
+        public DataSize currentSize()
         {
-            return totalSize();
+            return downloader.currentSize();
         }
 
-        public long totalSize()
+        public DataRate averageSpeed()
         {
-            return downloader.totalSize();
+            return new DataRate(totalSize(),runTime());
         }
 
         public boolean error()
@@ -336,14 +397,14 @@ public abstract class Downloader
             return new Date(endTime);
         }
 
-        public long averageSpeed()
+        public DataSize totalSize()
         {
-            return totalSize()*1000/runTime();
+            return downloader.currentSize();
         }
 
-        public long runTime()
+        public Time runTime()
         {
-            return endTime-downloader.startTime;
+            return new Time(endTime-downloader.startTime);
         }
     }
 }

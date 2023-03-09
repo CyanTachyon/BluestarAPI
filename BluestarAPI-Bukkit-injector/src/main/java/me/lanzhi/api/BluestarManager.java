@@ -9,7 +9,6 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 public final class BluestarManager
 {
@@ -94,35 +93,31 @@ public final class BluestarManager
         {
             return;
         }
-        BlockData blockData=location.getBlock().getBlockData();
+        BlockData blockData=location.getBlock().getBlockData().clone();
         location.getBlock().setType(block);
-        new BukkitRunnable()
+        Bukkit.getScheduler().runTaskAsynchronously(JavaPlugin.getProvidingPlugin(BluestarManager.class),()->
         {
-            @Override
-            public void run()
+            if (coreProtect==null)
             {
-                if (coreProtect==null)
+                coreProtect=getCoreProtect();
+            }
+            if (coreProtect!=null)
+            {
+                if (type==Material.AIR)
                 {
-                    coreProtect=getCoreProtect();
+                    coreProtect.logPlacement(playerName,location,block,null);
                 }
-                if (coreProtect!=null)
+                else if (block==Material.AIR)
                 {
-                    if (type==Material.AIR)
-                    {
-                        coreProtect.logPlacement(playerName,location,block,null);
-                    }
-                    else if (block==Material.AIR)
-                    {
-                        coreProtect.logRemoval(playerName,location,type,blockData);
-                    }
-                    else
-                    {
-                        coreProtect.logRemoval(playerName,location,type,blockData);
-                        coreProtect.logPlacement(playerName,location,block,null);
-                    }
+                    coreProtect.logRemoval(playerName,location,type,blockData);
+                }
+                else
+                {
+                    coreProtect.logRemoval(playerName,location,type,blockData);
+                    coreProtect.logPlacement(playerName,location,block,null);
                 }
             }
-        }.runTaskAsynchronously(JavaPlugin.getProvidingPlugin(BluestarManager.class));
+        });
     }
 
     public <T extends Event> T callEvent(T event)

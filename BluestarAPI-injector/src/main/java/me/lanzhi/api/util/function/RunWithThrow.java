@@ -28,4 +28,14 @@ public interface RunWithThrow
         }
         throw new RuntimeException(throwable);
     }
+
+    default Runnable toRunnable()
+    {
+        return toRun().toRunnable();
+    }
+
+    default Run toRun()
+    {
+        return ()->run(RuntimeException.class);
+    }
 }

@@ -1,5 +1,7 @@
 package me.lanzhi.api.util.collection;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.*;
 
 public class ByteVector implements Collection<Byte>, RandomAccess, Cloneable, java.io.Serializable
@@ -72,7 +74,22 @@ public class ByteVector implements Collection<Byte>, RandomAccess, Cloneable, ja
     @Override
     public Iterator<Byte> iterator()
     {
-        return new Itr(this);
+        return new Iterator<>()
+        {
+            private int pos=0;
+
+            @Override
+            public boolean hasNext()
+            {
+                return pos<size();
+            }
+
+            @Override
+            public Byte next()
+            {
+                return data[pos++];
+            }
+        };
     }
 
     @Override
@@ -114,7 +131,7 @@ public class ByteVector implements Collection<Byte>, RandomAccess, Cloneable, ja
     @Override
     public boolean remove(Object o)
     {
-        throw new AssertionError("不支持任意位置删除");
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -143,13 +160,13 @@ public class ByteVector implements Collection<Byte>, RandomAccess, Cloneable, ja
     @Override
     public boolean removeAll(Collection<?> c)
     {
-        throw new AssertionError("不支持任意位置删除");
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean retainAll(Collection<?> c)
     {
-        throw new AssertionError("不支持任意位置删除");
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -172,13 +189,13 @@ public class ByteVector implements Collection<Byte>, RandomAccess, Cloneable, ja
         return res;
     }
 
-    public byte get(int pos)
+    public byte top()
     {
-        if (pos<0||pos>=size())
+        if (top>=0)
         {
-            throw new NullPointerException("位置: "+pos+" 应不小于0且小于size");
+            return get(top);
         }
-        return data[pos];
+        throw new NoSuchElementException();
     }
 
     public boolean remove()
@@ -191,13 +208,13 @@ public class ByteVector implements Collection<Byte>, RandomAccess, Cloneable, ja
         return false;
     }
 
-    public byte top()
+    public byte get(int pos)
     {
-        if (top>=0)
+        if (pos<0||pos>=size())
         {
-            return get(top);
+            throw new IndexOutOfBoundsException("Index: "+pos+" is out of bounds: 0~"+(size()-1));
         }
-        throw new NullPointerException("数组内没有元素");
+        return data[pos];
     }
 
     public int getMaxSize()
@@ -209,7 +226,7 @@ public class ByteVector implements Collection<Byte>, RandomAccess, Cloneable, ja
     {
         if (size<size())
         {
-            throw new AssertionError("最大容量必须大于项目数量");
+            throw new IllegalArgumentException("Size: "+size+" is less than current size: "+size());
         }
         byte[] bytes=new byte[size];
         System.arraycopy(data,0,bytes,0,size());
@@ -220,30 +237,37 @@ public class ByteVector implements Collection<Byte>, RandomAccess, Cloneable, ja
     public ByteVector clone()
     {
         var clone=new ByteVector();
-        clone.put(data);
+        clone.put(toByteArray());
         return clone;
     }
 
-    private final static class Itr implements Iterator<Byte>
+    public OutputStream toOutputStream()
     {
-        private final ByteVector bytes;
-        private int pos=0;
-
-        private Itr(ByteVector bytes)
+        return new OutputStream()
         {
-            this.bytes=bytes;
-        }
+            @Override
+            public void write(int b)
+            {
+                put((byte) b);
+            }
+        };
+    }
 
-        @Override
-        public boolean hasNext()
+    public InputStream toInputStream()
+    {
+        return new InputStream()
         {
-            return pos<bytes.size();
-        }
+            private int pos=0;
 
-        @Override
-        public Byte next()
-        {
-            return bytes.get(pos++);
-        }
+            @Override
+            public int read()
+            {
+                if (pos<size())
+                {
+                    return get(pos++);
+                }
+                return -1;
+            }
+        };
     }
 }

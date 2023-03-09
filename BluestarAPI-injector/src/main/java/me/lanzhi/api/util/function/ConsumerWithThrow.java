@@ -1,11 +1,18 @@
 package me.lanzhi.api.util.function;
 
+import java.util.function.Consumer;
+
 public interface ConsumerWithThrow<T>
 {
-    default <E extends Throwable> void accept(T t,Class<E> eClass) throws E
+    default Consumer<T> toConsumer()
     {
-        ((RunWithThrow)()->accept(t)).run(eClass);
+        return t->accept(t,RuntimeException.class);
     }
 
     void accept(T t) throws Throwable;
+
+    default <E extends Throwable> void accept(T t,Class<E> eClass) throws E
+    {
+        ((RunWithThrow) ()->accept(t)).run(eClass);
+    }
 }

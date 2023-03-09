@@ -98,7 +98,7 @@ public final class Bluestar
     {
         if (commandManager==null)
         {
-            CommandManager.upData();
+            CommandManager.update();
         }
         return commandManager;
     }

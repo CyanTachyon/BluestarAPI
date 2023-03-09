@@ -41,10 +41,14 @@ public class DefaultDownload
                         outputStream.close();
                         file.delete();
                     }
+                    else
+                    {
+                        downloader.setFinished();
+                    }
                 }
                 catch (Throwable e)
                 {
-                    downloader.errorCause(e);
+                    downloader.error(e);
                 }
             }
         }.start();
