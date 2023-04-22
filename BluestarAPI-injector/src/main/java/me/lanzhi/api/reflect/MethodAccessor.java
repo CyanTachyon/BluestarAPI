@@ -1,6 +1,6 @@
 package me.lanzhi.api.reflect;
 
-import me.lanzhi.api.util.collection.FastLinkedList;
+import me.lanzhi.api.collection.FastLinkedList;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;

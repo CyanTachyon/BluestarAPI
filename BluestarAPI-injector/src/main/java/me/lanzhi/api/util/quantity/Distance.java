@@ -1,6 +1,6 @@
 package me.lanzhi.api.util.quantity;
 
-import me.lanzhi.api.util.quantity.Unit.DistanceUnit;
+import me.lanzhi.api.util.quantity.unit.DistanceUnit;
 
 public class Distance
 {

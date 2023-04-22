@@ -1,6 +1,6 @@
 package me.lanzhi.api.util.quantity;
 
-import me.lanzhi.api.util.quantity.Unit.DataSizeUnit;
+import me.lanzhi.api.util.quantity.unit.DataSizeUnit;
 
 public class DataSize
 {

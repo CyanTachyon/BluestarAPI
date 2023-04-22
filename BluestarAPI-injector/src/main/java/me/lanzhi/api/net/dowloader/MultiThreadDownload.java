@@ -1,11 +1,11 @@
 package me.lanzhi.api.net.dowloader;
 
-import me.lanzhi.api.util.collection.FastLinkedList;
+import me.lanzhi.api.collection.FastLinkedList;
 import me.lanzhi.api.util.quantity.DataRate;
 import me.lanzhi.api.util.quantity.DataSize;
 import me.lanzhi.api.util.quantity.Time;
-import me.lanzhi.api.util.quantity.Unit.DataSizeUnit;
-import me.lanzhi.api.util.quantity.Unit.TimeUnit;
+import me.lanzhi.api.util.quantity.unit.DataSizeUnit;
+import me.lanzhi.api.util.quantity.unit.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;

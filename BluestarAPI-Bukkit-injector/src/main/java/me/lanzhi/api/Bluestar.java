@@ -1,5 +1,6 @@
 package me.lanzhi.api;
 
+import me.lanzhi.api.command.CommandManager;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;

@@ -5,7 +5,7 @@
     <parent>
         <artifactId>BluestarAPI</artifactId>
         <groupId>me.lanzhi</groupId>
-        <version>3.3.6</version>
+        <version>3.4.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -44,13 +44,6 @@
             <artifactId>annotations</artifactId>
             <version>23.1.0</version>
             <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.javassist</groupId>
-            <artifactId>javassist</artifactId>
-            <version>3.29.2-GA</version>
-            <scope>compile</scope>
             <optional>true</optional>
         </dependency>
     </dependencies>

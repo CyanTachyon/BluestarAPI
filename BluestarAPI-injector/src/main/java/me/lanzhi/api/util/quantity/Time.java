@@ -1,6 +1,6 @@
 package me.lanzhi.api.util.quantity;
 
-import me.lanzhi.api.util.quantity.Unit.TimeUnit;
+import me.lanzhi.api.util.quantity.unit.TimeUnit;
 
 public class Time
 {

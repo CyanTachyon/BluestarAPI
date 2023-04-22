@@ -1,8 +1,8 @@
 package me.lanzhi.api.util.quantity;
 
-import me.lanzhi.api.util.quantity.Unit.DataRateUnit;
-import me.lanzhi.api.util.quantity.Unit.DataSizeUnit;
-import me.lanzhi.api.util.quantity.Unit.TimeUnit;
+import me.lanzhi.api.util.quantity.unit.DataRateUnit;
+import me.lanzhi.api.util.quantity.unit.DataSizeUnit;
+import me.lanzhi.api.util.quantity.unit.TimeUnit;
 
 
 public class DataRate
