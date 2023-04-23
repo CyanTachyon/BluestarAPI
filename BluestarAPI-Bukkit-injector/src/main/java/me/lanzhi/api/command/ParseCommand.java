@@ -16,4 +16,14 @@ public @interface ParseCommand
      * 处理的命令的传参
      */
     String[] value();
+
+    /**
+     * 权限
+     */
+    String permission() default "";
+
+    /**
+     * 是否只有玩家才能执行
+     */
+    boolean onlyPlayer() default false;
 }

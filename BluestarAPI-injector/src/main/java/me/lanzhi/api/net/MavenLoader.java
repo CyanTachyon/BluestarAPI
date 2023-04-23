@@ -1,10 +1,14 @@
 package me.lanzhi.api.net;
 
+import me.lanzhi.api.reflect.URLClassLoaderAccessor;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
@@ -44,11 +48,46 @@ public final class MavenLoader
         loadLibrary(group,artifact,version,DEFAULT_MAVEN_REPO,folder,true);
     }
 
-    public static void loadLibrary(String group,String artifact,String version,String repo,File folder,
-                                   boolean checkMD5) throws IOException, NoSuchAlgorithmException
+    public static void loadLibrary(String group,String artifact,String version,File folder,String extra) throws IOException, NoSuchAlgorithmException
     {
+        loadLibrary(group,artifact,version,DEFAULT_MAVEN_REPO,folder,true,extra);
+    }
+
+    public static void loadLibrary(String group,String artifact,String version,String repo,File folder,
+                                   boolean checkMD5,String extra) throws IOException, NoSuchAlgorithmException
+    {
+        if (version==null||version.equals("latest"))
+        {
+            version=getLatestVersion(group,artifact,repo);
+        }
+        if (version==null)
+        {
+            throw new RuntimeException("无法获取最新版本");
+        }
         File file=new File(folder,group.replace('.','/')+'/'+artifact+'/'+version+'/'+artifact+'-'+version+".jar");
-        loadMavenLibrary(group,artifact,version,repo,file,checkMD5);
+        loadMavenLibrary(group,artifact,version,repo,file,checkMD5,extra);
+    }
+
+    public static String getLatestVersion(String group,String artifact,String repo) throws IOException
+    {
+        String url=repo+group.replace('.','/')+'/'+artifact+"/maven-metadata.xml";
+        try (var in=new URL(url).openStream())
+        {
+            //从中解析出最新版本
+            //不使用JDOM或者DOM,因为这两个库太大了,手动解析
+            String xml=new String(in.readAllBytes());
+            int index=xml.indexOf("<release>");
+            if (index==-1)
+            {
+                return null;
+            }
+            int index2=xml.indexOf("</release>",index);
+            if (index2==-1)
+            {
+                return null;
+            }
+            return xml.substring(index+9,index2);
+        }
     }
 
     /**
@@ -62,12 +101,14 @@ public final class MavenLoader
      * @param checkMD5 是否在下载完成后通过MD5校验下载正确性
      */
     public static void loadMavenLibrary(String group,String artifact,String version,String repo,File file,
-                                        boolean checkMD5) throws IOException, NoSuchAlgorithmException
+                                        boolean checkMD5,String extra) throws IOException, NoSuchAlgorithmException
     {
         Objects.requireNonNull(group);
         Objects.requireNonNull(artifact);
         Objects.requireNonNull(file);
-        if (version==null)
+        if (extra==null)
+            extra="";
+        if (version==null||version.equals("latest"))
         {
             version=getLatestVersion(group,artifact,repo);
         }
@@ -75,13 +116,18 @@ public final class MavenLoader
         {
             throw new RuntimeException("无法获取最新版本");
         }
-        String url=repo+group.replace('.','/')+'/'+artifact+'/'+version+'/'+artifact+'-'+version+".jar";
+        String url=repo+group.replace('.','/')+'/'+artifact+'/'+version+'/'+artifact+'-'+version+extra+".jar";
         //先下载文件,下载结束后再获取MD5
         if (file.exists())
         {
             if (!checkMD5||Objects.equals(getMD5(url),getMD5(file)))
             {
-                return;
+                if (MavenLoader.class.getClassLoader() instanceof URLClassLoader)
+                {
+                    loadJar(file,(URLClassLoader) MavenLoader.class.getClassLoader());
+                }
+                else
+                    loadJar(file,null);
             }
             else
                 file.delete();
@@ -89,27 +135,30 @@ public final class MavenLoader
         file.getParentFile().mkdirs();
         file.createNewFile();
         download(url,file,checkMD5);
+        if (MavenLoader.class.getClassLoader() instanceof URLClassLoader)
+        {
+            loadJar(file,(URLClassLoader) MavenLoader.class.getClassLoader());
+        }
+        else
+            loadJar(file,null);
     }
 
-    public static String getLatestVersion(String group,String artifact,String repo) throws IOException
+    public static void loadJar(File jarFile,URLClassLoader classLoader) throws IOException
     {
-        String url=repo+group.replace('.','/')+'/'+artifact+"/maven-metadata.xml";
-        try (var in=new URL(url).openStream())
+        System.err.println("loading "+jarFile);
+        if (classLoader==null)
         {
-            //从中解析出最新版本
-            //不使用JDOM或者DOM,因为这两个库太大了,手动解析
-            String xml=new String(in.readAllBytes());
-            int index=xml.indexOf("<latest>");
-            if (index==-1)
-            {
-                return null;
-            }
-            int index2=xml.indexOf("</latest>",index);
-            if (index2==-1)
-            {
-                return null;
-            }
-            return xml.substring(index+8,index2);
+            new URLClassLoader(new URL[]{jarFile.toURI().toURL()},MavenLoader.class.getClassLoader());
+            return;
+        }
+        URLClassLoaderAccessor accessor=new URLClassLoaderAccessor(classLoader);
+        try
+        {
+            accessor.addURL(jarFile.toURI().toURL());
+        }
+        catch (Throwable e)
+        {
+            throw new IOException(e);
         }
     }
 
@@ -145,12 +194,9 @@ public final class MavenLoader
     {
         file.getParentFile().mkdirs();
         file.delete();
-        file.createNewFile();
-        if (!file.isFile())
-            throw new IOException("Cannot create file");
         try (var in=new URL(url).openStream())
         {
-            Files.copy(in,file.toPath());
+            Files.copy(in,file.toPath(),StandardCopyOption.REPLACE_EXISTING);
         }
         if (checkMD5)
         {
@@ -160,6 +206,12 @@ public final class MavenLoader
                 throw new IOException("MD5校验失败");
             }
         }
+    }
+
+    public static void loadLibrary(String group,String artifact,String version,String repo,File folder,
+                                   boolean checkMD5) throws IOException, NoSuchAlgorithmException
+    {
+        loadLibrary(group,artifact,version,repo,folder,checkMD5,null);
     }
 
     public static void loadLibrary(String group,String artifact,String version,String repo,File folder) throws IOException, NoSuchAlgorithmException
@@ -187,7 +239,7 @@ public final class MavenLoader
         return new MavenLibrary(group,artifact,version,repo);
     }
 
-    public static final class MavenLibrary
+    public static final class MavenLibrary implements Cloneable
     {
         public final String group;
         public final String artifact;
@@ -210,6 +262,46 @@ public final class MavenLoader
             this.artifact=artifact;
             this.version=version;
             this.repo=repo;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return group.hashCode()^artifact.hashCode()^version.hashCode()^repo.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (obj==null)
+            {
+                return false;
+            }
+            if (obj==this)
+            {
+                return true;
+            }
+            if (obj instanceof MavenLibrary)
+            {
+                MavenLibrary library=(MavenLibrary) obj;
+                return group.equals(library.group)&&
+                       artifact.equals(library.artifact)&&
+                       version.equals(library.version)&&
+                       repo.equals(library.repo);
+            }
+            return false;
+        }
+
+        @Override
+        protected Object clone()
+        {
+            return new MavenLibrary(group,artifact,version,repo);
+        }
+
+        @Override
+        public String toString()
+        {
+            return group+':'+artifact+':'+version;
         }
     }
 }

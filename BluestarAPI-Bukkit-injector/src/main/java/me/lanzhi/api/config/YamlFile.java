@@ -7,6 +7,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,11 +16,12 @@ import java.util.function.BiConsumer;
 /**
  * 代表一个YAML类型的文件
  */
-public final class YamlFile extends YamlConfiguration
+public class YamlFile extends YamlConfiguration
 {
     private final File file;
     private long time=0;
     private boolean exists=true;
+    private final boolean autoSave;
 
     /**
      * 创建一个YAML文件
@@ -32,6 +34,12 @@ public final class YamlFile extends YamlConfiguration
     }
 
     private YamlFile(@NotNull File file,boolean autoReload,BiConsumer<YamlFile,Event> biConsumer,Plugin plugin)
+    {
+        this(file,autoReload,biConsumer,plugin,true);
+    }
+
+    private YamlFile(@NotNull File file,boolean autoReload,BiConsumer<YamlFile,Event> biConsumer,Plugin plugin,
+                     boolean autoSave)
     {
         this.file=file;
         try
@@ -66,6 +74,7 @@ public final class YamlFile extends YamlConfiguration
                 }
             },0,20);
         }
+        this.autoSave=autoSave;
     }
 
     public YamlFile(@NotNull File file,boolean autoReload)
@@ -77,6 +86,17 @@ public final class YamlFile extends YamlConfiguration
                 yamlFile.reload();
             }
         },JavaPlugin.getProvidingPlugin(ReflectAccessor.getCallerClass()));
+    }
+
+    public YamlFile(@NotNull File file,boolean autoReload,boolean autoSave)
+    {
+        this(file,autoReload,(yamlFile,event)->
+        {
+            if (event==Event.UPDATE)
+            {
+                yamlFile.reload();
+            }
+        },JavaPlugin.getProvidingPlugin(ReflectAccessor.getCallerClass()),autoSave);
     }
 
     @NotNull
@@ -137,6 +157,16 @@ public final class YamlFile extends YamlConfiguration
                 yamlFile.reload();
             }
         },JavaPlugin.getProvidingPlugin(ReflectAccessor.getCallerClass())).reload();
+    }
+
+    @Override
+    public void set(@NotNull String path,@Nullable Object value)
+    {
+        super.set(path,value);
+        if (autoSave)
+        {
+            save();
+        }
     }
 
     @NotNull

@@ -151,19 +151,6 @@ public final class CommandHelper
             }
         }
 
-        private void add(Run run,Object instance)
-        {
-            if (run.isTab)
-            {
-                tabArgsMap.add(run);
-            }
-            else
-            {
-                argsMap.add(run);
-            }
-            instances.put(run,instance);
-        }
-
         private void add(Class<?> clazz)
         {
             Objects.requireNonNull(clazz);
@@ -175,15 +162,9 @@ public final class CommandHelper
                 ParseCommand parseCommand=method.getAnnotation(ParseCommand.class);
                 ParseTab parseTab=method.getAnnotation(ParseTab.class);
                 if (parseCommand!=null)
-                    for (String s: parseCommand.value())
-                    {
-                        add(new Run(method,s,false),(Object) null);
-                    }
+                    add(Run.of(method,parseCommand),(Object) null);
                 if (parseTab!=null)
-                    for (String s: parseTab.value())
-                    {
-                        add(new Run(method,s,true),(Object) null);
-                    }
+                    add(Run.of(method,parseTab),(Object) null);
             }
             for (var field: clazz.getDeclaredFields())
             {
@@ -192,15 +173,25 @@ public final class CommandHelper
                 ParseCommand parseCommand=field.getAnnotation(ParseCommand.class);
                 ParseTab parseTab=field.getAnnotation(ParseTab.class);
                 if (parseCommand!=null)
-                    for (String s: parseCommand.value())
-                    {
-                        add(new Run(field,s,false),(Object) null);
-                    }
+                    add(Run.of(field,parseCommand),(Object) null);
                 if (parseTab!=null)
-                    for (String s: parseTab.value())
-                    {
-                        add(new Run(field,s,true),(Object) null);
-                    }
+                    add(Run.of(field,parseTab),(Object) null);
+            }
+        }
+
+        private void add(Run[] run,Object instance)
+        {
+            for (var r: run)
+            {
+                if (r.isTab)
+                {
+                    tabArgsMap.add(r);
+                }
+                else
+                {
+                    argsMap.add(r);
+                }
+                instances.put(r,instance);
             }
         }
 
@@ -227,15 +218,9 @@ public final class CommandHelper
                 ParseCommand parseCommand=method.getAnnotation(ParseCommand.class);
                 ParseTab parseTab=method.getAnnotation(ParseTab.class);
                 if (parseCommand!=null)
-                    for (String s: parseCommand.value())
-                    {
-                        add(new Run(method,s,false),instance);
-                    }
+                    add(Run.of(method,parseCommand),instance);
                 if (parseTab!=null)
-                    for (String s: parseTab.value())
-                    {
-                        add(new Run(method,s,true),instance);
-                    }
+                    add(Run.of(method,parseTab),instance);
             }
             for (var field: c.getDeclaredFields())
             {
@@ -244,15 +229,9 @@ public final class CommandHelper
                 ParseCommand parseCommand=field.getAnnotation(ParseCommand.class);
                 ParseTab parseTab=field.getAnnotation(ParseTab.class);
                 if (parseCommand!=null)
-                    for (String s: parseCommand.value())
-                    {
-                        add(new Run(field,s,false),instance);
-                    }
+                    add(Run.of(field,parseCommand),instance);
                 if (parseTab!=null)
-                    for (String s: parseTab.value())
-                    {
-                        add(new Run(field,s,true),instance);
-                    }
+                    add(Run.of(field,parseTab),instance);
             }
             if (c.getSuperclass()!=Object.class&&c.getSuperclass()!=null)
                 add(instance,c.getSuperclass());
@@ -262,7 +241,7 @@ public final class CommandHelper
         public boolean onCommand(@NotNull CommandSender sender,@NotNull Command command,@NotNull String label,
                                  String[] args)
         {
-            var run=argsMap.get(args);
+            var run=argsMap.get(args,sender);
             if (run==null)
             {
                 sender.sendMessage(ChatColor.RED+"Unknown command");
@@ -334,7 +313,7 @@ public final class CommandHelper
         public List<String> onTabComplete(@NotNull CommandSender sender,@NotNull Command command,
                                           @NotNull String alias,String[] args)
         {
-            var run=tabArgsMap.get(args);
+            var run=tabArgsMap.get(args,sender);
             if (run==null)
             {
                 return Collections.emptyList();
@@ -788,35 +767,42 @@ public final class CommandHelper
             }
         }
 
-        Run get(String[] args)
+        private static boolean check(Run run,CommandSender sender)
         {
-            return get(args,0);
+            return run!=null&&
+                   (run.permission==null||run.permission.isEmpty()||sender.hasPermission(run.permission))&&
+                   (!run.playerOnly||sender instanceof Player);
         }
 
-        Run get(String[] args,int index)
+        Run get(String[] args,CommandSender sender)
+        {
+            return get(args,0,sender);
+        }
+
+        Run get(String[] args,int index,CommandSender sender)
         {
             if (args.length==index)
             {
-                if (res!=null)
+                if (check(res,sender))
                     return res;
-                else
+                else if (check(any,sender))
                     return any;
+                else
+                    return null;
             }
             var map=this.commandMap.get(args[index].toLowerCase(Locale.ENGLISH));
             if (map!=null)
             {
-                var m=map.get(args,index+1);
+                var m=map.get(args,index+1,sender);
                 if (m!=null)
-                {
                     return m;
-                }
             }
-            var m=commandAny().get(args,index+1);
+            var m=commandAny().get(args,index+1,sender);
             if (m!=null)
-            {
                 return m;
-            }
-            return any;
+            if (check(any,sender))
+                return any;
+            return null;
         }
     }
 
@@ -825,22 +811,84 @@ public final class CommandHelper
         private final Method method;
         private final Field field;
         private final String format;
+        private final String permission;
+        private final boolean playerOnly;
         private final boolean isTab;
 
-        public Run(Method method,String formatArgs,boolean isTab)
+        public Run(Method method,String format,String permission,boolean playerOnly,boolean isTab)
         {
             this.method=method;
-            this.format=formatArgs;
-            this.isTab=isTab;
             this.field=null;
+            this.format=format;
+            this.permission=permission;
+            this.playerOnly=playerOnly;
+            this.isTab=isTab;
         }
 
-        public Run(Field field,String formatArgs,boolean isTab)
+        public Run(Field field,String format,String permission,boolean playerOnly,boolean isTab)
         {
-            this.format=formatArgs;
-            this.isTab=isTab;
             this.method=null;
             this.field=field;
+            this.format=format;
+            this.permission=permission;
+            this.playerOnly=playerOnly;
+            this.isTab=isTab;
+        }
+
+        public static Run[] of(Method method,ParseCommand parseCommand)
+        {
+            var format=parseCommand.value();
+            var permission=parseCommand.permission();
+            var playerOnly=parseCommand.onlyPlayer();
+            var isTab=false;
+            var res=new Run[format.length];
+            for (int i=0;i<format.length;i++)
+            {
+                res[i]=new Run(method,format[i],permission,playerOnly,isTab);
+            }
+            return res;
+        }
+
+        public static Run[] of(Method field,ParseTab parseTab)
+        {
+            var format=parseTab.value();
+            var permission=parseTab.permission();
+            var playerOnly=parseTab.onlyPlayer();
+            var isTab=true;
+            var res=new Run[format.length];
+            for (int i=0;i<format.length;i++)
+            {
+                res[i]=new Run(field,format[i],permission,playerOnly,isTab);
+            }
+            return res;
+        }
+
+        public static Run[] of(Field field,ParseTab parseTab)
+        {
+            var format=parseTab.value();
+            var permission=parseTab.permission();
+            var playerOnly=parseTab.onlyPlayer();
+            var isTab=true;
+            var res=new Run[format.length];
+            for (int i=0;i<format.length;i++)
+            {
+                res[i]=new Run(field,format[i],permission,playerOnly,isTab);
+            }
+            return res;
+        }
+
+        public static Run[] of(Field field,ParseCommand parseCommand)
+        {
+            var format=parseCommand.value();
+            var permission=parseCommand.permission();
+            var playerOnly=parseCommand.onlyPlayer();
+            var isTab=false;
+            var res=new Run[format.length];
+            for (int i=0;i<format.length;i++)
+            {
+                res[i]=new Run(field,format[i],permission,playerOnly,isTab);
+            }
+            return res;
         }
 
         public Parameter[] getParameters()
@@ -890,6 +938,16 @@ public final class CommandHelper
         public String parse()
         {
             return format;
+        }
+
+        public String permission()
+        {
+            return permission;
+        }
+
+        public boolean isPlayerOnly()
+        {
+            return playerOnly;
         }
     }
 }
