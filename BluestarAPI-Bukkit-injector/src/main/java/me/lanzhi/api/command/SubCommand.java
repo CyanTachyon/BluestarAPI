@@ -4,9 +4,8 @@ import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.FIELD})
-@Repeatable(ParseCommands.class)
-public @interface ParseCommand
-{
+@Repeatable(SubCommands.class)
+public @interface SubCommand {
     /**
      * 处理的命令的传参
      */

@@ -6,21 +6,19 @@ import org.bukkit.enchantments.Enchantment;
 
 import java.util.Map;
 
-public final class EnchantmentManager
-{
-    private final FieldAccessor acceptRegisterEnchantment;
-    private final Map<NamespacedKey,Enchantment> enchantmentByKey;
-    private final Map<String, Enchantment> enchantmentByName;
-    public EnchantmentManager()
-    {
-        try
-        {
-            acceptRegisterEnchantment=FieldAccessor.getDeclaredField(Enchantment.class,"acceptingNew");
-            FieldAccessor byKey=FieldAccessor.getDeclaredField(Enchantment.class,"byKey");
-            enchantmentByKey=(Map<NamespacedKey,Enchantment>) byKey.get(null);
+public final class EnchantmentManager {
+    private static final FieldAccessor acceptRegisterEnchantment;
+    private static final Map<NamespacedKey, Enchantment> enchantmentByKey;
+    private static final Map<String, Enchantment> enchantmentByName;
 
-            FieldAccessor byName=FieldAccessor.getDeclaredField(Enchantment.class,"byName");
-            enchantmentByName=(Map<String,Enchantment>) byName.get(null);
+    static {
+        try {
+            acceptRegisterEnchantment = FieldAccessor.getDeclaredField(Enchantment.class, "acceptingNew");
+            FieldAccessor byKey = FieldAccessor.getDeclaredField(Enchantment.class, "byKey");
+            enchantmentByKey = (Map<NamespacedKey, Enchantment>) byKey.get(null);
+
+            FieldAccessor byName = FieldAccessor.getDeclaredField(Enchantment.class, "byName");
+            enchantmentByName = (Map<String, Enchantment>) byName.get(null);
         }
         catch (Throwable e)
         {
@@ -28,15 +26,8 @@ public final class EnchantmentManager
         }
     }
 
-    public static void upData()
-    {
-        Bluestar.setEnchantmentManager(new EnchantmentManager());
-    }
-
-    public boolean registerEnchantment(Enchantment enchantment)
-    {
-        if (!openEnchantmentRegistrations())
-        {
+    public static boolean registerEnchantment(Enchantment enchantment) {
+        if (!openEnchantmentRegistrations()) {
             return false;
         }
         Enchantment.registerEnchantment(enchantment);
@@ -44,15 +35,12 @@ public final class EnchantmentManager
         return true;
     }
 
-    public boolean openEnchantmentRegistrations()
-    {
-        if (acceptRegisterEnchantment==null)
-        {
+    public static boolean openEnchantmentRegistrations() {
+        if (acceptRegisterEnchantment == null) {
             return false;
         }
-        try
-        {
-            acceptRegisterEnchantment.set(null,true);
+        try {
+            acceptRegisterEnchantment.set(null, true);
             return true;
         }
         catch (Throwable e)
@@ -61,37 +49,31 @@ public final class EnchantmentManager
         }
     }
 
-    public void closeEnchantmentRegistrations()
-    {
+    public static void closeEnchantmentRegistrations() {
         Enchantment.stopAcceptingRegistrations();
     }
 
-    public Enchantment removeEnchantment(NamespacedKey key)
-    {
-        Enchantment enchantment=enchantmentByKey.remove(key);
+    public static Enchantment removeEnchantment(NamespacedKey key) {
+        Enchantment enchantment = enchantmentByKey.remove(key);
         enchantmentByName.values().remove(enchantment);
         return enchantment;
     }
 
-    public Enchantment removeEnchantment(String name)
-    {
-        Enchantment enchantment=enchantmentByName.remove(name);
+    public static Enchantment removeEnchantment(String name) {
+        Enchantment enchantment = enchantmentByName.remove(name);
         enchantmentByKey.values().remove(enchantment);
         return enchantment;
     }
 
-    public Enchantment getEnchantment(NamespacedKey key)
-    {
+    public static Enchantment getEnchantment(NamespacedKey key) {
         return enchantmentByKey.get(key);
     }
 
-    public Enchantment getEnchantment(String name)
-    {
+    public static Enchantment getEnchantment(String name) {
         return enchantmentByName.get(name);
     }
 
-    public Enchantment[] getEnchantments()
-    {
+    public static Enchantment[] getEnchantments() {
         return Enchantment.values();
     }
 }

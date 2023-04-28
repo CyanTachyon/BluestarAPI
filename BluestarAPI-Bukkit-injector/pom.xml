@@ -5,7 +5,7 @@
     <parent>
         <artifactId>BluestarAPI</artifactId>
         <groupId>me.lanzhi</groupId>
-        <version>3.4.4</version>
+        <version>3.4.5-rc7</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -82,13 +82,6 @@
             <groupId>com.comphenix.protocol</groupId>
             <artifactId>ProtocolLib</artifactId>
             <version>4.8.0</version>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>net.coreprotect</groupId>
-            <artifactId>coreprotect</artifactId>
-            <version>20.3</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>

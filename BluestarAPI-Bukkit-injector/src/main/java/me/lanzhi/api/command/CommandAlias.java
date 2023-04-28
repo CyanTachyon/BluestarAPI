@@ -15,5 +15,5 @@ public @interface CommandAlias
     /**
      * 命令的别名
      */
-    String[] value();
+    CommandAlia[] value();
 }

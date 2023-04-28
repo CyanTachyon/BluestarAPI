@@ -15,7 +15,7 @@ public @interface ParseTab
     /**
      * 处理的命令的传参
      */
-    String[] value();
+    String value();
 
     /**
      * 权限
@@ -23,7 +23,7 @@ public @interface ParseTab
     String permission() default "";
 
     /**
-     * 是否只有玩家才能执行
+     * 特定的命令发送者才能执行
      */
-    boolean onlyPlayer() default false;
+    Class<?>[] only() default {};
 }
