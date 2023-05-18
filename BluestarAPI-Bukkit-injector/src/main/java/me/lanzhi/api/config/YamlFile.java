@@ -1,16 +1,15 @@
 package me.lanzhi.api.config;
 
-import me.lanzhi.api.reflect.ReflectAccessor;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.function.BiConsumer;
 
 /**
@@ -19,8 +18,8 @@ import java.util.function.BiConsumer;
 public class YamlFile extends YamlConfiguration
 {
     private final File file;
-    private long time=0;
-    private boolean exists=true;
+    private long time = 0;
+    private boolean exists = true;
     private final boolean autoSave;
 
     /**
@@ -28,20 +27,59 @@ public class YamlFile extends YamlConfiguration
      *
      * @param file 文件
      */
-    public YamlFile(@NotNull File file)
+    public YamlFile(@NotNull File file,@NotNull Plugin plugin)
     {
-        this(file,false,null,JavaPlugin.getProvidingPlugin(ReflectAccessor.getCallerClass()));
+        this(file,plugin,true);
     }
 
-    private YamlFile(@NotNull File file,boolean autoReload,BiConsumer<YamlFile,Event> biConsumer,Plugin plugin)
+    public YamlFile(@NotNull File file,@NotNull Plugin plugin,boolean autoReload)
     {
-        this(file,autoReload,biConsumer,plugin,true);
+        this(file,plugin,autoReload,(yamlFile,event) ->
+        {
+            if (event==Event.UPDATE)
+            {
+                yamlFile.reload();
+            }
+        });
     }
 
-    private YamlFile(@NotNull File file,boolean autoReload,BiConsumer<YamlFile,Event> biConsumer,Plugin plugin,
-                     boolean autoSave)
+    public YamlFile(@NotNull File file,@NotNull Plugin plugin,boolean autoReload,boolean autoSave)
     {
-        this.file=file;
+        this(file,plugin,autoReload,(yamlFile,event) ->
+        {
+            if (event==Event.UPDATE)
+            {
+                yamlFile.reload();
+            }
+        },autoSave);
+    }
+
+    public YamlFile(@NotNull File file,Plugin plugin,boolean autoReload,String message)
+    {
+        this(file,plugin,autoReload,message,true);
+    }
+
+    public YamlFile(@NotNull File file,Plugin plugin,boolean autoReload,BiConsumer<YamlFile,Event> biConsumer)
+    {
+        this(file,plugin,autoReload,biConsumer,true);
+    }
+
+    public YamlFile(@NotNull File file,Plugin plugin,boolean autoReload,String message,boolean autoSave)
+    {
+        this(file,plugin,autoReload,(yamlFile,event) ->
+        {
+            if (event==Event.UPDATE)
+            {
+                yamlFile.reload();
+                Bukkit.getLogger().info(message);
+            }
+        },autoSave);
+    }
+
+    public YamlFile(@NotNull File file,Plugin plugin,boolean autoReload,BiConsumer<YamlFile,Event> biConsumer,
+                    boolean autoSave)
+    {
+        this.file = file;
         try
         {
             file.getParentFile().mkdirs();
@@ -51,70 +89,51 @@ public class YamlFile extends YamlConfiguration
         {
             System.out.println("§4[BluestarAPI]创建文件时出错:"+file.getName());
         }
-        if (autoReload)
+        if (autoReload && biConsumer!=null)
         {
-            Bukkit.getScheduler().runTaskTimerAsynchronously(plugin,()->
+            Bukkit.getScheduler().runTaskTimerAsynchronously(plugin,() ->
             {
-                if (file.exists()&&!exists)
+                if (file.exists() && !exists)
                 {
-                    exists=file.exists();
-                    time=file.lastModified();
+                    exists = file.exists();
+                    time = file.lastModified();
                     biConsumer.accept(YamlFile.this,Event.CREATE);
                 }
-                else if (!file.exists()&&exists)
+                else if (!file.exists() && exists)
                 {
-                    exists=file.exists();
-                    time=file.lastModified();
+                    exists = file.exists();
+                    time = file.lastModified();
                     biConsumer.accept(YamlFile.this,Event.DELETE);
                 }
-                else if (exists&&file.lastModified()!=time)
+                else if (exists && file.lastModified()!=time)
                 {
-                    time=file.lastModified();
+                    time = file.lastModified();
                     biConsumer.accept(YamlFile.this,Event.UPDATE);
                 }
             },0,20);
         }
-        this.autoSave=autoSave;
-    }
-
-    public YamlFile(@NotNull File file,boolean autoReload)
-    {
-        this(file,autoReload,(yamlFile,event)->
-        {
-            if (event==Event.UPDATE)
-            {
-                yamlFile.reload();
-            }
-        },JavaPlugin.getProvidingPlugin(ReflectAccessor.getCallerClass()));
-    }
-
-    public YamlFile(@NotNull File file,boolean autoReload,boolean autoSave)
-    {
-        this(file,autoReload,(yamlFile,event)->
-        {
-            if (event==Event.UPDATE)
-            {
-                yamlFile.reload();
-            }
-        },JavaPlugin.getProvidingPlugin(ReflectAccessor.getCallerClass()),autoSave);
+        this.autoSave = autoSave;
     }
 
     @NotNull
     public YamlFile reload()
     {
+        if (!file.exists())
+        {
+            try
+            {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            }
+            catch (IOException e)
+            {
+                System.out.println("§4[BluestarAPI]创建文件时出错:"+file.getName());
+                e.printStackTrace();
+            }
+        }
         try
         {
-            file.getParentFile().mkdirs();
-            file.createNewFile();
-        }
-        catch (IOException e)
-        {
-            System.out.println("§4[BluestarAPI]创建文件时出错:"+file.getName());
-            e.printStackTrace();
-        }
-        try
-        {
-            this.load(file);
+            this.loadFromString(new String(Files.readAllBytes(file.toPath())));
         }
         catch (IOException|InvalidConfigurationException e)
         {
@@ -124,71 +143,11 @@ public class YamlFile extends YamlConfiguration
         return this;
     }
 
-    public YamlFile(@NotNull File file,boolean autoReload,String message)
-    {
-        this(file,autoReload,(yamlFile,event)->
-        {
-            if (event==Event.UPDATE)
-            {
-                yamlFile.reload();
-                Bukkit.getLogger().info(message);
-            }
-        },JavaPlugin.getProvidingPlugin(ReflectAccessor.getCallerClass()));
-    }
-
-    public YamlFile(@NotNull File file,boolean autoReload,BiConsumer<YamlFile, Event> biConsumer)
-    {
-        this(file,autoReload,biConsumer,JavaPlugin.getProvidingPlugin(ReflectAccessor.getCallerClass()));
-    }
-
-    @NotNull
-    public static YamlFile loadYamlFile(@NotNull File file)
-    {
-        return new YamlFile(file,false,null,JavaPlugin.getProvidingPlugin(ReflectAccessor.getCallerClass())).reload();
-    }
-
-    @NotNull
-    public static YamlFile loadYamlFile(@NotNull File file,boolean autoReload)
-    {
-        return new YamlFile(file,autoReload,(yamlFile,event)->
-        {
-            if (event==Event.UPDATE)
-            {
-                yamlFile.reload();
-            }
-        },JavaPlugin.getProvidingPlugin(ReflectAccessor.getCallerClass())).reload();
-    }
-
     @Override
     public void set(@NotNull String path,@Nullable Object value)
     {
         super.set(path,value);
-        if (autoSave)
-        {
-            save();
-        }
-    }
-
-    @NotNull
-    public static YamlFile loadYamlFile(@NotNull File file,boolean autoReload,String message)
-    {
-        return new YamlFile(file,autoReload,(yamlFile,event)->
-        {
-            if (event==Event.UPDATE)
-            {
-                yamlFile.reload();
-                Bukkit.getLogger().info(message);
-            }
-        },JavaPlugin.getProvidingPlugin(ReflectAccessor.getCallerClass())).reload();
-    }
-
-    @NotNull
-    public static YamlFile loadYamlFile(@NotNull File file,boolean autoReload,BiConsumer<YamlFile, Event> biConsumer)
-    {
-        return new YamlFile(file,
-                            autoReload,
-                            biConsumer,
-                            JavaPlugin.getProvidingPlugin(ReflectAccessor.getCallerClass())).reload();
+        if (autoSave) save();
     }
 
     @NotNull
@@ -208,6 +167,8 @@ public class YamlFile extends YamlConfiguration
 
     public enum Event
     {
-        UPDATE,DELETE,CREATE
+        UPDATE,
+        DELETE,
+        CREATE
     }
 }
