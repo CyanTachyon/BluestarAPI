@@ -52,7 +52,6 @@ sealed class Channel
     }
 }
 
-//保留通道
 class ReservedChannel(override val id: UShort, override val connection: Connection) : Channel()
 {
     override fun send(data: Any) = throw UnsupportedOperationException("this channel is reserved")
@@ -61,6 +60,7 @@ class ReservedChannel(override val id: UShort, override val connection: Connecti
 
     override fun alive(): Boolean = true
 }
+
 fun Connection.reserve(id: UShort): ReservedChannel
 {
     return ReservedChannel(id, this)
@@ -99,7 +99,7 @@ class TransformChannelHandler(private val otherChannel:Channel):ChannelHandler<B
     }
 }
 
-fun Channel.transform(otherChannel: Channel)
+infix fun Channel.transformTo(otherChannel: Channel)
 {
     channelHandlers.clear()
     channelHandlers.add(TransformChannelHandler(otherChannel)as ChannelHandler<Any?>)

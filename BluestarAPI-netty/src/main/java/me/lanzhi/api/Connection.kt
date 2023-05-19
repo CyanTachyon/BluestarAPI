@@ -2,14 +2,33 @@ package me.lanzhi.api
 
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufAllocator
+import java.util.*
 import kotlin.math.max
 
 typealias NettyChannel = io.netty.channel.Channel
 
-class Connection(private val nettyChnl: NettyChannel) : Channel()
+class Connection private constructor(private val nettyChnl: NettyChannel) : Channel()
 {
-    //频道占用情况
-    private val map= mutableMapOf<UShort, Channel>()
+    companion object
+    {
+        //连接池,防止重复创建连接,同时防止连接不会被回收
+        private val map = WeakHashMap<NettyChannel, Connection>()
+
+        @JvmStatic
+        @Synchronized
+        fun of(nettyChnl: NettyChannel): Connection
+        {
+            val connection = map[nettyChnl]
+            if (connection != null) return connection
+            val newConnection = Connection(nettyChnl)
+            map[nettyChnl] = newConnection
+            return newConnection
+        }
+
+        fun NettyChannel.toConnection(): Connection = of(this)
+    }
+
+    private val map = mutableMapOf<UShort, Channel>()
     val handlers = mutableListOf<ConnectionHandler>()
     override val id: UShort = 0U
     override val connection: Connection = this
@@ -31,17 +50,17 @@ class Connection(private val nettyChnl: NettyChannel) : Channel()
                         3.toUShort() -> send(reserve(4U), msg.readBytes(msg.readableBytes()))
                         4.toUShort() ->
                         {
-                            val time=msg.readLong()
-                            while (pendingPing.isNotEmpty() &&pendingPing.min()<time)
+                            val time = msg.readLong()
+                            while (pendingPing.isNotEmpty() && pendingPing.min() < time)
                             {
                                 pendingPing.remove(pendingPing.min())
-                                ping=System.currentTimeMillis()-time
+                                ping = System.currentTimeMillis() - time
                             }
                         }
+
                         else -> msg.release()
                     }
-                }
-                else
+                } else
                 {
                     val channel = (if (id == 0U.toUShort()) this@Connection else map[id]) ?: return
                     channel.onMessage(msg.readBytes(msg.readableBytes()))
@@ -49,13 +68,13 @@ class Connection(private val nettyChnl: NettyChannel) : Channel()
             }
         })
 
-        for (i in 0 .. 15) map[i.toUShort()] = reserve(i.toUShort())
+        for (i in 0..15) map[i.toUShort()] = reserve(i.toUShort())
     }
 
     fun send(channel: Channel, data: Any)
     {
         if (channel.connection != this) throw IllegalArgumentException("channel not in this connection")
-        val data1 = if (channel !is ReservedChannel)channel.onSend(data) else listOf(data)
+        val data1 = if (channel !is ReservedChannel) channel.onSend(data) else listOf(data)
         data1.forEach { //处理所有netty支持的数据类型
             when (it)
             {
@@ -125,7 +144,7 @@ class Connection(private val nettyChnl: NettyChannel) : Channel()
     fun closeChannel(channel: Channel) = closeChannel(channel, ChannelReason.LOCAL)
 
     fun closeChannel(id: UShort, channelReason: ChannelReason) =
-            closeChannel(get(id) ?: throw IllegalArgumentException("channel not found"), channelReason)
+        closeChannel(get(id) ?: throw IllegalArgumentException("channel not found"), channelReason)
 
     private fun closeChannel(channel: Channel, channelReason: ChannelReason)
     {
@@ -147,11 +166,11 @@ class Connection(private val nettyChnl: NettyChannel) : Channel()
     }
 
     //获取最小可用的频道id
-    fun getMinAvailableChannelId(start:UShort=16U): UShort
+    fun getMinAvailableChannelId(start: UShort = 16U): UShort
     {
         var id = start
-        while (map.containsKey(id)&&map.size<65536)id++
-        if (map.size>=65536)throw IllegalStateException("no available channel id")
+        while (map.containsKey(id) && map.size < 65536) id++
+        if (map.size >= 65536) throw IllegalStateException("no available channel id")
         return id
     }
 
@@ -160,36 +179,26 @@ class Connection(private val nettyChnl: NettyChannel) : Channel()
         return getMinAvailableChannelId((UShort.MIN_VALUE..UShort.MAX_VALUE).random().toUShort())
     }
 
-    fun getChannelCount():Int=map.size
-    fun getChannelIds():Set<UShort> = map.keys
-    fun getChannels():Set<Channel> = map.values.toSet()
-    val allChannelIds:Set<UShort> by lazy { (0U..65535U).map { it.toUShort() }.toSet() }
-    fun getAvailableChannelIds():Set<UShort> = allChannelIds.minus(getChannelIds())
-    fun getAvailableChannelCount():Int = 65536-getChannelCount()
+    fun getChannelCount(): Int = map.size
+    fun getChannelIds(): Set<UShort> = map.keys
+    fun getChannels(): Set<Channel> = map.values.toSet()
+    val allChannelIds: Set<UShort> by lazy { (0U..65535U).map { it.toUShort() }.toSet() }
+    fun getAvailableChannelIds(): Set<UShort> = allChannelIds.minus(getChannelIds())
+    fun getAvailableChannelCount(): Int = 65536 - getChannelCount()
 
     /* ping */
 
     //最后一次ping的结果
-    private var ping:Long=0
-    //发送但未收到pong的ping
-    private val pendingPing= mutableSetOf<Long>()
+    private var ping: Long = 0
 
-    fun ping():Long
+    //发送但未收到pong的ping
+    private val pendingPing = mutableSetOf<Long>()
+
+    fun ping(): Long
     {
         //如果没有未收到pong的ping，则返回最后一次ping的结果
-        if (pendingPing.isEmpty())return ping
+        if (pendingPing.isEmpty()) return ping
         //如果有未收到pong的ping，则返回最早的max(最早未收到pong的ping与当前时间差,最后一次ping的结果)
-        return max(System.currentTimeMillis()- pendingPing.min(), ping)
+        return max(System.currentTimeMillis() - pendingPing.min(), ping)
     }
-}
-
-interface ConnectionHandler
-{
-    fun onChannelCreated(channel: Channel, channelReason: ChannelReason)=Unit
-    fun onChannelClosed(channel: Channel, channelReason: ChannelReason)=Unit
-}
-
-enum class ChannelReason
-{
-    REMOTE, LOCAL
 }
