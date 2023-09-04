@@ -3,9 +3,10 @@ package me.lanzhi.api.command;
 import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.FIELD})
+@Target({ElementType.METHOD,ElementType.FIELD})
 @Repeatable(SubCommands.class)
-public @interface SubCommand {
+public @interface SubCommand
+{
     /**
      * 处理的命令的传参
      */

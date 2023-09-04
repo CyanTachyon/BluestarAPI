@@ -2,10 +2,26 @@ package me.lanzhi.api
 
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufAllocator
+import io.netty.channel.ChannelHandlerContext
+import io.netty.channel.ChannelOption
+import me.lanzhi.api.util.LoggerUtils
 import java.util.*
+import java.util.logging.Logger
+import kotlin.math.log
 import kotlin.math.max
+import kotlin.math.min
 
 typealias NettyChannel = io.netty.channel.Channel
+
+var logger: LoggerUtils = LoggerUtils(Logger.getLogger("BluestarAPI"))
+internal fun <T> runSave(block: () -> T): T? = try
+{
+    block()
+}
+catch (_: Exception)
+{
+    null
+}
 
 class Connection private constructor(private val nettyChnl: NettyChannel) : Channel()
 {
@@ -22,6 +38,8 @@ class Connection private constructor(private val nettyChnl: NettyChannel) : Chan
             if (connection != null) return connection
             val newConnection = Connection(nettyChnl)
             map[nettyChnl] = newConnection
+            //设置ChannelOption.RCVBUF_ALLOCATOR
+
             return newConnection
         }
 
@@ -29,41 +47,34 @@ class Connection private constructor(private val nettyChnl: NettyChannel) : Chan
     }
 
     private val map = mutableMapOf<UShort, Channel>()
-    val handlers = mutableListOf<ConnectionHandler>()
+    val connectionHandlers = mutableListOf<ConnectionHandler>()
     override val id: UShort = 0U
     override val connection: Connection = this
 
     init
     {
-        nettyChnl.pipeline().addLast("receive", object : io.netty.channel.ChannelInboundHandlerAdapter()
+        nettyChnl.pipeline().addLast("receive", object : io.netty.channel.SimpleChannelInboundHandler<ByteBuf>()
         {
-            override fun channelRead(ctx: io.netty.channel.ChannelHandlerContext?, msg: Any?)
+            override fun channelRead0(ctx: ChannelHandlerContext?, msg: ByteBuf)
             {
-                if (msg !is ByteBuf) return
                 val id = msg.readUnsignedShort().toUShort()
+                logger.info("Received packet with id $id")
                 if (id > 0U && id < 16U)
                 {
                     when (id)
                     {
                         1.toUShort() -> createChannel(msg.readUnsignedShort().toUShort(), ChannelReason.REMOTE)
                         2.toUShort() -> closeChannel(msg.readUnsignedShort().toUShort(), ChannelReason.REMOTE)
-                        3.toUShort() -> send(reserve(4U), msg.readBytes(msg.readableBytes()))
-                        4.toUShort() ->
-                        {
-                            val time = msg.readLong()
-                            while (pendingPing.isNotEmpty() && pendingPing.min() < time)
-                            {
-                                pendingPing.remove(pendingPing.min())
-                                ping = System.currentTimeMillis() - time
-                            }
-                        }
-
-                        else -> msg.release()
                     }
-                } else
+                }
+                else
                 {
                     val channel = (if (id == 0U.toUShort()) this@Connection else map[id]) ?: return
-                    channel.onMessage(msg.readBytes(msg.readableBytes()))
+                    val len = msg.readUnsignedShort()
+                    logger.info("received packet with length $len from channel ${channel.id}")
+                    val byteBuf = ByteBufAllocator.DEFAULT.buffer(len)
+                    msg.readBytes(byteBuf)
+                    channel.onMessage(byteBuf)
                 }
             }
         })
@@ -73,38 +84,17 @@ class Connection private constructor(private val nettyChnl: NettyChannel) : Chan
 
     fun send(channel: Channel, data: Any)
     {
-        if (channel.connection != this) throw IllegalArgumentException("channel not in this connection")
-        val data1 = if (channel !is ReservedChannel) channel.onSend(data) else listOf(data)
-        data1.forEach { //处理所有netty支持的数据类型
-            when (it)
-            {
-                is ByteBuf ->
-                {
-                    val buf = ByteBufAllocator.DEFAULT.buffer(it.readableBytes())
-                    buf.writeBytes(it)
-                    send0(buf)
-                }
+        if (channel.connection != this || !channel.alive()) return
+        val data1 = if (channel !is ReservedChannel) channel.onSend(data)
+        else if (data is ByteBuf) data
+        else throw IllegalArgumentException("data must be ByteBuf")
 
-                is ByteArray ->
-                {
-                    val buf = ByteBufAllocator.DEFAULT.buffer(it.size)
-                    buf.writeBytes(it)
-                    send0(buf)
-                }
 
-                is String ->
-                {
-                    val buf = ByteBufAllocator.DEFAULT.buffer(it.length)
-                    buf.writeCharSequence(it, Charsets.UTF_8)
-                    send0(buf)
-                }
-
-                else ->
-                {
-                    throw IllegalArgumentException("unsupported data type")
-                }
-            }
-        }
+        val buf = ByteBufAllocator.DEFAULT.buffer(4 + data1.readableBytes())
+        buf.writeShort(channel.id.toInt())
+        buf.writeShort(data1.readableBytes())
+        buf.writeBytes(data1)
+        send0(buf)
     }
 
     private fun send0(data: ByteBuf)
@@ -137,7 +127,7 @@ class Connection private constructor(private val nettyChnl: NettyChannel) : Chan
             buf.writeShort(id.toInt())
             send0(buf)
         }
-        handlers.forEach { it.onChannelCreated(channel, channelReason) }
+        connectionHandlers.forEach { runSave { it.onChannelCreated(channel, channelReason) } }
         return channel
     }
 
@@ -148,16 +138,16 @@ class Connection private constructor(private val nettyChnl: NettyChannel) : Chan
 
     private fun closeChannel(channel: Channel, channelReason: ChannelReason)
     {
-        if (channel.connection != this) throw IllegalArgumentException("channel not in this connection")
-        if (!channel.alive()) throw IllegalArgumentException("channel already closed")
+        if (channel.connection != this || !channel.alive()) return
         map.remove(channel.id)
         if (channelReason == ChannelReason.LOCAL)
         {
             val buf = ByteBufAllocator.DEFAULT.buffer(4)
             buf.writeShort(2)
             buf.writeShort(channel.id.toInt())
+            send0(buf)
         }
-        handlers.forEach { it.onChannelClosed(channel, channelReason) }
+        connectionHandlers.forEach { runSave { it.onChannelClosed(channel, channelReason) } }
     }
 
     operator fun get(id: UShort): Channel?

@@ -10,7 +10,8 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface CommandName {
+public @interface CommandName
+{
     /**
      * 命令的名称
      */

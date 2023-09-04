@@ -3,6 +3,8 @@ package me.lanzhi.api.reflect;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 import static me.lanzhi.api.reflect.ReflectAccessor.*;
 
@@ -12,6 +14,15 @@ public final class FieldAccessor
     private final boolean staticField;
     private final MethodHandle setter;
     private final MethodHandle getter;
+
+    public static List<FieldAccessor> getDeclaredFields(Object o)
+    {
+        if (o==null)
+        {
+            return new ArrayList<>();
+        }
+        return getDeclaredFields(o.getClass());
+    }
 
     public FieldAccessor(Field field)
     {
@@ -103,6 +114,42 @@ public final class FieldAccessor
         return null;
     }
 
+    public static List<FieldAccessor> getDeclaredFields(Class<?> type)
+    {
+        List<FieldAccessor> fields=new ArrayList<>();
+        for (Class<?> c: getAllSuperClass(type))
+        {
+            fields.addAll(getFields(c));
+        }
+        return fields;
+    }
+
+    public static List<FieldAccessor> getFields(Object o)
+    {
+        if (o==null)
+        {
+            return new ArrayList<>();
+        }
+        return getFields(o.getClass());
+    }
+
+    public static List<FieldAccessor> getFields(Class<?> type)
+    {
+        List<FieldAccessor> fields=new ArrayList<>();
+        List.of(type.getDeclaredFields()).forEach(field ->
+                                                  {
+                                                      fields.add(new FieldAccessor(field));
+                                                  });
+        return fields;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "FieldAccessor{"+field+"}";
+    }
+
+
     public Field getField()
     {
         return field;
@@ -128,11 +175,11 @@ public final class FieldAccessor
         }
         if (this.staticField)
         {
-            return this.setter.invokeExact();
+            return this.getter.invokeExact();
         }
         else
         {
-            return this.setter.invokeExact(instance);
+            return this.getter.invokeExact(instance);
         }
     }
 

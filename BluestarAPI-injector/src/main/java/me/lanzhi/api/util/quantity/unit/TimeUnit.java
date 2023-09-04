@@ -10,16 +10,31 @@ public enum TimeUnit
 
     private final long time;
 
+    /**
+     * 构造方法，用于创建TimeUnit枚举对象
+     *
+     * @param time 时间
+     */
     TimeUnit(long time)
     {
         this.time=time;
     }
 
+    /**
+     * 获取时间
+     *
+     * @return 时间
+     */
     public long time()
     {
         return time;
     }
 
+    /**
+     * 将TimeUnit对象转换为字符串表示形式
+     *
+     * @return 字符串表示形式
+     */
     @Override
     public String toString()
     {

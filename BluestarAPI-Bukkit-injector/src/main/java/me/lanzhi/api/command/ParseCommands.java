@@ -9,7 +9,8 @@ import java.lang.annotation.Target;
  * 标记这个方法处理一个命令
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.FIELD})
-public @interface ParseCommands {
+@Target({ElementType.METHOD,ElementType.FIELD})
+public @interface ParseCommands
+{
     ParseCommand[] value();
 }

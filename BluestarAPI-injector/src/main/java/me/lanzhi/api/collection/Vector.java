@@ -136,8 +136,19 @@ public class Vector<E> implements Collection<E>, RandomAccess, Cloneable, java.i
         {
             return;
         }
-        E[] newData=(E[]) new Object[data.length<<1];
-        System.arraycopy(data,0,newData,0,size());
+        expand(data.length);
+    }
+
+    private void expand(int min)
+    {
+        if (min<data.length)
+        {
+            return;
+        }
+        int x=1;
+        while (min>=(data.length<<x)) ++x;
+        E[] newData=(E[]) new Object[data.length<<x];
+        System.arraycopy(data,0,newData,0,data.length);
         data=newData;
     }
 
@@ -161,16 +172,23 @@ public class Vector<E> implements Collection<E>, RandomAccess, Cloneable, java.i
 
     public E set(int index,E b)
     {
-        E res=get(index);
+        //如果index小于0,抛出异常,如果大于等于size,扩容
+        if (index<0)
+        {
+            throw new IndexOutOfBoundsException("Index: "+index+" is out of bounds: 0~"+(size()-1));
+        }
+        expand(index);
+        E old=data[index];
         data[index]=b;
-        return res;
+        top=Math.max(top,index);
+        return old;
     }
 
     public E get(int pos)
     {
         if (pos<0||pos>=size())
         {
-            throw new IndexOutOfBoundsException("Index: "+pos+" is out of bounds: 0~"+(size()-1));
+            return null;
         }
         return data[pos];
     }
@@ -224,5 +242,55 @@ public class Vector<E> implements Collection<E>, RandomAccess, Cloneable, java.i
         {
             put(b);
         }
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int res=0;
+        for (E b: this)
+        {
+            res+=b.hashCode();
+        }
+        return res;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof Vector)
+        {
+            Vector<E> v=(Vector<E>) obj;
+            if (v.size()!=size())
+            {
+                return false;
+            }
+            for (int i=0;i<size();++i)
+            {
+                if (!Objects.equals(v.get(i),get(i)))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder sb=new StringBuilder();
+        sb.append("[");
+        for (int i=0;i<size();++i)
+        {
+            sb.append(get(i));
+            if (i!=size()-1)
+            {
+                sb.append(",");
+            }
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }

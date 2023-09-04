@@ -6,12 +6,13 @@
 
     <groupId>me.lanzhi</groupId>
     <artifactId>BluestarAPI</artifactId>
-    <version>3.4.6-pre2</version>
+    <version>3.7.0</version>
     <modules>
         <module>BluestarAPI-Bukkit-injector</module>
         <module>BluestarAPI-plugin</module>
         <module>BluestarAPI-injector</module>
-        <module>BluestarAPI-netty</module>
+        <module>BluestarAPI-net</module>
+        <module>BluestarAPI-kotlin</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -43,14 +44,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>2.8.2</version>
-                <configuration>
-                    <altDeploymentRepository>internal.repo::default::file://C:/.mvn-repo
-                    </altDeploymentRepository>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <version>2.3</version>
@@ -63,54 +56,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <id>run</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>cmd</executable>
-                            <arguments>
-                                <argument>/c</argument>
-                                <argument>C:\.mvn-repo\updata.bat</argument>
-                                <argument>${project.name}</argument>
-                                <argument>${project.version}</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <!--<plugin>
-                <groupId>com.github.github</groupId>
-                <artifactId>site-maven-plugin</artifactId>
-                <version>0.12</version>
-                <configuration>
-                    <message>Upload ${project.name}:${project.version} to GitHub</message>
-                    <noJekyll>true</noJekyll>
-                    <outputDirectory>C:/.mvn-repo</outputDirectory>&lt;!&ndash;本地jar地址&ndash;&gt;
-                    <branch>refs/heads/main</branch>&lt;!&ndash;分支的名称&ndash;&gt;
-                    <merge>true</merge>
-                    <includes>
-                        <include>**/*</include>
-                    </includes>
-                    <repositoryName>maven-repository</repositoryName>&lt;!&ndash;对应github上创建的仓库名称 name&ndash;&gt;
-                    <repositoryOwner>nullaqua</repositoryOwner>&lt;!&ndash;github 仓库所有者即登录用户名&ndash;&gt;
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>site</goal>
-                        </goals>
-                        <phase>deploy</phase>
-                    </execution>
-                </executions>
-            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -140,4 +85,11 @@
             </plugin>
         </plugins>
     </build>
+    <distributionManagement>
+        <repository>
+            <id>central</id>
+            <name>BluestarMvnRepo-releases</name>
+            <url>http://bluestarmc.top:8081/artifactory/libs-release</url>
+        </repository>
+    </distributionManagement>
 </project>

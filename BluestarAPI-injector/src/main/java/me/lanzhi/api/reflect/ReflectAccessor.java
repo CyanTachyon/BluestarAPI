@@ -88,10 +88,8 @@ public final class ReflectAccessor
         {
             //去掉反射调用和内部调用
             String className=o.getClassName();
-            if (className.startsWith("java.lang.reflect.")||
-                className.startsWith("sun.reflect.")||
-                className.startsWith(ReflectAccessor.class.getPackageName())||
-                className.startsWith("jdk.internal."))
+            if (className.startsWith("java.lang.reflect.")||className.startsWith("sun.reflect.")||className.startsWith(
+                    ReflectAccessor.class.getPackageName())||className.startsWith("jdk.internal."))
             {
                 continue;
             }
@@ -105,9 +103,9 @@ public final class ReflectAccessor
         return !clazz.getPackage().equals(ReflectAccessor.class.getPackage());
     }
 
-    public static <T> T newInstance(Class<T> type) throws Throwable
+    public static <T> T blankInstance(Class<T> type) throws Throwable
     {
-        return Objects.requireNonNull(ConstructorAccessor.getOrCreateConstructor(type)).invoke();
+        return Objects.requireNonNull(ConstructorAccessor.createBlankConstructor(type)).invoke((Object) null);
     }
 
     public static List<Class<?>> getAllSuperClass(Class<?> type)
@@ -117,7 +115,7 @@ public final class ReflectAccessor
         {
             return clazz;
         }
-        while (type!=null)
+        while (type!=null&&type!=Object.class)
         {
             clazz.add(type);
             type=type.getSuperclass();
@@ -146,7 +144,17 @@ public final class ReflectAccessor
     public static List<FieldAccessor> getFields(Class<?> c)
     {
         List<FieldAccessor> accessors=new ArrayList<>();
-        Arrays.asList(c.getDeclaredFields()).forEach(field->accessors.add(new FieldAccessor(field)));
+        Arrays.asList(c.getDeclaredFields()).forEach(field -> accessors.add(new FieldAccessor(field)));
+        return accessors;
+    }
+
+    public static List<FieldAccessor> getDeclaredFields(Class<?> c)
+    {
+        List<FieldAccessor> accessors=new ArrayList<>();
+        for (var cc: getAllSuperClass(c))
+        {
+            accessors.addAll(getFields(cc));
+        }
         return accessors;
     }
 
@@ -161,47 +169,15 @@ public final class ReflectAccessor
 
     private static List<FieldAccessor> getBothFields(Class<?> a,Class<?> b)
     {
-        return getAllFields(getBothSuperClass(a,b));
-    }
-
-    public static List<FieldAccessor> getAllFields(Object o)
-    {
-        if (o==null)
-        {
-            return new ArrayList<>();
-        }
-        return getAllFields(o.getClass());
-    }
-
-    public static List<FieldAccessor> getAllFields(Class<?> type)
-    {
-        List<FieldAccessor> fields=new ArrayList<>();
-        for (Class<?> c: getAllSuperClass(type))
-        {
-            fields.addAll(getFields(c));
-        }
-        return fields;
-
+        return FieldAccessor.getDeclaredFields(getBothSuperClass(a,b));
     }
 
     public static boolean isSimpleObject(Object o)
     {
         Class<?> type=o.getClass();
-        return type.isPrimitive()||
-               type.equals(String.class)||
-               type.equals(Long.class)||
-               type.equals(Boolean.class)||
-               type.equals(Short.class)||
-               type.equals(Integer.class)||
-               type.equals(Character.class)||
-               type.equals(Float.class)||
-               type.equals(Double.class)||
-               type.equals(Void.class)||
-               type.equals(Byte.class)||
-               type.isEnum()||
-               type==Class.class||
-               type==Method.class||
-               type==Constructor.class;
+        return type.isPrimitive()||type.equals(String.class)||type.equals(Long.class)||type.equals(Boolean.class)||type.equals(
+                Short.class)||type.equals(Integer.class)||type.equals(Character.class)||type.equals(Float.class)||type.equals(
+                Double.class)||type.equals(Void.class)||type.equals(Byte.class)||type.isEnum()||type==Class.class||type==Method.class||type==Constructor.class;
     }
 
     public static <T> T cloneObject(T o) throws Throwable
@@ -236,7 +212,7 @@ public final class ReflectAccessor
         }
         else
         {
-            newInstance=newInstance(o.getClass());
+            newInstance=blankInstance(o.getClass());
         }
         map.put(o,newInstance);
         cloneFields(o,newInstance,map);
@@ -258,34 +234,30 @@ public final class ReflectAccessor
         map.put(o,array);
         for (int i=0;i<len;i++)
         {
-            Array.set(array,i,cloneObject(Array.get(o,i),map));
+            if (Array.get(o,i)==null) continue;
+            var x=cloneObject(Array.get(o,i),map);
+            Array.set(array,i,x);
         }
         return array;
     }
 
-    private static void cloneFields(Object object,Object newObject,Map<Object,Object> map)
+    private static void cloneFields(Object object,Object newObject,Map<Object,Object> map) throws Throwable
     {
         if (object==null||newObject==null)
         {
             return;
         }
-        List<FieldAccessor> fields=getBothFields(object,newObject);
+        List<FieldAccessor> fields=getDeclaredFields(object.getClass());
         for (FieldAccessor f: fields)
         {
             if (!Modifier.isStatic(f.getField().getModifiers()))
             {
-                try
-                {
-                    f.set(newObject,cloneObject(f.get(object),map));
-                }
-                catch (Throwable e)
-                {
-                }
+                f.set(newObject,cloneObject(f.get(object),map));
             }
         }
     }
 
-    public static <T> T objectCopy(T o,T newObject)
+    public static <T> T objectCopy(T o,T newObject) throws Throwable
     {
         Map<Object,Object> map=new HashMap<>();
         map.put(o,newObject);

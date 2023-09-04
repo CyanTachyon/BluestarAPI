@@ -7,6 +7,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.List;
 
 import static me.lanzhi.api.reflect.ReflectAccessor.LOOKUP;
@@ -111,6 +112,15 @@ public final class MethodAccessor
             }
         }
         return list;
+    }
+
+    public static List<MethodAccessor> getDeclaredMethods(Object o)
+    {
+        if (o==null)
+        {
+            return Collections.emptyList();
+        }
+        return getDeclaredMethods(o.getClass());
     }
 
     public Object invoke(Object target,Object... args) throws Throwable

@@ -19,34 +19,46 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-
-public final class PlayerChatInput<T> implements Listener
+/**
+ * 用聊天框让玩家输入
+ *
+ * @param <T> 输入的类型
+ */
+public final class PlayerChatInput<T>
 {
 
-    private static List<UUID> players=new ArrayList<>();
-    private EnumMap<EndReason, PlayerChatInput<?>> chainAfter;
-    private BiFunction<Player, String, Boolean> onInvalidInput;
-    private BiFunction<Player, String, Boolean> isValidInput;
-    private BiFunction<Player, String, T> setValue;
-    private BiConsumer<Player, T> onFinish;
-    private Consumer<Player> onCancel;
-    private Consumer<Player> onExpire;
-    private Runnable onDisconnect;
-    private Player player;
-    private String invalidInputMessgae;
-    private String sendValueMessage;
-    private String onExpireMessage;
-    private String cancel;
-    private Plugin main;
-    private int expiresAfter;
+    private static final List<UUID> players=new ArrayList<>();
+    private final EnumMap<EndReason,PlayerChatInput<?>> chainAfter;
+    private final BiFunction<Player,String,Boolean> onInvalidInput;
+    private final BiFunction<Player,String,Boolean> isValidInput;
+    private final BiFunction<Player,String,T> setValue;
+    private final BiConsumer<Player,T> onFinish;
+    private final Consumer<Player> onCancel;
+    private final Consumer<Player> onExpire;
+    private final Runnable onDisconnect;
+    private final Player player;
+    private final String invalidInputMessgae;
+    private final String sendValueMessage;
+    private final String onExpireMessage;
+    private final String cancel;
+    private final Plugin main;
+    private final int expiresAfter;
+    private final InputListener listener=new InputListener();
     private boolean started;
-    private boolean repeat;
+    private final boolean repeat;
     private T value;
     private BukkitTask task;
     private EndReason end;
 
 
-    public PlayerChatInput(@NotNull Plugin plugin,@NotNull Player player,@Nullable T startOn,@Nullable String invalidInputMessgae,@Nullable String sendValueMessage,@NotNull BiFunction<Player, String, Boolean> isValidInput,@NotNull BiFunction<Player, String, T> setValue,@NotNull BiConsumer<Player, T> onFinish,@NotNull Consumer<Player> onCancel,@NotNull String cancel,@NotNull BiFunction<Player, String, Boolean> onInvalidInput,boolean repeat,@Nullable EnumMap<EndReason, PlayerChatInput<?>> chainAfter,int expiresAfter,@NotNull Consumer<Player> onExpire,@Nullable String whenExpireMessage,@NotNull Runnable onDisconnect)
+    private PlayerChatInput(@NotNull Plugin plugin,@NotNull Player player,@Nullable T startOn,
+                            @Nullable String invalidInputMessgae,@Nullable String sendValueMessage,
+                            @NotNull BiFunction<Player,String,Boolean> isValidInput,@NotNull BiFunction<Player,String
+            ,T> setValue,@NotNull BiConsumer<Player,T> onFinish,@NotNull Consumer<Player> onCancel,
+                            @NotNull String cancel,@NotNull BiFunction<Player,String,Boolean> onInvalidInput,
+                            boolean repeat,@Nullable EnumMap<EndReason,PlayerChatInput<?>> chainAfter,
+                            int expiresAfter,@NotNull Consumer<Player> onExpire,@Nullable String whenExpireMessage,
+                            @NotNull Runnable onDisconnect)
     {
         Objects.requireNonNull(plugin,"main can't be null");
         Objects.requireNonNull(player,"player can't be null");
@@ -81,6 +93,12 @@ public final class PlayerChatInput<T> implements Listener
         this.start();
     }
 
+    /**
+     * 获取一个新的Builder
+     *
+     * @param <U> 输入的类型
+     * @return Builder
+     */
     public static <U> Builder<U> builder()
     {
         return new Builder<>();
@@ -96,35 +114,17 @@ public final class PlayerChatInput<T> implements Listener
         players.remove(player);
     }
 
-
+    /**
+     * 一个玩家是否正在被一个PlayerChatInput监听(如果是,则不能再次监听)
+     *
+     * @param player 玩家
+     * @return 是否正在被监听
+     */
     public static boolean isInputing(UUID player)
     {
         return players.contains(player);
     }
 
-    @EventHandler
-    public void onPlayerChatEvent(AsyncPlayerChatEvent e)
-    {
-        if (!player.getUniqueId().equals(e.getPlayer().getUniqueId()))
-        {
-            return;
-        }
-        if (!isStarted())
-        {
-            return;
-        }
-        e.setCancelled(true);
-        Bukkit.getScheduler().runTask(main,()->runEventOnMainThread(e.getMessage()));
-    }
-
-    @EventHandler
-    public void onPluginDisable(PluginDisableEvent event)
-    {
-        if (event.getPlugin()==this.main)
-        {
-            end(EndReason.CUSTOM);
-        }
-    }
 
     private void runEventOnMainThread(String message)
     {
@@ -161,20 +161,6 @@ public final class PlayerChatInput<T> implements Listener
         }
     }
 
-    @EventHandler
-    public void onPlayerDisconnect(PlayerQuitEvent e)
-    {
-        if (e.getPlayer().getUniqueId().equals(player.getUniqueId()))
-        {
-            if (!isStarted())
-            {
-                return;
-            }
-            onDisconnect.run();
-            end(EndReason.PLAYER_DISCONECTS);
-        }
-    }
-
     @Nullable
     public T getValue()
     {
@@ -190,12 +176,12 @@ public final class PlayerChatInput<T> implements Listener
         addPlayer(player.getUniqueId());
 
 
-        main.getServer().getPluginManager().registerEvents(this,this.main);
+        main.getServer().getPluginManager().registerEvents(listener,this.main);
 
 
         if (expiresAfter>0)
         {
-            task=Bukkit.getScheduler().runTaskLater(main,()->
+            task=Bukkit.getScheduler().runTaskLater(main,() ->
             {
                 if (!isStarted())
                 {
@@ -217,8 +203,7 @@ public final class PlayerChatInput<T> implements Listener
         end=null;
     }
 
-
-    public void unregister()
+    private void unregister()
     {
 
         if (task!=null)
@@ -228,10 +213,14 @@ public final class PlayerChatInput<T> implements Listener
 
         removePlayer(player.getUniqueId());
 
-        HandlerList.unregisterAll(this);
+        HandlerList.unregisterAll(listener);
     }
 
-
+    /**
+     * 关闭这个监听
+     *
+     * @param reason 关闭的原因
+     */
     public void end(EndReason reason)
     {
         started=false;
@@ -239,7 +228,6 @@ public final class PlayerChatInput<T> implements Listener
         unregister();
 
         if (chainAfter!=null)
-
         {
             if (chainAfter.get(end)!=null)
 
@@ -249,27 +237,33 @@ public final class PlayerChatInput<T> implements Listener
         }
     }
 
-
     public boolean isStarted()
     {
         return started;
     }
 
 
-    public static enum EndReason
+    /**
+     * 关闭的原因
+     */
+    public enum EndReason
     {
-        PLAYER_CANCELLS,FINISH,RUN_OUT_OF_TIME,PLAYER_DISCONECTS,INVALID_INPUT,CUSTOM;
+        PLAYER_CANCELLS,
+        FINISH,
+        RUN_OUT_OF_TIME,
+        PLAYER_DISCONECTS,
+        INVALID_INPUT,
+        CUSTOM
     }
-
 
     public static class Builder<U>
     {
 
-        private EnumMap<EndReason, PlayerChatInput<?>> chainAfter;
-        private BiFunction<Player, String, Boolean> onInvalidInput;
-        private BiFunction<Player, String, Boolean> isValidInput;
-        private BiFunction<Player, String, U> setValue;
-        private BiConsumer<Player, U> onFinish;
+        private EnumMap<EndReason,PlayerChatInput<?>> chainAfter;
+        private BiFunction<Player,String,Boolean> onInvalidInput;
+        private BiFunction<Player,String,Boolean> isValidInput;
+        private BiFunction<Player,String,U> setValue;
+        private BiConsumer<Player,U> onFinish;
         private Consumer<Player> onCancel;
         private Consumer<Player> onExpire;
         private Runnable onDisconnect;
@@ -286,26 +280,26 @@ public final class PlayerChatInput<T> implements Listener
 
         private Plugin plugin;
 
-        public Builder()
+        private Builder()
         {
             invalidInputMessage="That is not a valid input";
             sendValueMessage="Send in the chat the value";
             whenExpire="You ran out of time to answer";
             cancel="cancel";
 
-            onInvalidInput=(p,mes)->true;
-            isValidInput=(p,mes)->true;
-            setValue=(p,mes)->value;
-            onFinish=(p,val)->
+            onInvalidInput=(p,mes) -> true;
+            isValidInput=(p,mes) -> true;
+            setValue=(p,mes) -> value;
+            onFinish=(p,val) ->
             {
             };
-            onCancel=(p)->
+            onCancel=(p) ->
             {
             };
-            onExpire=(p)->
+            onExpire=(p) ->
             {
             };
-            onDisconnect=()->
+            onDisconnect=() ->
             {
             };
 
@@ -313,34 +307,57 @@ public final class PlayerChatInput<T> implements Listener
             repeat=true;
         }
 
+        /**
+         * 设置当前调用插件
+         * @param plugin 当前调用插件
+         * @return 这个构造器
+         */
         public Builder<U> plugin(@NotNull Plugin plugin)
         {
             this.plugin=plugin;
             return this;
         }
 
-        public Builder<U> onInvalidInput(@NotNull BiFunction<Player, String, Boolean> onInvalidInput)
+        /**
+         * 当输入无效时执行
+         *
+         * @param onInvalidInput 当输入无效时执行,第一个参数是玩家,第二个参数是玩家输入的信息,返回值是是否继续等待输入
+         * @return 这个构造器
+         */
+        public Builder<U> onInvalidInput(@NotNull BiFunction<Player,String,Boolean> onInvalidInput)
         {
             this.onInvalidInput=onInvalidInput;
             return this;
         }
 
 
-        public Builder<U> isValidInput(@NotNull BiFunction<Player, String, Boolean> isValidInput)
+        /**
+         * 当输入有效时执行
+         *
+         * @param isValidInput 当输入有效时执行,第一个参数是玩家,第二个参数是玩家输入的信息,返回值是是否继续等待输入
+         * @return 这个构造器
+         */
+        public Builder<U> isValidInput(@NotNull BiFunction<Player,String,Boolean> isValidInput)
         {
             this.isValidInput=isValidInput;
             return this;
         }
 
 
-        public Builder<U> setValue(@NotNull BiFunction<Player, String, U> setValue)
+        /**
+         * 将有效的输入转换到对应的值
+         *
+         * @param setValue
+         * @return
+         */
+        public Builder<U> setValue(@NotNull BiFunction<Player,String,U> setValue)
         {
             this.setValue=setValue;
             return this;
         }
 
 
-        public Builder<U> onFinish(@NotNull BiConsumer<Player, U> onFinish)
+        public Builder<U> onFinish(@NotNull BiConsumer<Player,U> onFinish)
         {
             this.onFinish=onFinish;
             return this;
@@ -460,6 +477,47 @@ public final class PlayerChatInput<T> implements Listener
                                          onExpire,
                                          whenExpire,
                                          onDisconnect);
+        }
+    }
+
+    private class InputListener implements Listener
+    {
+        @EventHandler
+        public void onPlayerDisconnect(PlayerQuitEvent e)
+        {
+            if (e.getPlayer().getUniqueId().equals(player.getUniqueId()))
+            {
+                if (!isStarted())
+                {
+                    return;
+                }
+                onDisconnect.run();
+                end(EndReason.PLAYER_DISCONECTS);
+            }
+        }
+
+        @EventHandler
+        public void onPlayerChatEvent(AsyncPlayerChatEvent e)
+        {
+            if (!player.getUniqueId().equals(e.getPlayer().getUniqueId()))
+            {
+                return;
+            }
+            if (!isStarted())
+            {
+                return;
+            }
+            e.setCancelled(true);
+            Bukkit.getScheduler().runTask(main,() -> runEventOnMainThread(e.getMessage()));
+        }
+
+        @EventHandler
+        public void onPluginDisable(PluginDisableEvent event)
+        {
+            if (event.getPlugin()==PlayerChatInput.this.main)
+            {
+                end(EndReason.CUSTOM);
+            }
         }
     }
 

@@ -11,8 +11,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.function.Consumer;
 
+/**
+ * Utility class for handling errors.
+ */
 public class ErrorUtils
 {
+    /**
+     * A consumer that throws the given throwable.
+     */
     private static final Consumer<Throwable> thrower;
 
     static
@@ -39,8 +45,17 @@ public class ErrorUtils
         };
     }
 
+    /**
+     * A map that stores the class and its corresponding ConsumerWithThrow.
+     */
     private final Map<Class,ConsumerWithThrow> map=new HashMap<>();
 
+    /**
+     * Throws the given throwable.
+     *
+     * @param t The throwable to be thrown.
+     * @throws Throwable The throwable to be thrown.
+     */
     private static void forceThrow0(Throwable t) throws Throwable
     {
         throw t;

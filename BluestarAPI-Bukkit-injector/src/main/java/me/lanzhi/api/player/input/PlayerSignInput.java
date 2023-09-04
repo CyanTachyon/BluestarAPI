@@ -28,6 +28,10 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * 用告示牌让玩家输入(弹出告示牌输入框)
+ * 需要ProtocolLib
+ */
 public final class PlayerSignInput
 {
     private final BiConsumer<Player, List<String>> action;
@@ -37,7 +41,8 @@ public final class PlayerSignInput
     private PacketAdapter packetListener;
     private LeaveListener listener;
     private Sign sign;
-    public PlayerSignInput(BiConsumer<Player, List<String>> action,List<String> withLines,UUID uuid,Plugin plugin)
+
+    private PlayerSignInput(BiConsumer<Player,List<String>> action,List<String> withLines,UUID uuid,Plugin plugin)
     {
         this.lines=withLines;
         this.plugin=plugin;
@@ -47,7 +52,56 @@ public final class PlayerSignInput
         this.open();
     }
 
-    public void open()
+    /**
+     * 获取一个新的Builder
+     *
+     * @return
+     */
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
+    private void registerSignUpdateListener()
+    {
+        final ProtocolManager manager=ProtocolLibrary.getProtocolManager();
+        this.packetListener=new PacketAdapter(plugin,PacketType.Play.Client.UPDATE_SIGN)
+        {
+            @Override
+            public void onPacketReceiving(PacketEvent event)
+            {
+                if (event.getPlayer().getUniqueId().equals(PlayerSignInput.this.uuid))
+                {
+                    List<String> lines=Stream.of(0,1,2,3).map(line->getLine(event,line)).collect(Collectors.toList());
+
+                    Bukkit.getScheduler().runTask(plugin,()->
+                    {
+                        manager.removePacketListener(this);
+
+                        HandlerList.unregisterAll(PlayerSignInput.this.listener);
+
+                        PlayerSignInput.this.sign.getBlock().setType(Material.AIR);
+
+                        PlayerSignInput.this.action.accept(event.getPlayer(),lines);
+                    });
+                }
+            }
+        };
+        manager.addPacketListener(this.packetListener);
+    }
+
+    private String getLine(PacketEvent event,int line)
+    {
+        return Bukkit.getVersion().contains("1.8")?((WrappedChatComponent[]) event.getPacket()
+                                                                                  .getChatComponentArrays()
+                                                                                  .read(0))[line].getJson()
+                                                                                                 .replaceAll("\"",
+                                                                                                             ""):((String[]) event.getPacket()
+                                                                                                                                  .getStringArrays()
+                                                                                                                                  .read(0))[line];
+    }
+
+    private void open()
     {
         Plugin plugin=Bukkit.getPluginManager().getPlugin("ProtocolLib");
         if (plugin==null||!plugin.isEnabled())
@@ -126,50 +180,9 @@ public final class PlayerSignInput
         registerSignUpdateListener();
     }
 
-    private void registerSignUpdateListener()
-    {
-        final ProtocolManager manager=ProtocolLibrary.getProtocolManager();
-        this.packetListener=new PacketAdapter(plugin,PacketType.Play.Client.UPDATE_SIGN)
-        {
-            @Override
-            public void onPacketReceiving(PacketEvent event)
-            {
-                if (event.getPlayer().getUniqueId().equals(PlayerSignInput.this.uuid))
-                {
-                    List<String> lines=Stream.of(0,1,2,3).map(line->getLine(event,line)).collect(Collectors.toList());
-
-                    Bukkit.getScheduler().runTask(plugin,()->
-                    {
-                        manager.removePacketListener(this);
-
-                        HandlerList.unregisterAll(PlayerSignInput.this.listener);
-
-                        PlayerSignInput.this.sign.getBlock().setType(Material.AIR);
-
-                        PlayerSignInput.this.action.accept(event.getPlayer(),lines);
-                    });
-                }
-            }
-        };
-        manager.addPacketListener(this.packetListener);
-    }
-
-    private String getLine(PacketEvent event,int line)
-    {
-        return Bukkit.getVersion().contains("1.8")?((WrappedChatComponent[]) event.getPacket()
-                                                                                  .getChatComponentArrays()
-                                                                                  .read(0))[line].getJson()
-                                                                                                 .replaceAll("\"",
-                                                                                                             ""):((String[]) event.getPacket()
-                                                                                                                                  .getStringArrays()
-                                                                                                                                  .read(0))[line];
-    }
-
-    public static Builder builder()
-    {
-        return new Builder();
-    }
-
+    /**
+     * 用于构建PlayerSignInput
+     */
     public static final class Builder
     {
         private BiConsumer<Player, List<String>> action=(player,list)->
@@ -182,6 +195,11 @@ public final class PlayerSignInput
         {
         }
 
+        /**
+         * 设置输入完成后的回调
+         * @param listener 回调
+         * @return Builder
+         */
         public Builder action(BiConsumer<Player, List<String>> listener)
         {
             if (listener!=null)
@@ -191,6 +209,11 @@ public final class PlayerSignInput
             return this;
         }
 
+        /**
+         * 设置初始输入框的内容
+         * @param list 内容
+         * @return Builder
+         */
         public Builder lines(List<String> list)
         {
             if (list!=null)
@@ -200,12 +223,22 @@ public final class PlayerSignInput
             return this;
         }
 
+        /**
+         * 设置当前调用的插件
+         * @param plugin 插件
+         * @return Builder
+         */
         public Builder plugin(Plugin plugin)
         {
             this.plugin=plugin;
             return this;
         }
 
+        /**
+         * 构建PlayerSignInput,即向一个玩家打开一个输入框
+         * @param player 玩家
+         * @return PlayerSignInput
+         */
         public PlayerSignInput open(@NotNull Player player)
         {
             return new PlayerSignInput(action,lines,player.getUniqueId(),plugin);

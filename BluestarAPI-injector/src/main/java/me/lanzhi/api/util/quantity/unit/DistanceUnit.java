@@ -12,16 +12,31 @@ public enum DistanceUnit
 
     private final double distance;
 
+    /**
+     * 构造方法，用于创建DistanceUnit枚举对象
+     *
+     * @param distance 距离
+     */
     DistanceUnit(double distance)
     {
         this.distance=distance;
     }
 
+    /**
+     * 获取距离
+     *
+     * @return 距离
+     */
     public double distance()
     {
         return distance;
     }
 
+    /**
+     * 将DistanceUnit对象转换为字符串表示形式
+     *
+     * @return 字符串表示形式
+     */
     @Override
     public String toString()
     {
