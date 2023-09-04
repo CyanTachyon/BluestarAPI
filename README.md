@@ -50,7 +50,7 @@ public class TEST
 
 class A
 {
-    int a, b;
+    final int a, b;
 
     public A()
     {
