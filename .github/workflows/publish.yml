@@ -26,7 +26,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Build with Maven
-        run: mvn clean build
+        run: mvn clean package
 
       # Gets the version number from the pom.xml file
       - name: Get version
