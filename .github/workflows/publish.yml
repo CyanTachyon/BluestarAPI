@@ -51,10 +51,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        matrix:
-          jar: ${{ fromJson(steps.find_jar.outputs.jars) }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ matrix.jar }}
-          asset_name: ${{ matrix.jar }}
+          asset_path: ${{ fromJson(steps.find_jar.outputs.jars) }}
+          asset_name: ${{ fromJson(steps.find_jar.outputs.jars) }}
           asset_content_type: application/java-archive
