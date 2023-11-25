@@ -30,9 +30,9 @@ jobs:
       - name: Get version
         id: get_version
         run: echo "::set-output name=version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
-      - name: Is pre-release # 如果满足X.X.X就是正式版，否则是预发布版
+      - name: Is pre-release # 如果满足X.X.X就是false，否则是true
         id: is_pre_release
-        run: echo "::set-output name=is_pre_release::$(echo ${{ steps.get_version.outputs.version }} | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$')"
+        run: echo "::set-output name=is_pre_release::$(if [[ ${{ steps.get_version.outputs.version }} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then echo false; else echo true; fi)"
       # Creates a release using the version number
       - name: Create Release
         id: create_release
