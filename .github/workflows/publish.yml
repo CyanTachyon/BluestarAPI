@@ -33,17 +33,6 @@ jobs:
       - name: Is pre-release # 如果满足X.X.X就是false，否则是true
         id: is_pre_release
         run: echo "::set-output name=is_pre_release::$(if [[ ${{ steps.get_version.outputs.version }} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then echo false; else echo true; fi)"
-      # Creates a release using the version number
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        with:
-          tag_name: ${{ steps.get_version.outputs.version }}
-          release_name: Release ${{ steps.get_version.outputs.version }}
-          draft: false
-          prerelease: ${{ steps.is_pre_release.outputs.is_pre_release }}
       - name: find all jar(s) # 遍历每个模块中的target文件夹 找到 "模块名-当前版本.jar" 上传到release
         id: find_all_jar
         run: |
