@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>BluestarAPI</artifactId>
-        <groupId>me.lanzhi</groupId>
-        <version>3.7.0</version>
+        <groupId>me.nullaqua</groupId>
+        <version>4.0.0-pre1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -37,11 +37,11 @@
                 <configuration>
                     <relocations>
                         <relocation>
-                            <pattern>me.lanzhi.api.internal</pattern>
+                            <pattern>me.lanzhi.nullaqua.internal</pattern>
                             <shadedPattern>me.lanzhi.bluestarapi.internal</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>me.lanzhi.api</pattern>
+                            <pattern>me.lanzhi.nullaqua</pattern>
                             <shadedPattern>me.lanzhi.bluestarapi</shadedPattern>
                         </relocation>
                     </relocations>
@@ -58,9 +58,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>me.lanzhi</groupId>
+            <groupId>me.nullaqua</groupId>
             <artifactId>BluestarAPI-Bukkit-injector</artifactId>
-            <version>${project.version}</version>
+            <version>4.0.0-pre1</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>

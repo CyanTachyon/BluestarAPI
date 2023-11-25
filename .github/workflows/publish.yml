@@ -1,0 +1,62 @@
+# This is a workflow to build and deploy a multi-module maven project to github releases
+name: Maven Build and Deploy
+
+# Trigger the workflow on push or pull request
+on: [push, pull_request]
+
+jobs:
+  # This job runs on ubuntu-latest and uses JDK 17
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java-version: [17]
+    steps:
+      # Checkout the code from the repository
+      - uses: actions/checkout@v2
+      # Set up JDK 17
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v2
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: 'adopt'
+      # Run mvn clean deploy to build the project and install the artifacts to the local repository
+      - name: Build with Maven
+        run: mvn clean package
+      # Loop through each subdirectory under the project root and find the jar files
+      - name: Find jar files
+        id: find_jar
+        run: |
+          echo "::set-output name=jars::$(find . -type f -name "*.jar" -printf "%p\n" | sed 's/^\.\///' | paste -sd "," -)"
+      # Get the version number from the pom.xml file
+      - name: Get version
+        id: get_version
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "::set-output name=version::$VERSION"
+      # Create a release with the version number
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          release_name: Release ${{ steps.get_version.outputs.version }}
+          draft: false
+          prerelease: false
+      # Upload each jar file as an asset to the release
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ matrix.jar }}
+          asset_name: ${{ matrix.jar }}
+          asset_content_type: application/java-archive
+        # Use a matrix strategy to run this step for each jar file
+        strategy:
+          matrix:
+            jar: ${{ fromJson(steps.find_jar.outputs.jars) }}

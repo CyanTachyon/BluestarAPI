@@ -2,9 +2,9 @@
 
 package me.nullaqua.api
 
-import me.lanzhi.api.reflect.FieldAccessor
-import me.lanzhi.api.reflect.MethodAccessor
-import me.lanzhi.api.reflect.ReflectAccessor
+import me.nullaqua.api.reflect.FieldAccessor
+import me.nullaqua.api.reflect.MethodAccessor
+import me.nullaqua.api.reflect.ReflectAccessor
 
 @Throws(Throwable::class)
 fun <T> T?.getField(fieldName: String): Any?

@@ -35,7 +35,7 @@
 空白实例创建示例:
 
 ```java
-import me.lanzhi.api.reflect.ReflectAccessor;
+import reflect.me.nullaqua.api.ReflectAccessor;
 
 public class TEST
 {
