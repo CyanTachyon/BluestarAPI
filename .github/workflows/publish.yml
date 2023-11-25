@@ -37,7 +37,7 @@ jobs:
         id: find_all_jar
         run: |
           mkdir tmp
-          for module in $(ls -d); do
+          for module in $(ls -d *); do
             echo "${module}/target/${module}-${{ steps.get_version.outputs.version }}.jar"
             if [ test -f "${module}/target/${module}-${{ steps.get_version.outputs.version }}.jar" ]; then
               echo "find jar: ${module}-${{ steps.get_version.outputs.version }}.jar"
