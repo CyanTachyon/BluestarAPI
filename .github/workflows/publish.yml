@@ -30,9 +30,9 @@ jobs:
 
           # Check if the version is in the X.X.X format
           if [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            release_type="major"
+            release_type="false"
           else
-            release_type="prerelease"
+            release_type="true"
           fi
 
           # Create release
