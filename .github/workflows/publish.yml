@@ -22,6 +22,24 @@ jobs:
       - name: Build with Maven
         run: mvn clean package --quiet
 
+      - name: Create Release
+        id: create_release
+        run: |
+          # Extract version from Maven output
+          version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+
+          # Check if the version is in the X.X.X format
+          if [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            release_type="major"
+          else
+            release_type="prerelease"
+          fi
+
+          # Create release
+          gh release create $version target/* --title $version --notes "Release $version" --prerelease=$release_type
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
