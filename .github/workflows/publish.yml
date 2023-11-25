@@ -48,6 +48,6 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "${{ steps.get_version.outputs.version }}"
           prerelease: ${{ steps.is_pre_release.outputs.is_pre_release }}
-          title: "Release ${{ steps.get_version.outputs.version }}"
+          title: "${{ steps.get_version.outputs.version }}"
           files: |
-            staging/*.jar
+            tmp/*.jar
