@@ -100,4 +100,14 @@ public class DataSize
     {
         return size*1.0/unit.size();
     }
+
+    public DataSize add(DataSize other)
+    {
+        return new DataSize(size+other.size);
+    }
+
+    public DataSize sub(DataSize other)
+    {
+        return new DataSize(size-other.size);
+    }
 }

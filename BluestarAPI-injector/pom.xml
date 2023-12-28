@@ -5,7 +5,7 @@
     <parent>
         <artifactId>BluestarAPI</artifactId>
         <groupId>me.nullaqua</groupId>
-        <version>4.0.0-pre1</version>
+        <version>4.0.0-pre2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -36,10 +36,6 @@
                 </executions>
                 <configuration>
                     <relocations>
-                        <relocation>
-                            <pattern>me.lucko.jarrelocator</pattern>
-                            <shadedPattern>me.nullaqua.api.jarrelocator</shadedPattern>
-                        </relocation>
                     </relocations>
                 </configuration>
             </plugin>
@@ -52,13 +48,6 @@
             <artifactId>annotations</artifactId>
             <version>23.1.0</version>
             <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>me.lucko</groupId>
-            <artifactId>jar-relocator</artifactId>
-            <version>1.7</version>
-            <scope>compile</scope>
             <optional>true</optional>
         </dependency>
     </dependencies>

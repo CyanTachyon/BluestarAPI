@@ -1,4 +1,4 @@
-package me.nullaqua.api
+package me.nullaqua.api.net
 
 import me.nullaqua.api.collection.ByteVector
 import java.io.DataInputStream
@@ -12,7 +12,7 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
     private val channels = HashMap<UShort, Channel>()
     private val map = HashMap<UShort, UShort>()
     private val wait = HashMap<UShort, Channel>()
-    private val stream =PacketStream.create(`in`, `out`)
+    private val stream = PacketStream.create(`in`, `out`)
     private var isClosed = false
 
     init
@@ -67,7 +67,7 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
         stream.close()
     }
 
-    fun createChannel(): Channel= createChannel(getNewChannelID())
+    fun createChannel(): Channel = createChannel(getNewChannelID())
 
     private fun createChannel(id: UShort): Channel
     {
@@ -125,7 +125,7 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
         companion object
         {
             @JvmStatic
-            val coder = object : PacketCoder<CreateChannel>(1, CreateChannel::class.java)
+            val coder = object : PacketCoder<CreateChannel>(1U, CreateChannel::class.java)
             {
                 override fun encode(packet: CreateChannel, out: DataOutputStream) = out.writeShort(packet.id.toInt())
 
@@ -142,7 +142,7 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
         companion object
         {
             @JvmStatic
-            val coder = object : PacketCoder<MapChannel>(2, MapChannel::class.java)
+            val coder = object : PacketCoder<MapChannel>(2U, MapChannel::class.java)
             {
                 override fun encode(packet: MapChannel, out: DataOutputStream)
                 {
@@ -150,7 +150,7 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
                     out.writeShort(packet.id1.toInt())
                 }
 
-                override fun decode(input: DataInputStream): MapChannel=
+                override fun decode(input: DataInputStream): MapChannel =
                     MapChannel(input.readUnsignedShort().toUShort(), input.readUnsignedShort().toUShort())
             }
         }
@@ -161,11 +161,11 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
         companion object
         {
             @JvmStatic
-            val coder = object : PacketCoder<CloseChannel>(3, CloseChannel::class.java)
+            val coder = object : PacketCoder<CloseChannel>(3U, CloseChannel::class.java)
             {
                 override fun encode(packet: CloseChannel, out: DataOutputStream) = out.writeShort(packet.id.toInt())
 
-                override fun decode(input: DataInputStream): CloseChannel=
+                override fun decode(input: DataInputStream): CloseChannel =
                     CloseChannel(input.readUnsignedShort().toUShort())
             }
         }
@@ -180,7 +180,7 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
         companion object
         {
             @JvmStatic
-            val coder = object : PacketCoder<DataPacket>(0, DataPacket::class.java)
+            val coder = object : PacketCoder<DataPacket>(0U, DataPacket::class.java)
             {
                 override fun encode(packet: DataPacket, out: DataOutputStream)
                 {
@@ -189,7 +189,7 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
                     out.write(packet.data)
                 }
 
-                override fun decode(input: DataInputStream): DataPacket=
+                override fun decode(input: DataInputStream): DataPacket =
                     DataPacket(input.readUnsignedShort().toUShort(),
                                ByteArray(input.readInt()).apply { input.readFully(this) })
             }

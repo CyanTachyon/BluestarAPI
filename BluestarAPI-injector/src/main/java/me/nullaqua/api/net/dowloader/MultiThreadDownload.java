@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
 import java.util.Map;
 
 public class MultiThreadDownload
@@ -44,9 +45,9 @@ public class MultiThreadDownload
         {
             long blockSize=(length-startIndex)/(threadCount-threadId);
             long endIndex=startIndex+blockSize-1;
-            var thread=downloader.new DownloadThread(threadId,startIndex,endIndex,timeOut);
+            var thread=downloader.new DownloadThread(threadId,startIndex,endIndex,timeOut,blockSize);
             startIndex=endIndex+1;
-            downloader.downloader.addThread(thread,threadId,blockSize);
+            downloader.downloader.addThread(thread,threadId);
             thread.start();
         }
         return downloader.downloader;
@@ -71,10 +72,6 @@ public class MultiThreadDownload
     public static class MultiThreadDownloader extends Downloader
     {
         private final DownloadThread[] threads;
-        private final FastLinkedList<Map.Entry<Long,Long>>[] threadSpeedData;
-        private final long[] threadSpeed;
-        private final long[] threadCurrentSize;
-        private final long[] threadTotalSize;
         private final int totalThread;
         private int currentThread;
 
@@ -83,15 +80,7 @@ public class MultiThreadDownload
             super(totalSize,fileName);
             this.totalThread=totalThread;
             this.threads=new DownloadThread[totalThread];
-            this.threadCurrentSize=new long[totalThread];
-            this.threadTotalSize=new long[totalThread];
-            this.threadSpeedData=new FastLinkedList[totalThread];
-            for (int i=0;i<totalThread;i++)
-            {
-                threadSpeedData[i]=new FastLinkedList<>();
-            }
             currentThread=totalThread;
-            threadSpeed=new long[totalThread];
         }
 
         public int totalThread()
@@ -104,14 +93,16 @@ public class MultiThreadDownload
             return currentThread;
         }
 
+        @Deprecated
         public DataSize totalSize(int id)
         {
-            return new DataSize(threadTotalSize[id],DataSizeUnit.B);
+            return threads[id].totalSize();
         }
 
+        @Deprecated
         public DataSize currentSize(int id)
         {
-            return new DataSize(threadCurrentSize[id],DataSizeUnit.B);
+            return threads[id].currentSize();
         }
 
         private void finish(int threadId)
@@ -120,19 +111,15 @@ public class MultiThreadDownload
             {
                 threads[threadId]=null;
                 currentThread--;
-                if (currentThread==0)
-                {
-                    super.setSuccess();
-                }
+                if (currentThread==0) super.setSuccess();
             }
         }
 
-        private void addThread(DownloadThread thread,int threadId,long length)
+        private void addThread(DownloadThread thread,int threadId)
         {
             synchronized (this)
             {
                 threads[threadId]=thread;
-                threadTotalSize[threadId]=length;
             }
         }
 
@@ -140,75 +127,68 @@ public class MultiThreadDownload
         {
             synchronized (this)
             {
+                super.error(e);
                 for (var thread: threads)
                 {
-                    if (thread!=null)
+                    if (thread==null) continue;
+                    if (thread.conn!=null)
                     {
-                        if (thread.conn!=null)
+                        try
                         {
-                            try
-                            {
-                                thread.conn.getInputStream().close();
-                                thread.conn.getOutputStream().close();
-                            }
-                            catch (Throwable ignored)
-                            {
-                            }
+                            thread.conn.getInputStream().close();
+                            thread.conn.getOutputStream().close();
                         }
-                        thread.interrupt();
+                        catch (Throwable ignored)
+                        {
+                        }
                     }
+                    thread.interrupt();
                 }
-                super.error(e);
             }
         }
 
-        private void add(int threadId,int size)
-        {
-            synchronized (this)
-            {
-                threadCurrentSize[threadId]+=size;
-                threadSpeedData[threadId].add(Map.entry(System.currentTimeMillis(),(long) size));
-                threadSpeed[threadId]+=size;
-                super.add(size);
-                update(threadId);
-            }
-        }
-
-        private void update(int id)
-        {
-            long time=System.currentTimeMillis();
-            while (!threadSpeedData[id].isEmpty()&&time-threadSpeedData[id].getFirst().getKey()>1000)
-            {
-                threadSpeed[id]-=threadSpeedData[id].getFirst().getValue();
-                threadSpeedData[id].removeFirst();
-            }
-        }
-
+        @Deprecated
         public final double progressPercent(int id)
         {
-            return progress(id)*100.0;
+            synchronized (threads[id])
+            {
+                return threads[id].progressPercent();
+            }
         }
 
+        @Deprecated
         public final double progress(int id)
         {
-            return threadCurrentSize[id]*1.0/threadTotalSize[id];
+            synchronized (threads[id])
+            {
+                return threads[id].progress();
+            }
         }
 
+        @Deprecated
         public final Time remainingTime(int id)
         {
-            return new Time(waitSize(id).size()/speed(id).rate(DataSizeUnit.B,TimeUnit.s),TimeUnit.s);
+            synchronized (threads[id])
+            {
+                return threads[id].remainingTime();
+            }
         }
 
+        @Deprecated
         public final DataSize waitSize(int id)
         {
-            return new DataSize(threadTotalSize[id]-threadCurrentSize[id],DataSizeUnit.B);
+            synchronized (threads[id])
+            {
+                return threads[id].waitSize();
+            }
         }
 
+        @Deprecated
         public DataRate speed(int id)
         {
-            synchronized (this)
+            synchronized (threads[id])
             {
-                return new DataRate(threadSpeed[id],DataSizeUnit.B,TimeUnit.s);
+                return threads[id].speed();
             }
         }
     }
@@ -219,16 +199,87 @@ public class MultiThreadDownload
         private final long endIndex;
         private final int threadId;
         private final int timeOut;
+        private final FastLinkedList<Map.Entry<Long,Long>> threadSpeedData=new FastLinkedList<>();
+        private final long totalSize;
+        private long currentSize=0;
+        private long speed=0;
         private URLConnection conn;
 
-        public DownloadThread(int threadId,long startIndex,long endIndex,int timeOut)
+        public DownloadThread(int threadId,long startIndex,long endIndex,int timeOut,long totalSize)
         {
             this.threadId=threadId;
             this.startIndex=startIndex;
             this.endIndex=endIndex;
             this.timeOut=timeOut;
+            this.totalSize=totalSize;
         }
 
+        private void add(long size)
+        {
+            currentSize+=size;
+            threadSpeedData.add(Map.entry(System.currentTimeMillis(),size));
+            speed+=size;
+            downloader.add(size);
+            update();
+        }
+
+        private void update()
+        {
+            long time=System.currentTimeMillis();
+            while (!threadSpeedData.isEmpty()&&time-threadSpeedData.getFirst().getKey()>1000)
+            {
+                speed-=threadSpeedData.getFirst().getValue();
+                threadSpeedData.removeFirst();
+            }
+        }
+
+
+        public DataRate speed()
+        {
+            return new DataRate(speed,DataSizeUnit.B,TimeUnit.s);
+        }
+
+        public DataSize currentSize()
+        {
+            return new DataSize(currentSize,DataSizeUnit.B);
+        }
+
+        public DataSize totalSize()
+        {
+            return new DataSize(totalSize,DataSizeUnit.B);
+        }
+
+        public final double progressPercent()
+        {
+            synchronized (this)
+            {
+                return (double) currentSize/totalSize*100;
+            }
+        }
+
+        public final double progress()
+        {
+            synchronized (this)
+            {
+                return (double) currentSize/totalSize;
+            }
+        }
+
+        public final Time remainingTime()
+        {
+            synchronized (this)
+            {
+                return new Time((double) waitSize().size()/speed().rate(DataSizeUnit.B,TimeUnit.s),TimeUnit.s);
+            }
+        }
+
+        public final DataSize waitSize()
+        {
+            synchronized (this)
+            {
+                return new DataSize(totalSize-currentSize,DataSizeUnit.B);
+            }
+        }
 
         @Override
         public void run()
@@ -266,7 +317,7 @@ public class MultiThreadDownload
                     {
                         raf.write(b);
                     }
-                },x->downloader.add(threadId,(int) (long) x),downloader);
+                },this::add,downloader);
                 if (downloader.status()==Downloader.Status.Cancel||downloader.status()==Downloader.Status.Error)
                 {
                     raf.close();

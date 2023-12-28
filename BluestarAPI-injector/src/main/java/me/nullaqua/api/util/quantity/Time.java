@@ -108,4 +108,14 @@ public class Time
     {
         return time*1.0/unit.time();
     }
+
+    public Time add(Time other)
+    {
+        return new Time(this.time+other.time);
+    }
+
+    public Time sub(Time other)
+    {
+        return new Time(this.time-other.time);
+    }
 }

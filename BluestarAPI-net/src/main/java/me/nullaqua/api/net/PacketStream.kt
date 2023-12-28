@@ -1,4 +1,4 @@
-package me.nullaqua.api
+package me.nullaqua.api.net
 
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -10,7 +10,7 @@ import java.util.function.Consumer
 /**
  * 一个数据包传输流
  */
-abstract class PacketStream(var coderGroup: PacketCoderGroup= PacketCoderGroup())
+abstract class PacketStream(var coderGroup: PacketCoderGroup = PacketCoderGroup())
 {
     abstract fun next(): Packet
 
@@ -41,7 +41,7 @@ abstract class PacketStream(var coderGroup: PacketCoderGroup= PacketCoderGroup()
         fun create(
             `in`: InputStream,
             `out`: OutputStream,
-            coderGroup: PacketCoderGroup= PacketCoderGroup()
+            coderGroup: PacketCoderGroup = PacketCoderGroup()
         ): PacketStream
         {
             return DefaultPacketStream(`in`, `out`, coderGroup)
@@ -55,7 +55,7 @@ abstract class PacketStream(var coderGroup: PacketCoderGroup= PacketCoderGroup()
 open class DefaultPacketStream(
     `in`: InputStream,
     `out`: OutputStream,
-    coderGroup: PacketCoderGroup= PacketCoderGroup()
+    coderGroup: PacketCoderGroup = PacketCoderGroup()
 ) : PacketStream(coderGroup)
 {
     private val input = DataInputStream(`in`)
@@ -94,7 +94,7 @@ open class DefaultPacketStream(
 
     override fun send(packet: Packet) = coderGroup.encode(packet).let()
     {
-        output.writeShort(it.size)
+        output.writeInt(it.size)
         output.write(it)
     }
 }
@@ -103,7 +103,7 @@ class PacketConnection(
     private val socket: Socket,
     `in`: InputStream = socket.getInputStream(),
     `out`: OutputStream = socket.getOutputStream(),
-    coderGroup: PacketCoderGroup= PacketCoderGroup()
+    coderGroup: PacketCoderGroup = PacketCoderGroup()
 ) : DefaultPacketStream(`in`, `out`, coderGroup)
 {
     override fun close() = socket.use { super.close() }

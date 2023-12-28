@@ -1,7 +1,5 @@
 package me.nullaqua.api.net;
 
-import me.lucko.jarrelocator.JarRelocator;
-import me.lucko.jarrelocator.Relocation;
 import me.nullaqua.api.io.IOAccessor;
 import me.nullaqua.api.reflect.URLClassLoaderAccessor;
 import org.jetbrains.annotations.Nullable;
@@ -21,7 +19,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.ParseException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("UnusedReturnValue")
 public class MavenLoader extends AbstractXmlParser
@@ -44,7 +41,6 @@ public class MavenLoader extends AbstractXmlParser
     private static final Set<MavenPacket> injectedDependencies=new HashSet<>();
     private static final Set<MavenPacket> downloadedDependencies=new HashSet<>();
     private final Set<Repository> repositories=new HashSet<>();
-    private final Set<PacketRelocation> relocation=new HashSet<>();
     private final File baseDir;
     private MavenPacket.MavenPacketScope[] dependencyScopes={MavenPacket.MavenPacketScope.RUNTIME,
                                                              MavenPacket.MavenPacketScope.COMPILE};
@@ -76,20 +72,6 @@ public class MavenLoader extends AbstractXmlParser
     {
         this.baseDir=baseDir;
     }
-    public MavenLoader(@Nullable File baseDir,@Nullable List<PacketRelocation> relocation)
-    {
-        this.baseDir=baseDir;
-        if (relocation!=null)
-        {
-            for (PacketRelocation rel: relocation)
-            {
-                if (rel!=null)
-                {
-                    this.relocation.add(rel);
-                }
-            }
-        }
-    }
 
     public void injectClasspath(Set<MavenPacket> dependencies) throws IOException
     {
@@ -107,34 +89,8 @@ public class MavenLoader extends AbstractXmlParser
             File file=dep.findFile(baseDir,"jar");
             if (file.exists())
             {
-                if (relocation.isEmpty())
-                {
-                    loadJar(file,loader);
-                    injectedDependencies.add(dep);
-                }
-                else
-                {
-                    String name=file.getName().substring(0,file.getName().lastIndexOf('.'));
-                    File rel=new File(file.getParentFile(),name+"_r2_"+Math.abs(relocation.hashCode())+".jar");
-                    if (!rel.exists()||rel.length()==0)
-                    {
-                        try
-                        {
-                            List<Relocation> rules=relocation.stream()
-                                                             .map(PacketRelocation::toRelocation)
-                                                             .collect(Collectors.toList());
-                            File tempSourceFile=File.createTempFile(file.getName(),".jar");
-                            IOAccessor.copyFile(file,tempSourceFile);
-                            new JarRelocator(tempSourceFile,rel,rules).run();
-                        }
-                        catch (IOException e)
-                        {
-                            throw new IllegalStateException(String.format("Unable to relocate %s%n",dep),e);
-                        }
-                    }
-                    loadJar(rel,loader);
-                    injectedDependencies.add(dep);
-                }
+                loadJar(file,loader);
+                injectedDependencies.add(dep);
             }
             else
             {
@@ -371,11 +327,6 @@ public class MavenLoader extends AbstractXmlParser
     {
         this.ignoreException=ignoreException;
         return this;
-    }
-
-    public Set<PacketRelocation> getRelocation()
-    {
-        return relocation;
     }
 
     public boolean isTransitive()

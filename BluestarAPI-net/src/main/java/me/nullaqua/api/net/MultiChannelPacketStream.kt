@@ -1,4 +1,4 @@
-package me.nullaqua.api
+package me.nullaqua.api.net
 
 import java.io.*
 import java.util.*
@@ -181,13 +181,13 @@ sealed class PacketChannel : PacketStream()
     var onClose: ((PacketChannel) -> Unit) = {}
     abstract val id: UShort
 
-    override fun next(): Packet= synchronized(this)
+    override fun next(): Packet = synchronized(this)
     {
         while (packets.isEmpty() && alive()) (this as Object).wait()
         return if (alive()) packets.removeAt(0) else throw IOException("Channel closed")
     }
 
-    override fun peek(): Packet= synchronized(this)
+    override fun peek(): Packet = synchronized(this)
     {
         while (packets.isEmpty() && alive()) (this as Object).wait()
         return if (alive()) packets[0] else throw IOException("Channel closed")

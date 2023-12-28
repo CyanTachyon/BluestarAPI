@@ -62,7 +62,7 @@ public class Repository extends AbstractXmlParser
         {
             throw ex;
         }
-        catch (Exception ex)
+        catch (Throwable ex)
         {
             throw new IOException(ex);
         }

@@ -97,7 +97,7 @@ public final class Calculator
                         l=0L;
                     }
                     items.put(variable,++l);
-                    stack.push(String.valueOf(variable.getVault()));
+                    stack.push(String.valueOf(variable.vault()));
                 }
             }
             else if ("(".indexOf(str.charAt(i))>=0)
@@ -123,7 +123,7 @@ public final class Calculator
                     stack.push(a.pop()+"");
                     a.push(str.charAt(i));
                 }
-                else if ("(".indexOf(a.peek())>=0)
+                else if ("(".indexOf(a.peek())==0)
                 {
                     a.push(str.charAt(i));
                 }

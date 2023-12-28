@@ -22,7 +22,7 @@ public abstract class Downloader
     private final String file;
     private Status status;
 
-    protected Downloader(long totalSize,String file)
+    Downloader(long totalSize,String file)
     {
         this.totalSize=totalSize;
         this.time=new FastLinkedList<>();

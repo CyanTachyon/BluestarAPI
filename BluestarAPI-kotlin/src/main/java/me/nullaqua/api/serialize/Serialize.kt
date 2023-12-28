@@ -3,8 +3,8 @@ package me.nullaqua.api.serialize
 import me.nullaqua.api.collection.Vector
 import me.nullaqua.api.reflect.FieldAccessor
 import me.nullaqua.api.reflect.ReflectAccessor
-import me.nullaqua.api.blankInstance
-import me.nullaqua.api.setField
+import me.nullaqua.api.kotlin.blankInstance
+import me.nullaqua.api.kotlin.setField
 import java.lang.reflect.Modifier
 import java.util.*
 import java.util.zip.Deflater
@@ -175,10 +175,7 @@ sealed class SerializeObject
 
     fun deserialize(time: Time): Any? = synchronized(this)
     {
-        return if (t != null && t.after(time))
-        {
-            deserialize
-        }
+        return if (t.after(time)) deserialize
         else
         {
             t = time

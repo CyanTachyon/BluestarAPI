@@ -118,4 +118,14 @@ public class Distance
     {
         return distance/unit.distance();
     }
+
+    public Distance add(Distance distance)
+    {
+        return new Distance(this.distance+distance.distance);
+    }
+
+    public Distance sub(Distance distance)
+    {
+        return new Distance(this.distance-distance.distance);
+    }
 }

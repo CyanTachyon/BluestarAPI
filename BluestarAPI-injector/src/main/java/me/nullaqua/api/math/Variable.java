@@ -1,25 +1,42 @@
 package me.nullaqua.api.math;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
+
 public final class Variable extends Number
 {
     private final String name;
-    private double vault;
+    private Number vault;
 
-    private Variable(String name,double vault)
+    private Variable(String name,Number vault)
     {
         this.name=name;
         this.vault=vault;
+        check();
     }
 
-    public static Variable create(String name,double vault)
+    private void check()
     {
-        assert name!=null;
+        var var=vault();
+        while (var instanceof Variable)
+        {
+            if (var==this)
+            {
+                throw new AssertionError("变量循环引用");
+            }
+            var=((Variable) var).vault();
+        }
+    }
+
+    public static Variable create(String name,Number vault)
+    {
         try
         {
             Double.parseDouble(name);
             throw new AssertionError("变量名称不合法");
         }
-        catch (Exception e)
+        catch (Exception ignored)
         {
         }
         return new Variable(name,vault);
@@ -30,7 +47,8 @@ public final class Variable extends Number
         return name;
     }
 
-    public double getVault()
+    @NotNull
+    public Number vault()
     {
         synchronized (this)
         {
@@ -38,52 +56,43 @@ public final class Variable extends Number
         }
     }
 
-    public Variable setVault(double vault)
+    public Variable vault(Number vault)
     {
-        synchronized (this)
+        if (Objects.nonNull(vault))
         {
             this.vault=vault;
-            return this;
         }
+        return this;
     }
 
     @Override
     public int intValue()
     {
-        return (int) doubleValue();
+        return vault().intValue();
     }
 
     @Override
     public long longValue()
     {
-        return (long) doubleValue();
+        return vault().longValue();
     }
 
     @Override
     public float floatValue()
     {
-        return (float) doubleValue();
+        return vault().floatValue();
     }
 
     @Override
     public double doubleValue()
     {
-        synchronized (this)
-        {
-            return (double) vault;
-        }
+        return vault().doubleValue();
     }
 
     @Override
     public int hashCode()
     {
         return name.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        return obj instanceof Variable&&((Variable) obj).name.equals(name);
     }
 
     @Override

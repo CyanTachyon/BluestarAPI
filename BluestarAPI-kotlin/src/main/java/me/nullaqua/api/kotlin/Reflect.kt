@@ -1,6 +1,6 @@
-@file:JvmName("KotlinAPIs")
+@file:JvmName("Reflect")
 
-package me.nullaqua.api
+package me.nullaqua.api.kotlin
 
 import me.nullaqua.api.reflect.FieldAccessor
 import me.nullaqua.api.reflect.MethodAccessor
@@ -37,6 +37,12 @@ fun <T> T?.invokeMethod(methodName: String, types: Array<Class<*>>, vararg args:
 fun <T> Class<T>.blankInstance(): T
 {
     return ReflectAccessor.blankInstance(this)
+}
+
+@Throws(Throwable::class)
+inline fun <reified T> blankInstance(): T
+{
+    return T::class.java.blankInstance()
 }
 
 @Throws(Throwable::class)

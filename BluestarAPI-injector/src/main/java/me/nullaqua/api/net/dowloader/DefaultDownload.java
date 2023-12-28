@@ -52,7 +52,7 @@ public class DefaultDownload
         return downloader;
     }
 
-    protected static void copy(InputStream in,OutputStream out,Consumer<Long> add,final Downloader manager) throws IOException
+    static void copy(InputStream in,OutputStream out,Consumer<Long> add,final Downloader manager) throws IOException
     {
         byte[] buffer=new byte[1024];
         int len;

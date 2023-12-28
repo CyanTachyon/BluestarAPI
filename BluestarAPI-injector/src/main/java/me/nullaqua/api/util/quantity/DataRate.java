@@ -273,4 +273,14 @@ public class DataRate
     {
         return toString(TimeUnit.s);
     }
+
+    public DataRate add(DataRate dataRate)
+    {
+        return new DataRate(this.rate(DataSizeUnit.B,TimeUnit.s)+dataRate.rate(DataSizeUnit.B,TimeUnit.s),DataSizeUnit.B,TimeUnit.s);
+    }
+
+    public DataRate sub(DataRate dataRate)
+    {
+        return new DataRate(this.rate(DataSizeUnit.B,TimeUnit.s)-dataRate.rate(DataSizeUnit.B,TimeUnit.s),DataSizeUnit.B,TimeUnit.s);
+    }
 }
