@@ -17,7 +17,7 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
 
     init
     {
-        stream.listen()
+        stream.stream.forEach()
         {
             when (it)
             {
@@ -32,6 +32,7 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
                         stream.send(MapChannel(id0, id1))
                     }
                 }
+
                 is MapChannel    ->
                 {
                     synchronized(map)
@@ -40,26 +41,25 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
                         (map as Object).notifyAll()
                     }
                 }
+
                 is CloseChannel  ->
                 {
                     channels[it.id]?.close()
                     channels.remove(it.id)
                 }
+
                 is DataPacket    ->
                 {
-                    channels[map[it.id] ?: throw IllegalArgumentException("Channel ${it.id} not found")]?.onReceive(
-                        it.data)
+                    channels[map[it.id] ?: throw IllegalArgumentException("Channel ${it.id} not found")]
+                        ?.onReceive(it.data)
                 }
             }
         }
     }
 
     operator fun get(id: UShort) = channels[id]
-
     fun getOrThrow(id: UShort) = channels[id] ?: throw IllegalArgumentException("Channel $id not found")
-
     fun getOrNew(id: UShort) = channels[id] ?: createChannel(id)
-
     fun close()
     {
         isClosed = true
@@ -68,7 +68,6 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
     }
 
     fun createChannel(): Channel = createChannel(getNewChannelID())
-
     private fun createChannel(id: UShort): Channel
     {
         val channel = Channel(this, id)
@@ -97,14 +96,18 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
         do
         {
             id = (Random().nextInt(0x10000-0x10)+0x10).toUShort()
-        } while (channels.containsKey(id)||wait.containsKey(id))
+        }
+        while (channels.containsKey(id)||wait.containsKey(id))
         return id
     }
 
-    fun send(channel: Channel, data: ByteArray)
-    {
-        stream.send(DataPacket(map[channel.id] ?: throw IllegalArgumentException("Channel ${channel.id} not found"), data))
-    }
+    fun send(channel: Channel, data: ByteArray) =
+        stream.send(
+            DataPacket(
+                map[channel.id] ?: throw IllegalArgumentException("Channel ${channel.id} not found"),
+                data
+            )
+        )
 
     companion object
     {
@@ -120,15 +123,14 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
         }
     }
 
-    private class CreateChannel(val id: UShort = 0U) : Packet()
+    private class CreateChannel(val id: UShort = 0U): Packet()
     {
         companion object
         {
             @JvmStatic
-            val coder = object : PacketCoder<CreateChannel>(1U, CreateChannel::class.java)
+            val coder = object: PacketCoder<CreateChannel>(1U, CreateChannel::class.java)
             {
                 override fun encode(packet: CreateChannel, out: DataOutputStream) = out.writeShort(packet.id.toInt())
-
                 override fun decode(input: DataInputStream) = CreateChannel(input.readUnsignedShort().toUShort())
             }
         }
@@ -137,12 +139,12 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
     private class MapChannel(
         val id0: UShort = 0U,
         val id1: UShort = 0U
-    ) : Packet()
+    ): Packet()
     {
         companion object
         {
             @JvmStatic
-            val coder = object : PacketCoder<MapChannel>(2U, MapChannel::class.java)
+            val coder = object: PacketCoder<MapChannel>(2U, MapChannel::class.java)
             {
                 override fun encode(packet: MapChannel, out: DataOutputStream)
                 {
@@ -156,15 +158,14 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
         }
     }
 
-    private class CloseChannel(val id: UShort = 0U) : Packet()
+    private class CloseChannel(val id: UShort = 0U): Packet()
     {
         companion object
         {
             @JvmStatic
-            val coder = object : PacketCoder<CloseChannel>(3U, CloseChannel::class.java)
+            val coder = object: PacketCoder<CloseChannel>(3U, CloseChannel::class.java)
             {
                 override fun encode(packet: CloseChannel, out: DataOutputStream) = out.writeShort(packet.id.toInt())
-
                 override fun decode(input: DataInputStream): CloseChannel =
                     CloseChannel(input.readUnsignedShort().toUShort())
             }
@@ -174,13 +175,12 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
     private class DataPacket(
         val id: UShort = 0U,
         val data: ByteArray = ByteArray(0)
-    ) : Packet()
+    ): Packet()
     {
-
         companion object
         {
             @JvmStatic
-            val coder = object : PacketCoder<DataPacket>(0U, DataPacket::class.java)
+            val coder = object: PacketCoder<DataPacket>(0U, DataPacket::class.java)
             {
                 override fun encode(packet: DataPacket, out: DataOutputStream)
                 {
@@ -191,19 +191,18 @@ class MultiChannelStream(`in`: InputStream, `out`: OutputStream)
 
                 override fun decode(input: DataInputStream): DataPacket =
                     DataPacket(input.readUnsignedShort().toUShort(),
-                               ByteArray(input.readInt()).apply { input.readFully(this) })
+                        ByteArray(input.readInt()).apply { input.readFully(this) })
             }
         }
     }
-
-
 }
+
 class Channel(private val father: MultiChannelStream, internal val id: UShort)
 {
     private val inputBuffer = LinkedList<Byte>()
     private val outputBuffer = ByteVector()
     private var isClosed = false
-    val inputStream = object : InputStream()
+    val inputStream = object: InputStream()
     {
         override fun read(): Int
         {
@@ -218,7 +217,7 @@ class Channel(private val father: MultiChannelStream, internal val id: UShort)
             return -1
         }
     }
-    val outputStream = object : OutputStream()
+    val outputStream = object: OutputStream()
     {
         override fun write(b: Int) = synchronized(outputBuffer)
         {

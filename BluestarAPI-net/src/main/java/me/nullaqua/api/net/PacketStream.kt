@@ -6,18 +6,16 @@ import java.io.EOFException
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.Socket
+import java.util.Objects
 import java.util.function.Consumer
+import java.util.stream.Stream
 
 /**
  * 一个数据包传输流
  */
-abstract class PacketStream(var coderGroup: PacketCoderGroup = PacketCoderGroup())
+abstract class PacketStream<T:PacketStream<T>> (var coderGroup: PacketCoderGroup = PacketCoderGroup())
 {
-    var onClose: (() -> Unit)? = null
-
-    abstract fun next(): Packet
-
-    abstract fun peek(): Packet
+    var onClose: (T.() -> Unit) = {}
 
     abstract fun alive(): Boolean
 
@@ -25,19 +23,7 @@ abstract class PacketStream(var coderGroup: PacketCoderGroup = PacketCoderGroup(
 
     abstract fun send(packet: Packet)
 
-    fun listen(listener: Consumer<Packet>)
-    {
-        while (alive())
-        {
-            try
-            {
-                listener.accept(next())
-            }
-            catch (_: Exception)
-            {
-            }
-        }
-    }
+    abstract val stream: Stream<Packet>
 
     companion object
     {
@@ -45,7 +31,7 @@ abstract class PacketStream(var coderGroup: PacketCoderGroup = PacketCoderGroup(
             `in`: InputStream,
             `out`: OutputStream,
             coderGroup: PacketCoderGroup = PacketCoderGroup()
-        ): PacketStream = DefaultPacketStream(`in`, `out`, coderGroup)
+        ): DefaultPacketStream = DefaultPacketStream(`in`, `out`, coderGroup)
 
         fun create(
             socket: Socket,
@@ -63,34 +49,29 @@ open class DefaultPacketStream(
     `in`: InputStream,
     `out`: OutputStream,
     coderGroup: PacketCoderGroup = PacketCoderGroup()
-) : PacketStream(coderGroup)
+) : PacketStream<DefaultPacketStream>(coderGroup)
 {
     private val input = DataInputStream(`in`)
     private val output = DataOutputStream(`out`)
     private var isClosed = false
     private var packet: Packet? = null
 
-    override fun next(): Packet = synchronized(this)
+    private fun readNext(): Packet? = synchronized(this)
     {
-        val packet = this.packet ?: peek()
-        this.packet = null
-        return packet
-    }
-
-    override fun peek(): Packet = synchronized(this)
-    {
-        if (runCatching(::readNext).exceptionOrNull() is EOFException) close()
-        return packet!!
-    }
-
-    private fun readNext(): Packet = synchronized(this)
-    {
-        if (packet != null) return packet!!
-        val length = input.readUnsignedShort()
-        val bytes = ByteArray(length)
-        input.readFully(bytes)
-        packet = coderGroup.decode(bytes)
-        return packet as Packet
+        try
+        {
+            if (packet!=null) return packet!!
+            val length = input.readUnsignedShort()
+            val bytes = ByteArray(length)
+            input.readFully(bytes)
+            packet = coderGroup.decode(bytes)
+            return packet as Packet
+        }
+        catch (e:EOFException)
+        {
+            close()
+            return null
+        }
     }
 
     override fun alive() = !isClosed
@@ -98,7 +79,7 @@ open class DefaultPacketStream(
     override fun close()
     {
         isClosed = true
-        runCatching { onClose?.invoke() }
+        runCatching { onClose() }
         runCatching(input::close)
         runCatching(output::close)
     }
@@ -108,6 +89,7 @@ open class DefaultPacketStream(
         output.writeInt(it.size)
         output.write(it)
     }
+    override val stream: Stream<Packet> = Stream.generate { readNext() }.takeWhile { it!=null }.map { it!! }
 }
 
 class PacketConnection(

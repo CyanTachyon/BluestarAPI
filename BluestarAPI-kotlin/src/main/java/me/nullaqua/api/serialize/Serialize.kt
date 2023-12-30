@@ -108,16 +108,16 @@ object Serialize
                 res.add(ArrayObject())
             }
         }
-        for (i in res.indices)
+        for (j in res.indices)
         {
-            val x = res[i]
+            val x = res[j]
             if (x is ComplexObject)
             {
-                x.from(v[i].first, v[i].second, res)
+                x.from(v[j].first, v[j].second, res)
             }
             else
             {
-                (x as ArrayObject).from(v[i].first, v[i].second, res)
+                (x as ArrayObject).from(v[j].first, v[j].second, res)
             }
         }
         return res[0]

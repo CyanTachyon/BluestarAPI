@@ -2,6 +2,7 @@ package me.nullaqua.api.net
 
 import java.io.*
 import java.util.*
+import java.util.stream.Stream
 
 class MultiChannelPacketStream(
     `in`: InputStream,
@@ -96,7 +97,7 @@ class MultiChannelPacketStream(
 
     override fun close()
     {
-        this.onClose(this)
+        this.onClose()
         input.close()
         output.close()
     }
@@ -123,7 +124,7 @@ class MultiChannelPacketStream(
         if (!channel.alive()) return
         try
         {
-            channel.onClose(channel)
+            channel.onClose()
         }
         finally
         {
@@ -175,23 +176,17 @@ class MultiChannelPacketStream(
     }
 }
 
-sealed class PacketChannel : PacketStream()
+sealed class PacketChannel : PacketStream<PacketChannel>()
 {
     private val packets: MutableList<Packet> = LinkedList()
-    var onClose: ((PacketChannel) -> Unit) = {}
     abstract val id: UShort
 
-    override fun next(): Packet = synchronized(this)
+    private fun getNext(): Packet? = synchronized(this)
     {
         while (packets.isEmpty() && alive()) (this as Object).wait()
-        return if (alive()) packets.removeAt(0) else throw IOException("Channel closed")
+        return if (alive()) packets.removeAt(0) else null
     }
-
-    override fun peek(): Packet = synchronized(this)
-    {
-        while (packets.isEmpty() && alive()) (this as Object).wait()
-        return if (alive()) packets[0] else throw IOException("Channel closed")
-    }
+    override val stream: Stream<Packet> = Stream.generate { getNext() }.takeWhile { it != null }.map { it!! }
 
     abstract override fun alive(): Boolean
 
@@ -207,13 +202,13 @@ sealed class PacketChannel : PacketStream()
 }
 
 class DefaultPacketChannel(
-    private val stream: MultiChannelPacketStream,
+    private val rStream: MultiChannelPacketStream,
     override val id: UShort
 ) : PacketChannel()
 {
-    override fun alive(): Boolean = stream.alive()
+    override fun alive(): Boolean = rStream.alive()
 
-    override fun close() = stream.close(this)
+    override fun close() = rStream.close(this)
 
-    override fun send(packet: Packet) = stream.send(packet, this)
+    override fun send(packet: Packet) = rStream.send(packet, this)
 }
