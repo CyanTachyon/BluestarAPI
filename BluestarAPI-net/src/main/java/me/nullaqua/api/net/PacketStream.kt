@@ -2,6 +2,7 @@ package me.nullaqua.api.net
 
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import java.io.EOFException
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.Socket
@@ -12,6 +13,8 @@ import java.util.function.Consumer
  */
 abstract class PacketStream(var coderGroup: PacketCoderGroup = PacketCoderGroup())
 {
+    var onClose: (() -> Unit)? = null
+
     abstract fun next(): Packet
 
     abstract fun peek(): Packet
@@ -42,10 +45,14 @@ abstract class PacketStream(var coderGroup: PacketCoderGroup = PacketCoderGroup(
             `in`: InputStream,
             `out`: OutputStream,
             coderGroup: PacketCoderGroup = PacketCoderGroup()
-        ): PacketStream
-        {
-            return DefaultPacketStream(`in`, `out`, coderGroup)
-        }
+        ): PacketStream = DefaultPacketStream(`in`, `out`, coderGroup)
+
+        fun create(
+            socket: Socket,
+            `in`: InputStream = socket.getInputStream(),
+            `out`: OutputStream = socket.getOutputStream(),
+            coderGroup: PacketCoderGroup = PacketCoderGroup()
+        ): PacketConnection = PacketConnection(socket, `in`, `out`, coderGroup)
     }
 }
 
@@ -63,14 +70,20 @@ open class DefaultPacketStream(
     private var isClosed = false
     private var packet: Packet? = null
 
-    override fun next(): Packet
+    override fun next(): Packet = synchronized(this)
     {
         val packet = this.packet ?: peek()
         this.packet = null
         return packet
     }
 
-    override fun peek(): Packet
+    override fun peek(): Packet = synchronized(this)
+    {
+        if (runCatching(::readNext).exceptionOrNull() is EOFException) close()
+        return packet!!
+    }
+
+    private fun readNext(): Packet = synchronized(this)
     {
         if (packet != null) return packet!!
         val length = input.readUnsignedShort()
@@ -80,16 +93,14 @@ open class DefaultPacketStream(
         return packet as Packet
     }
 
-    override fun alive(): Boolean
-    {
-        return !isClosed
-    }
+    override fun alive() = !isClosed
 
     override fun close()
     {
         isClosed = true
-        input.close()
-        output.close()
+        runCatching { onClose?.invoke() }
+        runCatching(input::close)
+        runCatching(output::close)
     }
 
     override fun send(packet: Packet) = coderGroup.encode(packet).let()
@@ -100,7 +111,7 @@ open class DefaultPacketStream(
 }
 
 class PacketConnection(
-    private val socket: Socket,
+    val socket: Socket,
     `in`: InputStream = socket.getInputStream(),
     `out`: OutputStream = socket.getOutputStream(),
     coderGroup: PacketCoderGroup = PacketCoderGroup()
