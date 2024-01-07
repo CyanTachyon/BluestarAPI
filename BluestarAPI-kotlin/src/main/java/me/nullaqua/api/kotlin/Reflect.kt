@@ -5,6 +5,9 @@ package me.nullaqua.api.kotlin
 import me.nullaqua.api.reflect.FieldAccessor
 import me.nullaqua.api.reflect.MethodAccessor
 import me.nullaqua.api.reflect.ReflectAccessor
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 @Throws(Throwable::class)
 fun <T> T?.getField(fieldName: String): Any?
@@ -60,3 +63,20 @@ fun <T> T?.getAllMethods(): List<MethodAccessor>
 {
     return MethodAccessor.getDeclaredMethods(this)
 }
+
+@OptIn(ExperimentalContracts::class)
+inline fun <R> Any.lock(block: () -> R): R
+{
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return synchronized(this,block)
+}
+
+fun Any.asObject() = Object::class.java.cast(this)
+@Throws(InterruptedException::class)
+fun Any.wait() = this.asObject().wait()
+@Throws(InterruptedException::class)
+fun Any.wait(millis: Long) = this.asObject().wait(millis)
+@Throws(InterruptedException::class)
+fun Any.wait(millis: Long, nanos: Int) = this.asObject().wait(millis, nanos)
+fun Any.notify() = this.asObject().notify()
+fun Any.notifyAll() = this.asObject().notifyAll()

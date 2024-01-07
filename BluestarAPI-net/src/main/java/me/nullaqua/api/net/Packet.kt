@@ -44,8 +44,12 @@ class PacketCoderGroup
     fun encode(packet: Packet): ByteArray
     {
         val byteArrayOutputStream = ByteArrayOutputStream()
-        this[packet.javaClass]?.encode(packet, DataOutputStream(byteArrayOutputStream))
-            ?: throw Exception("No coder found for packet ${packet.javaClass.name}")
+        val output = DataOutputStream(byteArrayOutputStream)
+        this[packet.javaClass]?.apply()
+        {
+            output.writeByte(this.id.toInt())
+            this.encode(packet, output)
+        } ?: throw Exception("No coder found for packet ${packet.javaClass.name}")
         return byteArrayOutputStream.toByteArray()
     }
 

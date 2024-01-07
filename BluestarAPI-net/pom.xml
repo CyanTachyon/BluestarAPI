@@ -6,12 +6,13 @@
     <parent>
         <groupId>me.nullaqua</groupId>
         <artifactId>BluestarAPI</artifactId>
-        <version>4.0.0-pre3</version>
+        <version>4.0.0-pre7</version>
     </parent>
 
     <artifactId>BluestarAPI-net</artifactId>
 
     <properties>
+        <java.version>17</java.version>
         <maven.compiler.source>19</maven.compiler.source>
         <maven.compiler.target>19</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -53,15 +54,9 @@
         </dependency>
         <dependency>
             <groupId>me.nullaqua</groupId>
-            <artifactId>BluestarAPI-injector</artifactId>
-            <version>4.0.0-pre3</version>
+            <artifactId>BluestarAPI-kotlin</artifactId>
+            <version>4.0.0-pre7</version>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-            <version>4.1.86.Final</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 
