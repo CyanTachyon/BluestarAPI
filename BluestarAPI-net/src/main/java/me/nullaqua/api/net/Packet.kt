@@ -25,8 +25,13 @@ abstract class PacketCoder<T: Packet> constructor(val id: UByte, val packetClass
 /**
  * 由若干个包编码器组成的编码器组
  */
-class PacketCoderGroup
+class PacketCoderGroup()
 {
+    constructor(vararg coders: PacketCoder<*>):this()
+    {
+        coders.forEach(::addCoder)
+    }
+
     private val map: MutableMap<Class<*>, PacketCoder<*>> = mutableMapOf()
     private val coders: Array<PacketCoder<*>?> = Array(UByte.MAX_VALUE.toInt()+1) { null }
     fun addCoder(coder: PacketCoder<*>)
