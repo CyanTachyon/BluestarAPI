@@ -5,7 +5,7 @@
     <parent>
         <artifactId>BluestarAPI</artifactId>
         <groupId>me.nullaqua</groupId>
-        <version>4.0.0-pre7</version>
+        <version>4.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -37,12 +37,12 @@
                 <configuration>
                     <relocations>
                         <relocation>
-                            <pattern>me.lanzhi.nullaqua.internal</pattern>
-                            <shadedPattern>me.lanzhi.bluestarapi.internal</shadedPattern>
+                            <pattern>me.nullaqua.api.internal</pattern>
+                            <shadedPattern>me.nullaqua.bluestarapi.internal</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>me.lanzhi.nullaqua</pattern>
-                            <shadedPattern>me.lanzhi.bluestarapi</shadedPattern>
+                            <pattern>me.nullaqua.api</pattern>
+                            <shadedPattern>me.nullaqua.bluestarapi</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
@@ -60,7 +60,7 @@
         <dependency>
             <groupId>me.nullaqua</groupId>
             <artifactId>BluestarAPI-Bukkit-injector</artifactId>
-            <version>4.0.0-pre7</version>
+            <version>4.0.0</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>

@@ -2,9 +2,9 @@ package me.nullaqua.api.serialize
 
 import me.nullaqua.api.collection.Vector
 import me.nullaqua.api.reflect.FieldAccessor
-import me.nullaqua.api.reflect.ReflectAccessor
-import me.nullaqua.api.kotlin.blankInstance
-import me.nullaqua.api.kotlin.setField
+import me.nullaqua.api.reflect.ReflectionAccessor
+import me.nullaqua.kotlin.reflect.blankInstance
+import me.nullaqua.kotlin.reflect.setField
 import java.lang.reflect.Modifier
 import java.util.*
 import java.util.zip.Deflater
@@ -428,7 +428,7 @@ class ComplexObject : SerializeObject()
     fun `init`(o: Any)
     {
         val map = HashMap<Pair<String, String>, SerializeObject>()
-        val f = ReflectAccessor.getDeclaredFields(o::class.java)
+        val f = ReflectionAccessor.getDeclaredFields(o::class.java)
         for (i in f)
         {
             if (i.field.modifiers and Modifier.STATIC != 0) continue

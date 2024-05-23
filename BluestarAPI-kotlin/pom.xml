@@ -6,7 +6,7 @@
     <parent>
         <groupId>me.nullaqua</groupId>
         <artifactId>BluestarAPI</artifactId>
-        <version>4.0.0-pre7</version>
+        <version>4.0.0</version>
     </parent>
 
     <artifactId>BluestarAPI-kotlin</artifactId>
@@ -43,13 +43,23 @@
         <dependency>
             <groupId>me.nullaqua</groupId>
             <artifactId>BluestarAPI-injector</artifactId>
-            <version>4.0.0-pre7</version>
+            <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
             <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib-jdk8</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>me.nullaqua</groupId>
+            <artifactId>BluestarAPI-kotlin-reflect</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>

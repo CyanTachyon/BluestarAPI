@@ -6,6 +6,7 @@ import java.security.ProtectionDomain;
 /**
  * 类加载器访问器
  */
+@SuppressWarnings("unused")
 public class ClassLoaderAccessor
 {
     private final static MethodAccessor addClass=MethodAccessor.getMethod(ClassLoader.class,"addClass",Class.class);

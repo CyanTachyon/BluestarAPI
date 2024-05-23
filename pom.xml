@@ -6,24 +6,49 @@
 
     <groupId>me.nullaqua</groupId>
     <artifactId>BluestarAPI</artifactId>
-    <version>4.0.0-pre7</version>
+    <version>4.0.0</version>
     <modules>
         <module>BluestarAPI-Bukkit-injector</module>
         <module>BluestarAPI-plugin</module>
         <module>BluestarAPI-injector</module>
         <module>BluestarAPI-net</module>
         <module>BluestarAPI-kotlin</module>
+        <module>BluestarAPI-reflect</module>
+        <module>BluestarAPI-kotlin-reflect</module>
     </modules>
     <packaging>pom</packaging>
 
     <name>BluestarAPI</name>
+    <description>BluestarAPI are a set of tools for  java,kotlin,bukkit plugin.</description>
+    <url>https://github.com/nullaqua/BluestarAPI</url>
 
     <properties>
         <java.version>10</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <github.global.server>github</github.global.server>
-        <kotlin.version>1.8.21</kotlin.version>
+        <kotlin.version>1.9.23</kotlin.version>
     </properties>
+
+    <licenses>
+        <license>
+            <name>AG</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>nullaqua</name>
+            <email>nullaqua@outlook.com</email>
+            <url>https://github.com/nullaqua</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/nullaqua/BluestarAPI.git</connection>
+        <developerConnection>scm:git:ssh://github.com:nullaqua/BluestarAPI.git</developerConnection>
+        <url>https://github.com/nullaqua/BluestarAPI/tree/master</url>
+    </scm>
 
     <repositories>
         <repository>
@@ -57,36 +82,62 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9</version>
+                <groupId>org.jetbrains.dokka</groupId>
+                <artifactId>dokka-maven-plugin</artifactId>
+                <version>1.9.20</version>
                 <executions>
                     <execution>
-                        <id>attach-javadocs</id>
+<!--                        <phase>pre-site</phase>-->
+                        <phase>package</phase>
                         <goals>
-                            <goal>jar</goal>
+                            <goal>javadocJar</goal>
+<!--                            <goal>dokka</goal>-->
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <additionalparam>-Xdoclint:none</additionalparam>
-                    <charset>UTF-8</charset>
-                    <encoding>UTF-8</encoding>
-                    <docencoding>UTF-8</docencoding>
-                </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
                 <version>2.11.0</version>
             </plugin>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.4.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <tokenAuth>true</tokenAuth>
+                    <autoPublish>true</autoPublish>
+                    <waitUntil>published</waitUntil>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
-    <distributionManagement>
-        <repository>
-            <id>central</id>
-            <name>BluestarMvnRepo-releases</name>
-            <url>http://bluestarmc.top:8081/artifactory/libs-release</url>
-        </repository>
-    </distributionManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>23.1.0</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
 </project>

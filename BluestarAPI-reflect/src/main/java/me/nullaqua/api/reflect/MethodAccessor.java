@@ -1,16 +1,16 @@
 package me.nullaqua.api.reflect;
 
-import me.nullaqua.api.collection.FastLinkedList;
-
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
-import static me.nullaqua.api.reflect.ReflectAccessor.LOOKUP;
+import static me.nullaqua.api.reflect.ReflectionAccessor.LOOKUP;
 
 public final class MethodAccessor
 {
@@ -20,13 +20,9 @@ public final class MethodAccessor
 
     public MethodAccessor(Method method)
     {
-        if (method==null||!ReflectAccessor.isVisibility(method.getDeclaringClass()))
-        {
-            this.method=null;
-            this.methodHandle=null;
-            this.staticMethod=false;
-            return;
-        }
+        Objects.requireNonNull(method);
+        ReflectionAccessor.checkVisibility(method.getDeclaringClass());
+
         MethodHandle unreflected;
         boolean staticMethod=Modifier.isStatic(method.getModifiers());
         try
@@ -80,7 +76,7 @@ public final class MethodAccessor
             return null;
         }
         classes=classes==null?new Class[0]:classes;
-        for (Class<?> clazz: ReflectAccessor.getAllSuperClass(c))
+        for (Class<?> clazz: ReflectionAccessor.getAllSuperClass(c))
         {
             try
             {
@@ -95,13 +91,13 @@ public final class MethodAccessor
 
     public static List<MethodAccessor> getDeclaredMethods(Class<?> c)
     {
-        List<MethodAccessor> list=new FastLinkedList<>();
+        List<MethodAccessor> list=new ArrayList<>();
         for (Method method: c.getDeclaredMethods())
         {
             list.add(new MethodAccessor(method));
         }
         c=c.getSuperclass();
-        for (Class<?> clazz: ReflectAccessor.getAllSuperClass(c))
+        for (Class<?> clazz: ReflectionAccessor.getAllSuperClass(c))
         {
             for (Method method:clazz.getDeclaredMethods())
             {
@@ -127,10 +123,7 @@ public final class MethodAccessor
     {
         if (methodHandle==null)
         {
-            if (!ReflectAccessor.isVisibility(method.getDeclaringClass()))
-            {
-                return null;
-            }
+            ReflectionAccessor.checkVisibility(method.getDeclaringClass());
             method.setAccessible(true);
             Object o=method.invoke(target,args);
             method.setAccessible(false);

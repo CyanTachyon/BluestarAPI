@@ -2,18 +2,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>me.nullaqua</groupId>
         <artifactId>BluestarAPI</artifactId>
         <version>4.0.0</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
-    <artifactId>BluestarAPI-net</artifactId>
+
+    <artifactId>BluestarAPI-kotlin-reflect</artifactId>
 
     <properties>
-        <java.version>17</java.version>
-        <maven.compiler.source>19</maven.compiler.source>
-        <maven.compiler.target>19</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -33,7 +33,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <jvmTarget>17</jvmTarget>
+                    <jvmTarget>1.8</jvmTarget>
                 </configuration>
             </plugin>
         </plugins>
@@ -41,17 +41,26 @@
 
     <dependencies>
         <dependency>
+            <groupId>me.nullaqua</groupId>
+            <artifactId>BluestarAPI-reflect</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+            <version>${kotlin.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
-        <!-- kotlin 协程 -->
-        <dependency>
-            <groupId>me.nullaqua</groupId>
-            <artifactId>BluestarAPI-kotlin</artifactId>
-            <version>4.0.0</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
-
 </project>

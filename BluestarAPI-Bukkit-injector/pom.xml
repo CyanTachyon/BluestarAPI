@@ -5,7 +5,7 @@
     <parent>
         <artifactId>BluestarAPI</artifactId>
         <groupId>me.nullaqua</groupId>
-        <version>4.0.0-pre7</version>
+        <version>4.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -38,15 +38,15 @@
                     <relocations>
                         <relocation>
                             <pattern>de.tr7zw.changeme.nbtapi</pattern>
-                            <shadedPattern>me.lanzhi.nullaqua.nbt</shadedPattern>
+                            <shadedPattern>me.nullaqua.api.nbt</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>de.tr7zw.annotations</pattern>
-                            <shadedPattern>me.lanzhi.nullaqua.internal.annotations</shadedPattern>
+                            <shadedPattern>me.nullaqua.api.internal.annotations</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>net.wesjd.anvilgui</pattern>
-                            <shadedPattern>me.lanzhi.nullaqua.internal.anvilgui</shadedPattern>
+                            <shadedPattern>me.nullaqua.api.internal.anvilgui</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
@@ -86,13 +86,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>23.1.0</version>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>net.wesjd</groupId>
             <artifactId>anvilgui</artifactId>
             <version>1.6.3-SNAPSHOT</version>
@@ -111,11 +104,12 @@
             <artifactId>spigot-api</artifactId>
             <version>1.17-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>me.nullaqua</groupId>
             <artifactId>BluestarAPI-injector</artifactId>
-            <version>4.0.0-pre7</version>
+            <version>4.0.0</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>

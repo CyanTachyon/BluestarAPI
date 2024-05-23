@@ -2,6 +2,7 @@ package me.nullaqua.api.reflect;
 
 import java.net.URLClassLoader;
 
+@SuppressWarnings("unused")
 public class URLClassLoaderAccessor extends ClassLoaderAccessor
 {
     private final static MethodAccessor addURL=MethodAccessor.getMethod(URLClassLoader.class,

@@ -6,7 +6,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
-import static me.nullaqua.api.reflect.ReflectAccessor.*;
+import static me.nullaqua.api.reflect.ReflectionAccessor.*;
 
 public final class FieldAccessor
 {
@@ -100,7 +100,7 @@ public final class FieldAccessor
         {
             return null;
         }
-        for (Class<?> clazz: ReflectAccessor.getAllSuperClass(c))
+        for (Class<?> clazz: ReflectionAccessor.getAllSuperClass(c))
         {
             try
             {
@@ -164,10 +164,7 @@ public final class FieldAccessor
     {
         if (getter==null)
         {
-            if (!ReflectAccessor.isVisibility(field.getDeclaringClass()))
-            {
-                return null;
-            }
+            ReflectionAccessor.checkVisibility(field.getDeclaringClass());
             field.setAccessible(true);
             Object o=field.get(instance);
             field.setAccessible(false);
@@ -187,10 +184,7 @@ public final class FieldAccessor
     {
         if (setter==null)
         {
-            if (!ReflectAccessor.isVisibility(field.getDeclaringClass()))
-            {
-                return;
-            }
+            ReflectionAccessor.checkVisibility(field.getDeclaringClass());
             field.setAccessible(true);
             field.set(instance,value);
             field.setAccessible(false);
