@@ -1,4 +1,4 @@
-# BluestarAPI
+# BluestarAPI ![](https://img.shields.io/maven-central/v/me.nullaqua/BluestarAPI)
 
 ## 模块介绍
 
