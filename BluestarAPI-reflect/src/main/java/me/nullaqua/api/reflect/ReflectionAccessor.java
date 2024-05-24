@@ -93,14 +93,21 @@ public final class ReflectionAccessor
 
     /// 调用栈获取 ///
 
-    public static Method getMethodFromStackFrame(StackWalker.StackFrame stackFrame)
+    public static Invoker<?> getInvokerFromStackFrame(StackWalker.StackFrame stackFrame)
     {
         if (stackFrame == null) return null;
         try
         {
+            if (stackFrame.getMethodName().equals("<clinit>"))
+                return UnsafeOperation.getClinitMethod(stackFrame.getDeclaringClass());
             final var methodName = stackFrame.getMethodName();
             final var parameterArray = stackFrame.getMethodType().parameterArray();
-            return stackFrame.getDeclaringClass().getDeclaredMethod(methodName, parameterArray);
+            if (stackFrame.getMethodName().equals("<init>"))
+            {
+                final var con = stackFrame.getDeclaringClass().getDeclaredConstructor(parameterArray);
+                return new ConstructorAccessor<>(con);
+            }
+            return new MethodAccessor(stackFrame.getDeclaringClass().getDeclaredMethod(methodName, parameterArray));
         }
         catch (Throwable e)
         {
@@ -110,10 +117,20 @@ public final class ReflectionAccessor
 
     private static final Predicate<? super StackWalker.StackFrame> filter = stackFrame ->
     {
-        var mthd = ReflectionAccessor.getMethodFromStackFrame(stackFrame);
-        if (mthd == null) return false;
-        if (mthd.isAnnotationPresent(CallerSensitive.class)) return false;
-        return !mthd.getDeclaringClass().isAnnotationPresent(CallerSensitive.class);
+        if (stackFrame.getDeclaringClass().isAnnotationPresent(CallerSensitive.class)) return false;
+        final var m = ReflectionAccessor.getInvokerFromStackFrame(stackFrame);
+        if (m == null) return false;
+        if (m instanceof MethodAccessor)
+        {
+            final var method = ((MethodAccessor) m).getMethod();
+            if (method == null) return true;
+            return !method.isAnnotationPresent(CallerSensitive.class);
+        }
+        if (m instanceof ConstructorAccessor)
+        {
+            return !((ConstructorAccessor<?>) m).getConstructor().isAnnotationPresent(CallerSensitive.class);
+        }
+        return true;
     };
 
     @CallerSensitive
@@ -129,12 +146,9 @@ public final class ReflectionAccessor
     }
 
     @CallerSensitive
-    public static List<MethodAccessor> getCallerMethods()
+    public static List<Invoker<?>> getCallerMethods()
     {
-        return getCallers().stream()
-                           .map(ReflectionAccessor::getMethodFromStackFrame)
-                           .map(MethodAccessor::new)
-                           .collect(Collectors.toList());
+        return getCallers().stream().map(ReflectionAccessor::getInvokerFromStackFrame).collect(Collectors.toList());
     }
 
     @CallerSensitive
@@ -144,9 +158,9 @@ public final class ReflectionAccessor
     }
 
     @CallerSensitive
-    public static MethodAccessor getCallerMethod()
+    public static Invoker<?> getCallerMethod()
     {
-        return new MethodAccessor(getMethodFromStackFrame(getCaller()));
+        return getInvokerFromStackFrame(getCaller());
     }
 
     @CallerSensitive

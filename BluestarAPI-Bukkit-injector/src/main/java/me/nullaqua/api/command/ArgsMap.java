@@ -756,7 +756,7 @@ class ArgsMap
             {
                 if (method!=null)
                 {
-                    return method.invoke(instance,args);
+                    return method.invokeMethod(instance, args);
                 }
                 else if (field!=null) return field.get(instance);
                 return null;

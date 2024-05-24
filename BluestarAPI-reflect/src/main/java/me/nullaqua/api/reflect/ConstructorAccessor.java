@@ -12,7 +12,7 @@ import static me.nullaqua.api.reflect.ReflectionAccessor.LOOKUP;
  *
  * @param <T> 泛型参数
  */
-public class ConstructorAccessor<T>
+public class ConstructorAccessor<T> implements Invoker<T>
 {
     private final Constructor<T> constructor;
     private final MethodHandle constructorAccessor;
@@ -107,6 +107,7 @@ public class ConstructorAccessor<T>
      * @throws Throwable 异常
      */
     @SuppressWarnings("unchecked")
+    @Override
     public T invoke(Object... args) throws Throwable
     {
         if (constructorAccessor==null)

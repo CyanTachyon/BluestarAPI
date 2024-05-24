@@ -5,8 +5,10 @@ package me.nullaqua.kotlin.reflect
 
 import me.nullaqua.api.reflect.CallerSensitive
 import me.nullaqua.api.reflect.FieldAccessor
+import me.nullaqua.api.reflect.Invoker
 import me.nullaqua.api.reflect.MethodAccessor
 import me.nullaqua.api.reflect.ReflectionAccessor
+import java.lang.reflect.Executable
 import kotlin.reflect.KClass
 
 @Throws(Throwable::class)
@@ -33,7 +35,7 @@ inline fun <T> T?.invokeMethod(methodName: String, types: Array<Class<*>>, varar
     val t = this ?: return null
     val clazz = t::class.java
     val method = MethodAccessor.getDeclaredMethod(clazz, methodName, *types)
-    return method?.invoke(t, *args)
+    return method?.invokeMethod(t, *args)
 }
 
 @Throws(Throwable::class)
@@ -75,10 +77,10 @@ inline fun getCaller(): StackWalker.StackFrame? = ReflectionAccessor.getCaller()
 @CallerSensitive
 inline fun getCallerClass(): Class<*>? = ReflectionAccessor.getCallerClass()
 @CallerSensitive
-inline fun getCallerMethod(): MethodAccessor? = ReflectionAccessor.getCallerMethod()
+inline fun getCallerMethod(): Invoker<*>? = ReflectionAccessor.getCallerMethod()
 @CallerSensitive
 inline fun getCallers(): List<StackWalker.StackFrame> = ReflectionAccessor.getCallers()
 @CallerSensitive
 inline fun getCallerClasses(): List<Class<*>> = ReflectionAccessor.getCallerClasses()
 @CallerSensitive
-inline fun getCallerMethods(): List<MethodAccessor> = ReflectionAccessor.getCallerMethods()
+inline fun getCallerMethods(): List<Invoker<*>> = ReflectionAccessor.getCallerMethods()

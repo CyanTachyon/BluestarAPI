@@ -5,18 +5,38 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static me.nullaqua.api.reflect.ReflectionAccessor.LOOKUP;
 
-public final class MethodAccessor
+public final class MethodAccessor implements Invoker<Object>
 {
+    private static final Class<?> javaMethodAccessor;
+    private static MethodAccessor javaMethodAccessorInvoke = null;
+
+    static
+    {
+        try
+        {
+            javaMethodAccessor = Class.forName("jdk.internal.reflect.MethodAccessor");
+        }
+        catch (Exception e)
+        {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+
+    static MethodAccessor getJavaMethodAccessorInvoke() throws NoSuchMethodException
+    {
+        if (javaMethodAccessorInvoke != null) return javaMethodAccessorInvoke;
+        Method method = javaMethodAccessor.getDeclaredMethod("invoke", Object.class, Object[].class);
+        javaMethodAccessorInvoke = new MethodAccessor(method);
+        return javaMethodAccessorInvoke;
+    }
+
     private final Method method;
     private final boolean staticMethod;
-    private final MethodHandle methodHandle;
+    private final Object methodHandle;
 
     public MethodAccessor(Method method)
     {
@@ -24,44 +44,51 @@ public final class MethodAccessor
         ReflectionAccessor.checkVisibility(method.getDeclaringClass());
 
         MethodHandle unreflected;
-        boolean staticMethod=Modifier.isStatic(method.getModifiers());
+        boolean staticMethod = Modifier.isStatic(method.getModifiers());
         try
         {
-            unreflected=LOOKUP.unreflect(method);
+            unreflected = LOOKUP.unreflect(method);
         }
         catch (Exception e)
         {
-            this.method=method;
-            this.methodHandle=null;
-            this.staticMethod=staticMethod;
+            this.method = method;
+            this.methodHandle = null;
+            this.staticMethod = staticMethod;
             return;
         }
 
-        MethodHandle target=unreflected.asFixedArity();
-        int paramCount=unreflected.type().parameterCount()-(staticMethod?0:1);
-        MethodType methodType=MethodType.genericMethodType(1,true);
-        target=target.asSpreader(Object[].class,paramCount);
+        MethodHandle target = unreflected.asFixedArity();
+        int paramCount = unreflected.type().parameterCount()-(staticMethod?0:1);
+        MethodType methodType = MethodType.genericMethodType(1, true);
+        target = target.asSpreader(Object[].class, paramCount);
         if (staticMethod)
         {
-            target=MethodHandles.dropArguments(target,0,Object.class);
+            target = MethodHandles.dropArguments(target, 0, Object.class);
         }
-        MethodHandle generified=target.asType(methodType);
+        MethodHandle generified = target.asType(methodType);
 
-        this.method=method;
-        this.methodHandle=generified;
-        this.staticMethod=staticMethod;
+        this.method = method;
+        this.methodHandle = generified;
+        this.staticMethod = staticMethod;
     }
 
-    public static MethodAccessor getMethod(Class<?> clazz,String name,Class<?>... classes)
+    MethodAccessor(boolean staticMethod, Object methodAccessor)
     {
-        if (clazz==null||name==null)
+        this.method = null;
+        this.methodHandle = methodAccessor;
+        this.staticMethod = staticMethod;
+    }
+
+    public static MethodAccessor getMethod(Class<?> clazz, String name, Class<?>... classes)
+    {
+        if (clazz == null || name == null)
         {
             return null;
         }
-        classes=classes==null?new Class[0]:classes;
+        classes = classes == null?new Class[0]:classes;
         try
         {
-            return new MethodAccessor(clazz.getDeclaredMethod(name,classes));
+            return new MethodAccessor(clazz.getDeclaredMethod(name, classes));
         }
         catch (Exception e)
         {
@@ -69,18 +96,18 @@ public final class MethodAccessor
         }
     }
 
-    public static MethodAccessor getDeclaredMethod(Class<?> c,String name,Class<?>... classes)
+    public static MethodAccessor getDeclaredMethod(Class<?> c, String name, Class<?>... classes)
     {
-        if (c==null||name==null)
+        if (c == null || name == null)
         {
             return null;
         }
-        classes=classes==null?new Class[0]:classes;
+        classes = classes == null?new Class[0]:classes;
         for (Class<?> clazz: ReflectionAccessor.getAllSuperClass(c))
         {
             try
             {
-                return new MethodAccessor(clazz.getDeclaredMethod(name,classes));
+                return new MethodAccessor(clazz.getDeclaredMethod(name, classes));
             }
             catch (Exception ignored)
             {
@@ -91,15 +118,15 @@ public final class MethodAccessor
 
     public static List<MethodAccessor> getDeclaredMethods(Class<?> c)
     {
-        List<MethodAccessor> list=new ArrayList<>();
+        List<MethodAccessor> list = new ArrayList<>();
         for (Method method: c.getDeclaredMethods())
         {
             list.add(new MethodAccessor(method));
         }
-        c=c.getSuperclass();
+        c = c.getSuperclass();
         for (Class<?> clazz: ReflectionAccessor.getAllSuperClass(c))
         {
-            for (Method method:clazz.getDeclaredMethods())
+            for (Method method: clazz.getDeclaredMethods())
             {
                 if (!Modifier.isStatic(method.getModifiers()))
                 {
@@ -112,24 +139,34 @@ public final class MethodAccessor
 
     public static List<MethodAccessor> getDeclaredMethods(Object o)
     {
-        if (o==null)
+        if (o == null)
         {
             return Collections.emptyList();
         }
         return getDeclaredMethods(o.getClass());
     }
 
-    public Object invoke(Object target,Object... args) throws Throwable
+    public Object invokeMethod(Object target, Object... args) throws Throwable
     {
-        if (methodHandle==null)
+        if (methodHandle == null)
         {
-            ReflectionAccessor.checkVisibility(method.getDeclaringClass());
             method.setAccessible(true);
-            Object o=method.invoke(target,args);
+            Object o = method.invoke(target, args);
             method.setAccessible(false);
             return o;
         }
-        return this.methodHandle.invoke(target,args);
+        if (javaMethodAccessor.isInstance(methodHandle))
+        {;
+            return getJavaMethodAccessorInvoke().invokeMethod(methodHandle, target, args);
+        }
+        return ((MethodHandle) methodHandle).invoke(target, args);
+    }
+
+    @Override
+    public Object invoke(Object... args) throws Throwable
+    {
+        if (args.length == 0) throw new IllegalArgumentException("No target provided");
+        return invokeMethod(args[0], Arrays.copyOfRange(args, 1, args.length));
     }
 
     public Method getMethod()
