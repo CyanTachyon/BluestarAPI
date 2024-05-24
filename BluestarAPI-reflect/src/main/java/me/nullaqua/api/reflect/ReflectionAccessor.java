@@ -1,11 +1,15 @@
 package me.nullaqua.api.reflect;
 
+import org.jetbrains.annotations.Nullable;
 import sun.misc.Unsafe;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 // 禁用警告：未使用、未检查、内部API
 @SuppressWarnings({"unused","unchecked","JavaLangClash","JavaLangInvocation"})
@@ -46,19 +50,20 @@ public final class ReflectionAccessor
         LOOKUP = lookup;
     }
 
+    @Nullable
     public static Class<?> getClass(String name)
     {
         try
         {
             return Class.forName(name);
         }
-        catch (Exception e)
+        catch (Throwable e)
         {
             return null;
         }
     }
 
-    public static void checkVisibility(Class<?> clazz)
+    static void checkVisibility(Class<?> clazz)
     {
         if (clazz.getPackage().equals(ReflectionAccessor.class.getPackage()))
         {
@@ -66,6 +71,8 @@ public final class ReflectionAccessor
             throw new UnsupportedOperationException("This class cannot be accessed");
         }
     }
+
+    /// 越权操作 ///
 
     @SuppressWarnings("unchecked")
     public static <T> T blankInstance(Class<T> type) throws Throwable
@@ -84,21 +91,44 @@ public final class ReflectionAccessor
         return blankInstance(Void.class);
     }
 
+    /// 调用栈获取 ///
+
     public static MethodAccessor getMethodFromStackFrame(StackWalker.StackFrame stackFrame)
     {
         if (stackFrame == null) return null;
         return MethodAccessor.getMethod(stackFrame.getDeclaringClass(),stackFrame.getMethodName(),stackFrame.getMethodType().parameterArray());
     }
 
+    private static final Predicate<? super StackWalker.StackFrame> filter = stackFrame ->
+    {
+        var mthd = ReflectionAccessor.getMethodFromStackFrame(stackFrame);
+        if (mthd == null) return false;
+        if (mthd.getMethod().isAnnotationPresent(CallerSensitive.class)) return false;
+        return !mthd.getMethod().getDeclaringClass().isAnnotationPresent(CallerSensitive.class);
+    };
+
+    @CallerSensitive
+    public static List<StackWalker.StackFrame> getCallers()
+    {
+        return walker.walk(frames->frames.filter(filter).collect(Collectors.toList()));
+    }
+
+    @CallerSensitive
+    public static List<Class<?>> getCallerClasses()
+    {
+        return getCallers().stream().map(StackWalker.StackFrame::getDeclaringClass).collect(Collectors.toList());
+    }
+
+    @CallerSensitive
+    public static List<MethodAccessor> getCallerMethods()
+    {
+        return getCallers().stream().map(ReflectionAccessor::getMethodFromStackFrame).collect(Collectors.toList());
+    }
+
     @CallerSensitive
     public static StackWalker.StackFrame getCaller()
     {
-        return walker.walk(frames->frames.filter(m->
-                                                 {
-                                                     var mthd = ReflectionAccessor.getMethodFromStackFrame(m);
-                                                     if (mthd == null) return false;
-                                                     return !mthd.getMethod().isAnnotationPresent(CallerSensitive.class);
-                                                 }).findFirst()).orElse(null);
+        return getCallers().stream().findFirst().orElse(null);
     }
 
     @CallerSensitive
@@ -115,6 +145,7 @@ public final class ReflectionAccessor
         else return null;
     }
 
+    /// 深克隆 ///
 
     public static List<Class<?>> getAllSuperClass(Class<?> type)
     {

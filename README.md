@@ -35,13 +35,13 @@
 空白实例创建示例:
 
 ```java
-import reflect.me.nullaqua.api.ReflectAccessor;
+import me.nullaqua.api.reflect.ReflectionAccessor;
 
 public class TEST
 {
     public static void main(String[] args) throws Throwable
     {
-        A a=ReflectAccessor.blankInstance(A.class);
+        A a=ReflectionAccessor.blankInstance(A.class);
         System.out.println(a);
     }
 }

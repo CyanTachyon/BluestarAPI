@@ -71,13 +71,14 @@ inline fun <T> T?.getAllMethods(): List<MethodAccessor>
 }
 
 @CallerSensitive
-inline fun getCaller(): StackWalker.StackFrame? =
-    ReflectionAccessor.getCaller()
-
+inline fun getCaller(): StackWalker.StackFrame? = ReflectionAccessor.getCaller()
 @CallerSensitive
-inline fun getCallerClass(): Class<*>? =
-    ReflectionAccessor.getCallerClass()
-
+inline fun getCallerClass(): Class<*>? = ReflectionAccessor.getCallerClass()
 @CallerSensitive
-inline fun getCallerMethod(): MethodAccessor? =
-    ReflectionAccessor.getCallerMethod()
+inline fun getCallerMethod(): MethodAccessor? = ReflectionAccessor.getCallerMethod()
+@CallerSensitive
+inline fun getCallers(): List<StackWalker.StackFrame> = ReflectionAccessor.getCallers()
+@CallerSensitive
+inline fun getCallerClasses(): List<Class<*>> = ReflectionAccessor.getCallerClasses()
+@CallerSensitive
+inline fun getCallerMethods(): List<MethodAccessor> = ReflectionAccessor.getCallerMethods()
