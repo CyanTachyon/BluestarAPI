@@ -2,7 +2,6 @@ package me.nullaqua.api.serialize
 
 import me.nullaqua.api.collection.Vector
 import me.nullaqua.api.reflect.FieldAccessor
-import me.nullaqua.api.reflect.ReflectionAccessor
 import me.nullaqua.kotlin.reflect.blankInstance
 import me.nullaqua.kotlin.reflect.setField
 import java.lang.reflect.Modifier

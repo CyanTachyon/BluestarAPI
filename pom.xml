@@ -31,8 +31,8 @@
 
     <licenses>
         <license>
-            <name>AG</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <name>AGPL-3.0</name>
+            <url>https://www.gnu.org/licenses/agpl-3.0.html</url>
         </license>
     </licenses>
 
