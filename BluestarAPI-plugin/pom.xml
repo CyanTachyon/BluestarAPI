@@ -10,6 +10,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>BluestarAPI-plugin</artifactId>
+    <description>
+        Provide BluestarAPI content as a Bukkit plugin
+    </description>
 
     <properties>
         <maven.compiler.source>10</maven.compiler.source>

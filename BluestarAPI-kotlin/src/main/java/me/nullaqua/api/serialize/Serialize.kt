@@ -37,7 +37,7 @@ object Serialize
         }
         val a = ComplexObject()
         map[o] = a
-        a.init(o)
+        a.`init`(o)
         return a
     }
 
@@ -428,7 +428,7 @@ class ComplexObject : SerializeObject()
     fun `init`(o: Any)
     {
         val map = HashMap<Pair<String, String>, SerializeObject>()
-        val f = ReflectionAccessor.getDeclaredFields(o::class.java)
+        val f = FieldAccessor.getFieldsInSuperClasses(o::class.java)
         for (i in f)
         {
             if (i.field.modifiers and Modifier.STATIC != 0) continue

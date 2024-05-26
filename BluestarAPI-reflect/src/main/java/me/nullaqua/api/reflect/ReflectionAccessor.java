@@ -10,7 +10,6 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-// 禁用警告：未使用、未检查、内部API
 @SuppressWarnings({"unused", "unchecked", "JavaLangClash", "JavaLangInvocation"})
 @CallerSensitive
 public final class ReflectionAccessor
@@ -72,26 +71,9 @@ public final class ReflectionAccessor
         }
     }
 
-    /// 越权操作 ///
-
-    @SuppressWarnings("unchecked")
-    public static <T> T blankInstance(Class<T> type) throws Throwable
-    {
-        return (T) UNSAFE.allocateInstance(type);
-    }
-
-    /**
-     * 在成功时会返回一个新的Void类的实例
-     *
-     * @return void实例
-     * @throws Throwable 当反射出现问题
-     */
-    public static Void voidInstance() throws Throwable
-    {
-        return blankInstance(Void.class);
-    }
-
-    /// 调用栈获取 ///
+    //////////////////
+    /// get caller ///
+    //////////////////
 
     public static Invoker<?> getInvokerFromStackFrame(StackWalker.StackFrame stackFrame)
     {
@@ -122,7 +104,7 @@ public final class ReflectionAccessor
         if (m == null) return false;
         if (m instanceof MethodAccessor)
         {
-            final var method = ((MethodAccessor) m).getMethod();
+            final var method = ((MethodAccessor) m).getMethodOrNull();
             if (method == null) return true;
             return !method.isAnnotationPresent(CallerSensitive.class);
         }
@@ -171,8 +153,15 @@ public final class ReflectionAccessor
         else return null;
     }
 
-    /// 深克隆 ///
+    /////////////
+    /// utils ///
+    /////////////
 
+    /**
+     * 获取所有的父类(不包含Object.class)
+     * @param type 类型
+     * @return 所有的父类, 其中0为type本身, 之后依次为父类, 父类的父类, ...
+     */
     public static List<Class<?>> getAllSuperClass(Class<?> type)
     {
         List<Class<?>> clazz = new ArrayList<>();
@@ -188,42 +177,35 @@ public final class ReflectionAccessor
         return clazz;
     }
 
+    /**
+     * 获取两个类的最近的共同父类, 即该类为两个类的共同父类, 且不存在某一类为该类的子类并也是两个类的共同父类
+     * @param a 类a
+     * @param b 类b
+     * @return 两个类的最近的共同父类
+     */
     public static Class<?> getBothSuperClass(Class<?> a, Class<?> b)
     {
         if (a == null || b == null)
         {
             return Object.class;
         }
-        List<Class<?>> aSuperClass = getAllSuperClass(a);
-        List<Class<?>> bSuperClass = getAllSuperClass(b);
-        for (Class<?> c: aSuperClass)
+        Set<Class<?>> aSuperClass = new HashSet<>(getAllSuperClass(a));
+        while (b != null)
         {
-            if (bSuperClass.contains(c))
-            {
-                return c;
-            }
+            if (aSuperClass.contains(b))
+                return b;
+            b = b.getSuperclass();
         }
         return Object.class;
     }
 
-    public static List<FieldAccessor> getFields(Class<?> c)
-    {
-        List<FieldAccessor> accessors = new ArrayList<>();
-        Arrays.asList(c.getDeclaredFields()).forEach(field -> accessors.add(new FieldAccessor(field)));
-        return accessors;
-    }
-
-    public static List<FieldAccessor> getDeclaredFields(Class<?> c)
-    {
-        List<FieldAccessor> accessors = new ArrayList<>();
-        for (var cc: getAllSuperClass(c))
-        {
-            accessors.addAll(getFields(cc));
-        }
-        return accessors;
-    }
-
-    private static List<FieldAccessor> getBothFields(Object a, Object b)
+    /**
+     * 获取两个对象都拥有的字段, 即他们的所有共同父类的所有字段
+     * @param a 对象a
+     * @param b 对象b
+     * @return 两个对象的共同父类的所有字段
+     */
+    public static List<FieldAccessor> getBothFields(Object a, Object b)
     {
         if (a == null || b == null)
         {
@@ -232,14 +214,41 @@ public final class ReflectionAccessor
         return getBothFields(a.getClass(), b.getClass());
     }
 
-    private static List<FieldAccessor> getBothFields(Class<?> a, Class<?> b)
+    /**
+     * 获取两个类都拥有的字段, 即他们的所有共同父类的所有字段
+     * @param a 类a
+     * @param b 类b
+     * @return 两个类的共同父类的所有字段
+     */
+    public static List<FieldAccessor> getBothFields(Class<?> a, Class<?> b)
     {
-        return FieldAccessor.getDeclaredFields(getBothSuperClass(a, b));
+        return FieldAccessor.getFieldsInSuperClasses(getBothSuperClass(a, b));
     }
 
+    ///////////////////
+    /// force clone ///
+    ///////////////////
+
+    /**
+     * 强制深克隆一个对象, 即克隆对象的所有字段, 包括数组和对象.
+     * 理论上所有字段都会被强制克隆, 即使是一些不应存在两个的对象(例如线程, 类加载器, 枚举等).
+     * @param o 对象
+     * @return 克隆的对象
+     * @param <T> 对象类型
+     * @throws Throwable 异常
+     */
+    public static <T> T forceDeepObject(T o) throws Throwable
+    {
+        if (null == o)
+        {
+            return null;
+        }
+        Map<Object, Object> map = new HashMap<>();
+        return forceDeepObject(o, map);
+    }
 
     @SuppressWarnings("ConstantConditions")
-    public static boolean isSimpleObject(Object o)
+    private static boolean isSimpleObject(Object o)
     {
         Class<?> type = o.getClass();
         return type.isPrimitive() ||
@@ -259,17 +268,7 @@ public final class ReflectionAccessor
                type == Constructor.class;
     }
 
-    public static <T> T cloneObject(T o) throws Throwable
-    {
-        if (null == o)
-        {
-            return null;
-        }
-        Map<Object, Object> map = new HashMap<>();
-        return cloneObject(o, map);
-    }
-
-    private static <T> T cloneObject(T o, Map<Object, Object> map) throws Throwable
+    private static <T> T forceDeepObject(T o, Map<Object, Object> map) throws Throwable
     {
         if (o == null)
         {
@@ -291,7 +290,7 @@ public final class ReflectionAccessor
         }
         else
         {
-            newInstance = blankInstance(o.getClass());
+            newInstance = UnsafeOperation.blankInstance(o.getClass());
         }
         map.put(o, newInstance);
         cloneFields(o, newInstance, map);
@@ -306,7 +305,7 @@ public final class ReflectionAccessor
         }
         if (!o.getClass().isArray())
         {
-            return cloneObject(o, map);
+            return forceDeepObject(o, map);
         }
         int len = Array.getLength(o);
         Object array = Array.newInstance(o.getClass().getComponentType(), len);
@@ -314,7 +313,7 @@ public final class ReflectionAccessor
         for (int i = 0; i < len; i++)
         {
             if (Array.get(o, i) == null) continue;
-            var x = cloneObject(Array.get(o, i), map);
+            var x = forceDeepObject(Array.get(o, i), map);
             Array.set(array, i, x);
         }
         return array;
@@ -326,21 +325,13 @@ public final class ReflectionAccessor
         {
             return;
         }
-        List<FieldAccessor> fields = getDeclaredFields(object.getClass());
+        List<FieldAccessor> fields = FieldAccessor.getFieldsInSuperClasses(object.getClass());
         for (FieldAccessor f: fields)
         {
             if (!Modifier.isStatic(f.getField().getModifiers()))
             {
-                f.set(newObject, cloneObject(f.get(object), map));
+                f.set(newObject, forceDeepObject(f.get(object), map));
             }
         }
-    }
-
-    public static <T> T objectCopy(T o, T newObject) throws Throwable
-    {
-        Map<Object, Object> map = new HashMap<>();
-        map.put(o, newObject);
-        cloneFields(o, newObject, map);
-        return o;
     }
 }

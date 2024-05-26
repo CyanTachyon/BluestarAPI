@@ -21,7 +21,7 @@ public class URLClassLoaderAccessor extends ClassLoaderAccessor
 
     public URLClassLoaderAccessor addURL(java.net.URL url) throws Throwable
     {
-        addURL.invoke(classLoader(),url);
+        addURL.invokeMethod(classLoader(),url);
         return this;
     }
 
@@ -33,19 +33,19 @@ public class URLClassLoaderAccessor extends ClassLoaderAccessor
 
     public URLClassLoaderAccessor addURL(String url) throws Throwable
     {
-        addURL.invoke(classLoader(),new java.net.URL(url));
+        addURL.invokeMethod(classLoader(),new java.net.URL(url));
         return this;
     }
 
     public URLClassLoaderAccessor addURL(java.io.File file) throws Throwable
     {
-        addURL.invoke(classLoader(),file.toURI().toURL());
+        addURL.invokeMethod(classLoader(),file.toURI().toURL());
         return this;
     }
 
     public URLClassLoaderAccessor addURL(java.nio.file.Path path) throws Throwable
     {
-        addURL.invoke(classLoader(),path.toUri().toURL());
+        addURL.invokeMethod(classLoader(),path.toUri().toURL());
         return this;
     }
 }

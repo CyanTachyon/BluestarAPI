@@ -742,12 +742,10 @@ class ArgsMap
         {
             if (method!=null)
             {
-                return method.getMethod().getParameters();
+                final var method1 = method.getMethodOrNull();
+                if (method1!=null) return method1.getParameters();
             }
-            else
-            {
-                return new Parameter[0];
-            }
+            return new Parameter[0];
         }
 
         public Object invoke(Object... args) throws CommandException
@@ -786,7 +784,7 @@ class ArgsMap
         @Override
         public String toString()
         {
-            return method!=null?method.getMethod().toString():(field!=null?field.getField().toString():"");
+            return ""+(method!=null?method.getMethodOrNull():(field!=null?field.getField():""));
         }
 
         @Override

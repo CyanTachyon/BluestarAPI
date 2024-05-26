@@ -1,5 +1,7 @@
 package me.nullaqua.api.reflect;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -34,49 +36,58 @@ public final class MethodAccessor implements Invoker<Object>
         return javaMethodAccessorInvoke;
     }
 
-    private final Method method;
-    private final boolean staticMethod;
     private final Object methodHandle;
+    private final String methodName;
+    private final MethodType methodType;
+    private final Class<?> declaringClass;
 
     public MethodAccessor(Method method)
     {
+        Object handler = method;
         Objects.requireNonNull(method);
         ReflectionAccessor.checkVisibility(method.getDeclaringClass());
 
-        MethodHandle unreflected;
-        boolean staticMethod = Modifier.isStatic(method.getModifiers());
         try
         {
+            MethodHandle unreflected;
+            boolean staticMethod = Modifier.isStatic(method.getModifiers());
             unreflected = LOOKUP.unreflect(method);
+            MethodHandle target = unreflected.asFixedArity();
+            int paramCount = unreflected.type().parameterCount()-(staticMethod?0:1);
+            MethodType methodType = MethodType.genericMethodType(1, true);
+            target = target.asSpreader(Object[].class, paramCount);
+            if (staticMethod)
+            {
+                target = MethodHandles.dropArguments(target, 0, Object.class);
+            }
+            handler = target.asType(methodType);
         }
-        catch (Exception e)
+        catch (Throwable ignored)
         {
-            this.method = method;
-            this.methodHandle = null;
-            this.staticMethod = staticMethod;
-            return;
+            method.setAccessible(true);
         }
-
-        MethodHandle target = unreflected.asFixedArity();
-        int paramCount = unreflected.type().parameterCount()-(staticMethod?0:1);
-        MethodType methodType = MethodType.genericMethodType(1, true);
-        target = target.asSpreader(Object[].class, paramCount);
-        if (staticMethod)
-        {
-            target = MethodHandles.dropArguments(target, 0, Object.class);
-        }
-        MethodHandle generified = target.asType(methodType);
-
-        this.method = method;
-        this.methodHandle = generified;
-        this.staticMethod = staticMethod;
+        this.methodHandle = handler;
+        this.methodName = method.getName();
+        this.declaringClass = method.getDeclaringClass();
+        this.methodType = MethodType.methodType(method.getReturnType(), method.getParameterTypes());
     }
 
-    MethodAccessor(boolean staticMethod, Object methodAccessor)
+    MethodAccessor(Class<?> declaringClass, Object methodAccessor, String methodName, MethodType methodType)
     {
-        this.method = null;
         this.methodHandle = methodAccessor;
-        this.staticMethod = staticMethod;
+        this.methodName = methodName;
+        this.methodType = methodType;
+        this.declaringClass = declaringClass;
+    }
+
+    public static MethodAccessor makeAccessorWithoutLookup(Method method)
+    {
+        return new MethodAccessor(
+            method.getDeclaringClass(),
+            method,
+            method.getName(),
+            MethodType.methodType(method.getReturnType(), method.getParameterTypes())
+        );
     }
 
     public static MethodAccessor getMethod(Class<?> clazz, String name, Class<?>... classes)
@@ -96,7 +107,14 @@ public final class MethodAccessor implements Invoker<Object>
         }
     }
 
-    public static MethodAccessor getDeclaredMethod(Class<?> c, String name, Class<?>... classes)
+    /**
+     * 在一个类的所有父类中查找方法, 有同名且参数类型相同的方法则返回子类中的方法
+     * @param c 类
+     * @param name 方法名
+     * @param classes 参数类型
+     * @return 方法访问器, 若不存在则返回null
+     */
+    public static MethodAccessor getMethodInSuperClasses(Class<?> c, String name, Class<?>... classes)
     {
         if (c == null || name == null)
         {
@@ -116,7 +134,12 @@ public final class MethodAccessor implements Invoker<Object>
         return null;
     }
 
-    public static List<MethodAccessor> getDeclaredMethods(Class<?> c)
+    /**
+     * 获取一个类的所有方法, 包括父类的方法
+     * @param c 类
+     * @return 方法访问器列表
+     */
+    public static List<MethodAccessor> getMethodsInSuperClasses(Class<?> c)
     {
         List<MethodAccessor> list = new ArrayList<>();
         for (Method method: c.getDeclaredMethods())
@@ -137,29 +160,35 @@ public final class MethodAccessor implements Invoker<Object>
         return list;
     }
 
-    public static List<MethodAccessor> getDeclaredMethods(Object o)
+    /**
+     * 返回一个对象的所有方法, 包括父类的方法
+     * @param o 对象
+     * @return 方法访问器列表
+     */
+    public static List<MethodAccessor> getMethodsInSuperClasses(Object o)
     {
         if (o == null)
         {
             return Collections.emptyList();
         }
-        return getDeclaredMethods(o.getClass());
+        return getMethodsInSuperClasses(o.getClass());
     }
 
     public Object invokeMethod(Object target, Object... args) throws Throwable
     {
-        if (methodHandle == null)
+        if (methodHandle instanceof Method)
         {
-            method.setAccessible(true);
-            Object o = method.invoke(target, args);
-            method.setAccessible(false);
-            return o;
+            return ((Method) methodHandle).invoke(target, args);
+        }
+        if (methodHandle instanceof MethodHandle)
+        {
+            return ((MethodHandle) methodHandle).invoke(target, args);
         }
         if (javaMethodAccessor.isInstance(methodHandle))
-        {;
+        {
             return getJavaMethodAccessorInvoke().invokeMethod(methodHandle, target, args);
         }
-        return ((MethodHandle) methodHandle).invoke(target, args);
+        throw new UnsupportedOperationException("Unsupported method handle type: "+methodHandle.getClass());
     }
 
     @Override
@@ -169,13 +198,32 @@ public final class MethodAccessor implements Invoker<Object>
         return invokeMethod(args[0], Arrays.copyOfRange(args, 1, args.length));
     }
 
-    public Method getMethod()
+    public String methodName()
     {
-        return this.method;
+        return methodName;
     }
 
-    public boolean isStaticMethod()
+    public Class<?> declaringClass()
     {
-        return staticMethod;
+        return declaringClass;
+    }
+
+    public MethodType methodType()
+    {
+        return methodType;
+    }
+
+    @Nullable
+    public Method getMethodOrNull()
+    {
+        if (methodHandle instanceof Method) return (Method) methodHandle;
+        try
+        {
+            return declaringClass.getDeclaredMethod(methodName, methodType.parameterArray());
+        }
+        catch (Throwable e)
+        {
+            return null;
+        }
     }
 }

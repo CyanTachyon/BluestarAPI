@@ -8,9 +8,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
+@SuppressWarnings("unused")
 public class LinkedStack<E> implements Iterable<E>
 {
-    private int size=0;
+    private int size = 0;
     private Node<E> top;
 
     public LinkedStack()
@@ -25,7 +26,7 @@ public class LinkedStack<E> implements Iterable<E>
 
     public boolean isEmpty()
     {
-        return size==0;
+        return size == 0;
     }
 
     @NotNull
@@ -38,34 +39,35 @@ public class LinkedStack<E> implements Iterable<E>
     @NotNull
     public Object[] toArray()
     {
-        Object[] array=new Object[size];
-        int i=size-1;
+        Object[] array = new Object[size];
+        int i = size-1;
         for (E e: this)
         {
-            array[size--]=e;
+            array[size--] = e;
         }
         return array;
     }
 
     @NotNull
+    @SuppressWarnings("unchecked")
     public <T> T[] toArray(T[] a)
     {
-        Object[] objects=toArray();
-        if (a.length<size)
+        Object[] objects = toArray();
+        if (a.length < size)
         {
-            return (T[]) Arrays.copyOf(objects,size,a.getClass());
+            return (T[]) Arrays.copyOf(objects, size, a.getClass());
         }
-        System.arraycopy(objects,0,a,0,size);
-        if (a.length>size)
+        System.arraycopy(objects, 0, a, 0, size);
+        if (a.length > size)
         {
-            a[size]=null;
+            a[size] = null;
         }
         return a;
     }
 
     public void push(E e)
     {
-        top=new Node<>(e,top);
+        top = new Node<>(e, top);
         size++;
     }
 
@@ -79,8 +81,8 @@ public class LinkedStack<E> implements Iterable<E>
 
     public void clear()
     {
-        top=null;
-        size=0;
+        top = null;
+        size = 0;
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException
@@ -88,11 +90,12 @@ public class LinkedStack<E> implements Iterable<E>
         out.writeObject(toArray());
     }
 
+    @SuppressWarnings("unchecked")
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException
     {
-        var objects=(E[])in.readObject();
+        var objects = (E[]) in.readObject();
         clear();
-        for (E e:objects)
+        for (E e: objects)
         {
             push(e);
         }
@@ -105,14 +108,14 @@ public class LinkedStack<E> implements Iterable<E>
 
         public Node()
         {
-            this.vault=null;
-            this.next=this;
+            this.vault = null;
+            this.next = this;
         }
 
-        private Node(E vault,Node<E> next)
+        private Node(E vault, Node<E> next)
         {
-            this.vault=vault;
-            this.next=next;
+            this.vault = vault;
+            this.next = next;
         }
 
         public E getVault()
@@ -132,31 +135,31 @@ public class LinkedStack<E> implements Iterable<E>
 
         private StackIterator(Node<E> top)
         {
-            node=top;
+            node = top;
         }
 
         @Override
         public boolean hasNext()
         {
-            return node!=null;
+            return node != null;
         }
 
         @Override
         public E next()
         {
-            E e=get();
+            E e = get();
             nextOne();
             return e;
         }
 
         public E get()
         {
-            return node!=null?node.getVault():null;
+            return node != null?node.getVault():null;
         }
 
         public void nextOne()
         {
-            node=node!=null?node.getNext():null;
+            node = node != null?node.getNext():null;
         }
     }
 }

@@ -12,6 +12,7 @@ import java.util.Map;
  * 本类提供了一些方法来处理附魔注册.注意注册附魔本身只是让服务器知道这个附魔的存在,但是附魔的效果需要自己实现(比如说用监听器监听附魔物品的使用)
  * 自己注册的附魔没办法像官方附魔一样在物品上显示,需要自己实现显示(通过lore或者其他方式)
  */
+@SuppressWarnings("unused")
 public final class EnchantmentManager {
     private static final FieldAccessor acceptRegisterEnchantment;
     private static final Map<NamespacedKey, Enchantment> enchantmentByKey;
@@ -19,11 +20,11 @@ public final class EnchantmentManager {
 
     static {
         try {
-            acceptRegisterEnchantment = FieldAccessor.getDeclaredField(Enchantment.class, "acceptingNew");
-            FieldAccessor byKey = FieldAccessor.getDeclaredField(Enchantment.class, "byKey");
+            acceptRegisterEnchantment = FieldAccessor.getField(Enchantment.class, "acceptingNew");
+            FieldAccessor byKey = FieldAccessor.getField(Enchantment.class, "byKey");
             enchantmentByKey = (Map<NamespacedKey, Enchantment>) byKey.get(null);
 
-            FieldAccessor byName = FieldAccessor.getDeclaredField(Enchantment.class, "byName");
+            FieldAccessor byName = FieldAccessor.getField(Enchantment.class, "byName");
             enchantmentByName = (Map<String, Enchantment>) byName.get(null);
         }
         catch (Throwable e)

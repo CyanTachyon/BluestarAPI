@@ -17,9 +17,9 @@ public class SaveLinkedDeque<E> extends LinkedDeque<E>
     public SaveLinkedDeque()
     {
         super();
-        ReadWriteLock lock=new ReentrantReadWriteLock();
-        readLock=lock.readLock();
-        writeLock=lock.writeLock();
+        ReadWriteLock lock = new ReentrantReadWriteLock();
+        readLock = lock.readLock();
+        writeLock = lock.writeLock();
     }
 
     @Override
@@ -233,7 +233,7 @@ public class SaveLinkedDeque<E> extends LinkedDeque<E>
     }
 
     @Override
-    public SaveQueIterator iterator()
+    public @NotNull SaveQueIterator iterator()
     {
         return new SaveQueIterator();
     }
@@ -241,7 +241,7 @@ public class SaveLinkedDeque<E> extends LinkedDeque<E>
     @Override
     public SaveLinkedDeque<E> clone()
     {
-        SaveLinkedDeque<E> deque=new SaveLinkedDeque<>();
+        SaveLinkedDeque<E> deque = new SaveLinkedDeque<>();
         for (E e: this)
         {
             deque.addLast(e);
@@ -274,10 +274,10 @@ public class SaveLinkedDeque<E> extends LinkedDeque<E>
     @Override
     public SaveLinkedDeque<E> deepClone() throws Throwable
     {
-        SaveLinkedDeque<E> deque=new SaveLinkedDeque<>();
+        SaveLinkedDeque<E> deque = new SaveLinkedDeque<>();
         for (E e: this)
         {
-            MethodAccessor methodAccessor=MethodAccessor.getDeclaredMethod(e.getClass(),"clone");
+            MethodAccessor methodAccessor = MethodAccessor.getMethodInSuperClasses(e.getClass(), "clone");
             methodAccessor.invoke(e);
             deque.addLast(e);
         }
@@ -285,12 +285,12 @@ public class SaveLinkedDeque<E> extends LinkedDeque<E>
     }
 
     @Override
-    public void insert(LinkedDeque<E>.QueIterator iterator,E e)
+    public void insert(LinkedDeque<E>.QueIterator iterator, E e)
     {
         try
         {
             writeLock.lock();
-            super.insert(iterator,e);
+            super.insert(iterator, e);
         }
         finally
         {
@@ -306,12 +306,12 @@ public class SaveLinkedDeque<E> extends LinkedDeque<E>
     }
 
     @Override
-    public E set(LinkedDeque<E>.QueIterator iterator,E e)
+    public E set(LinkedDeque<E>.QueIterator iterator, E e)
     {
         try
         {
             writeLock.lock();
-            return super.set(iterator,e);
+            return super.set(iterator, e);
         }
         finally
         {
@@ -334,12 +334,12 @@ public class SaveLinkedDeque<E> extends LinkedDeque<E>
     }
 
     @Override
-    public void insert(LinkedDeque<E>.DesQueIterator iterator,E e)
+    public void insert(LinkedDeque<E>.DesQueIterator iterator, E e)
     {
         try
         {
             writeLock.lock();
-            super.insert(iterator,e);
+            super.insert(iterator, e);
         }
         finally
         {
@@ -349,12 +349,12 @@ public class SaveLinkedDeque<E> extends LinkedDeque<E>
     }
 
     @Override
-    public E set(LinkedDeque<E>.DesQueIterator iterator,E e)
+    public E set(LinkedDeque<E>.DesQueIterator iterator, E e)
     {
         try
         {
             writeLock.lock();
-            return super.set(iterator,e);
+            return super.set(iterator, e);
         }
         finally
         {

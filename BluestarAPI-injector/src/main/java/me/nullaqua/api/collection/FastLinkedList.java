@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+@SuppressWarnings("unused")
 public class FastLinkedList<E> extends LinkedDeque<E> implements List<E>
 {
     public FastLinkedList()

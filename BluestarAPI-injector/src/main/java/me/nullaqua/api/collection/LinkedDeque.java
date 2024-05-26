@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.*;
 
+@SuppressWarnings("unused")
 public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
 {
     private Node<E> first;
@@ -56,12 +57,12 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
     @Override
     public E removeFirst() throws NoSuchElementException
     {
-        if (size==0)
+        if (size == 0)
         {
             throw new NoSuchElementException("Can not invoke FastDeque.removeFirst(),because the queue is empty.");
         }
-        Node<E> node=first.getNext();
-        E e=node.getVault();
+        Node<E> node = first.getNext();
+        E e = node.getVault();
         node.remove();
         size--;
         return e;
@@ -70,12 +71,12 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
     @Override
     public E removeLast() throws NoSuchElementException
     {
-        if (size==0)
+        if (size == 0)
         {
             throw new NoSuchElementException("Can not invoke FastDeque.removeLast(),because the queue is empty.");
         }
-        Node<E> node=last.getPrevious();
-        E e=node.getVault();
+        Node<E> node = last.getPrevious();
+        E e = node.getVault();
         node.remove();
         size--;
         return e;
@@ -110,7 +111,7 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
     @Override
     public E getFirst() throws NoSuchElementException
     {
-        if (size==0)
+        if (size == 0)
         {
             throw new NoSuchElementException("Can not invoke FastDeque.getFirst(),because the queue is empty.");
         }
@@ -120,7 +121,7 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
     @Override
     public E getLast() throws NoSuchElementException
     {
-        if (size==0)
+        if (size == 0)
         {
             throw new NoSuchElementException("Can not invoke FastDeque.getLast(),because the queue is empty.");
         }
@@ -156,16 +157,16 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
     @Override
     public boolean removeFirstOccurrence(Object o)
     {
-        Node<E> node=first.getNext();
-        while (node!=last)
+        Node<E> node = first.getNext();
+        while (node != last)
         {
-            if (Objects.equals(o,node.getVault()))
+            if (Objects.equals(o, node.getVault()))
             {
                 node.remove();
                 size--;
                 return true;
             }
-            node=node.getNext();
+            node = node.getNext();
         }
         return false;
     }
@@ -173,16 +174,16 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
     @Override
     public boolean removeLastOccurrence(Object o)
     {
-        Node<E> node=last.getPrevious();
-        while (node!=first)
+        Node<E> node = last.getPrevious();
+        while (node != first)
         {
-            if (Objects.equals(o,node.getVault()))
+            if (Objects.equals(o, node.getVault()))
             {
                 node.remove();
                 size--;
                 return true;
             }
-            node=node.getPrevious();
+            node = node.getPrevious();
         }
         return false;
     }
@@ -236,10 +237,10 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
     @Override
     public boolean removeAll(@NotNull Collection<?> c)
     {
-        boolean flag=false;
+        boolean flag = false;
         for (Object object: c)
         {
-            flag|=this.removeAll(object);
+            flag |= this.removeAll(object);
         }
         return flag;
     }
@@ -247,17 +248,17 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
     @Override
     public boolean retainAll(@NotNull Collection<?> c)
     {
-        boolean flag=false;
-        Node<E> node=first.getNext();
-        while (node!=last)
+        boolean flag = false;
+        Node<E> node = first.getNext();
+        while (node != last)
         {
             if (!c.contains(node.getVault()))
             {
                 node.remove();
                 size--;
-                flag=true;
+                flag = true;
             }
-            node=node.getNext();
+            node = node.getNext();
         }
         return flag;
     }
@@ -265,24 +266,26 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
     @Override
     public LinkedDeque<E> clone()
     {
-        LinkedDeque<E> deque=new LinkedDeque<>();
+        LinkedDeque<E> deque = new LinkedDeque<>();
         for (E e: this)
         {
             deque.addLast(e);
         }
         return deque;
-    }    @Override
+    }
+
+    @Override
     public void clear()
     {
-        first=new Node<>();
-        last=new Node<>();
+        first = new Node<>();
+        last = new Node<>();
         first.setPrevious(first);
         first.setNext(last);
         last.setVault(null);
         last.setPrevious(first);
         last.setNext(last);
         last.setVault(null);
-        size=0;
+        size = 0;
     }
 
     @Override
@@ -299,17 +302,17 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
 
     public boolean removeAll(Object o)
     {
-        boolean flag=false;
-        Node<E> node=first.getNext();
-        while (node!=last)
+        boolean flag = false;
+        Node<E> node = first.getNext();
+        while (node != last)
         {
-            if (Objects.equals(o,node.getVault()))
+            if (Objects.equals(o, node.getVault()))
             {
                 node.remove();
                 size--;
-                flag=true;
+                flag = true;
             }
-            node=node.getNext();
+            node = node.getNext();
         }
         return flag;
     }
@@ -323,10 +326,10 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
     @Override
     public boolean containsAll(@NotNull Collection<?> c)
     {
-        boolean flag=true;
+        boolean flag = true;
         for (Object o: c)
         {
-            flag&=contains(o);
+            flag &= contains(o);
         }
         return flag;
     }
@@ -334,14 +337,14 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
     @Override
     public boolean contains(Object o)
     {
-        Node<E> node=first.getNext();
-        while (node!=last)
+        Node<E> node = first.getNext();
+        while (node != last)
         {
-            if (Objects.equals(o,node.getVault()))
+            if (Objects.equals(o, node.getVault()))
             {
                 return true;
             }
-            node=node.getNext();
+            node = node.getNext();
         }
         return false;
     }
@@ -355,9 +358,10 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
     @Override
     public boolean isEmpty()
     {
-        return size<=0;
+        return size <= 0;
     }
 
+    @NotNull
     @Override
     public QueIterator iterator()
     {
@@ -370,16 +374,16 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
         private Node<E> previous;
         private Node<E> next;
 
-        public Node(E vault,Node<E> previous,Node<E> next)
+        public Node(E vault, Node<E> previous, Node<E> next)
         {
-            this.vault=vault;
-            this.previous=previous;
-            this.next=next;
+            this.vault = vault;
+            this.previous = previous;
+            this.next = next;
         }
 
         public Node()
         {
-            this(null,null,null);
+            this(null, null, null);
         }
 
         public E getVault()
@@ -389,8 +393,8 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
 
         public E setVault(E vault)
         {
-            E v=this.vault;
-            this.vault=vault;
+            E v = this.vault;
+            this.vault = vault;
             return v;
         }
 
@@ -401,7 +405,7 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
 
         public void setPrevious(Node<E> previous)
         {
-            this.previous=previous;
+            this.previous = previous;
         }
 
         public Node<E> getNext()
@@ -411,13 +415,13 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
 
         public void setNext(Node<E> next)
         {
-            this.next=next;
+            this.next = next;
         }
 
         public void insertBefore(E e)
         {
-            Node<E> node=new Node<>(e,getPrevious(),this);
-            if (getPrevious()!=null)
+            Node<E> node = new Node<>(e, getPrevious(), this);
+            if (getPrevious() != null)
             {
                 getPrevious().setNext(node);
             }
@@ -426,8 +430,8 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
 
         public void insertAfter(E e)
         {
-            Node<E> node=new Node<>(e,this,getNext());
-            if (getNext()!=null)
+            Node<E> node = new Node<>(e, this, getNext());
+            if (getNext() != null)
             {
                 getNext().setPrevious(node);
             }
@@ -436,11 +440,11 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
 
         public void remove()
         {
-            if (getPrevious()!=null)
+            if (getPrevious() != null)
             {
                 getPrevious().setNext(getNext());
             }
-            if (getNext()!=null)
+            if (getNext() != null)
             {
                 getNext().setPrevious(getPrevious());
             }
@@ -449,51 +453,57 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
 
     public String toString()
     {
-        Object[] objects=toArray();
-        for (int i=0;i<objects.length;i++)
+        Object[] objects = toArray();
+        for (int i = 0; i < objects.length; i++)
         {
-            if (this==objects[i])
+            if (this == objects[i])
             {
-                objects[i]="(this)";
+                objects[i] = "(this)";
             }
         }
         return Arrays.toString(objects);
-    }    @NotNull
+    }
+
+    @NotNull
     @Override
-    public E[] toArray()
+    @SuppressWarnings("unchecked")
+    public E @NotNull [] toArray()
     {
-        E[] array=(E[]) new Object[size];
-        int i=0;
+        E[] array = (E[]) new Object[size];
+        int i = 0;
         for (E e: this)
         {
-            array[i++]=e;
+            array[i++] = e;
         }
         return array;
     }
 
     public LinkedDeque<E> deepClone() throws Throwable
     {
-        LinkedDeque<E> deque=new LinkedDeque<>();
+        LinkedDeque<E> deque = new LinkedDeque<>();
         for (E e: this)
         {
-            MethodAccessor methodAccessor=MethodAccessor.getDeclaredMethod(e.getClass(),"clone");
+            MethodAccessor methodAccessor = MethodAccessor.getMethodInSuperClasses(e.getClass(), "clone");
             methodAccessor.invoke(e);
             deque.addLast(e);
         }
         return deque;
-    }    @NotNull
+    }
+
+    @NotNull
     @Override
-    public <T> T[] toArray( T @NotNull []  a)
+    @SuppressWarnings({"unchecked", "SuspiciousSystemArraycopy"})
+    public <T> T @NotNull [] toArray(T @NotNull [] a)
     {
-        E[] objects=toArray();
-        if (a.length<size)
+        E[] objects = toArray();
+        if (a.length < size)
         {
-            return (T[]) Arrays.copyOf(objects,size,a.getClass());
+            return (T[]) Arrays.copyOf(objects, size, a.getClass());
         }
-        System.arraycopy(objects,0,a,0,size);
-        if (a.length>size)
+        System.arraycopy(objects, 0, a, 0, size);
+        if (a.length > size)
         {
-            a[size]=null;
+            a[size] = null;
         }
         return a;
     }
@@ -517,9 +527,9 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
         return QueIterator::new;
     }
 
-    public void insert(QueIterator iterator,E e)
+    public void insert(QueIterator iterator, E e)
     {
-        if (iterator.getNode()!=first)
+        if (iterator.getNode() != first)
         {
             iterator.getNode().insertBefore(e);
             iterator.index++;
@@ -527,9 +537,9 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
         }
     }
 
-    public E set(QueIterator iterator,E e)
+    public E set(QueIterator iterator, E e)
     {
-        if (iterator.getP()!=first&&iterator.getP()!=last)
+        if (iterator.getP() != first && iterator.getP() != last)
         {
             return iterator.getP().setVault(e);
         }
@@ -538,12 +548,12 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
 
     public E removeItem(QueIterator iterator)
     {
-        Node<E> node=iterator.getP();
-        if (node!=null&&node!=first&&node!=last)
+        Node<E> node = iterator.getP();
+        if (node != null && node != first && node != last)
         {
             node.remove();
             size--;
-            if (iterator.pr>0)
+            if (iterator.pr > 0)
             {
                 iterator.index--;
             }
@@ -552,18 +562,18 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
         return null;
     }
 
-    public void insert(DesQueIterator iterator,E e)
+    public void insert(DesQueIterator iterator, E e)
     {
-        if (iterator.getNode()!=last)
+        if (iterator.getNode() != last)
         {
             iterator.getNode().insertAfter(e);
             size++;
         }
     }
 
-    public E set(DesQueIterator iterator,E e)
+    public E set(DesQueIterator iterator, E e)
     {
-        if (iterator.getP()!=first&&iterator.getP()!=last)
+        if (iterator.getP() != first && iterator.getP() != last)
         {
             return iterator.getP().setVault(e);
         }
@@ -572,12 +582,12 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
 
     public E removeItem(DesQueIterator iterator)
     {
-        Node<E> node=iterator.getP();
-        if (node!=null&&node!=first&&node!=last)
+        Node<E> node = iterator.getP();
+        if (node != null && node != first && node != last)
         {
             node.remove();
             size--;
-            if (iterator.pr<0)
+            if (iterator.pr < 0)
             {
                 iterator.index--;
             }
@@ -588,10 +598,10 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
 
     public int indexOf(Object o)
     {
-        int i=0;
+        int i = 0;
         for (E e: this)
         {
-            if (Objects.equals(o,e))
+            if (Objects.equals(o, e))
             {
                 return i;
             }
@@ -602,10 +612,10 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
 
     public int lastIndexOf(Object o)
     {
-        int i=size-1;
+        int i = size-1;
         for (E e: descending())
         {
-            if (Objects.equals(o,e))
+            if (Objects.equals(o, e))
             {
                 return i;
             }
@@ -617,17 +627,18 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
     private void writeObject(ObjectOutputStream out) throws IOException
     {
         out.writeInt(size);
-        for (var x:this)
+        for (var x: this)
         {
             out.writeObject(x);
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException
     {
-        var x=in.readInt();
+        var x = in.readInt();
         clear();
-        while (x-->0)
+        while (x-- > 0)
         {
             add((E) in.readObject());
         }
@@ -636,17 +647,17 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
     @Override
     public int hashCode()
     {
-        int hashCode=1;
+        int hashCode = 1;
         for (E e: this)
         {
-            hashCode=31*hashCode+(e==null?0:e.hashCode());
+            hashCode = 31*hashCode+(e == null?0:e.hashCode());
         }
         return hashCode;
     }
 
     public boolean equals(Object o)
     {
-        if (o==this)
+        if (o == this)
         {
             return true;
         }
@@ -655,18 +666,18 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
             return false;
         }
 
-        Iterator<E> e1=iterator();
-        Iterator<?> e2=((Collection<?>) o).iterator();
-        while (e1.hasNext()&&e2.hasNext())
+        Iterator<E> e1 = iterator();
+        Iterator<?> e2 = ((Collection<?>) o).iterator();
+        while (e1.hasNext() && e2.hasNext())
         {
-            E o1=e1.next();
-            Object o2=e2.next();
-            if (!(Objects.equals(o1,o2)))
+            E o1 = e1.next();
+            Object o2 = e2.next();
+            if (!(Objects.equals(o1, o2)))
             {
                 return false;
             }
         }
-        return !(e1.hasNext()||e2.hasNext());
+        return !(e1.hasNext() || e2.hasNext());
     }
 
     public class QueIterator implements ListIterator<E>
@@ -674,19 +685,19 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
         private Node<E> node;
         private Node<E> p;
         private int index;
-        private int pr=0;
+        private int pr = 0;
 
         public QueIterator()
         {
-            node=first.next;
-            p=null;
-            index=0;
+            node = first.next;
+            p = null;
+            index = 0;
         }
 
         @Override
         public boolean hasNext()
         {
-            return node!=last;
+            return node != last;
         }
 
         @Override
@@ -694,10 +705,10 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
         {
             if (hasNext())
             {
-                p=node;
-                node=node.next;
-                index=Math.min(index+1,size);
-                pr=1;
+                p = node;
+                node = node.next;
+                index = Math.min(index+1, size);
+                pr = 1;
                 return p.vault;
             }
             return null;
@@ -711,7 +722,7 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
 
         public void set(E e)
         {
-            LinkedDeque.this.set(this,e);
+            LinkedDeque.this.set(this, e);
         }
 
         private Node<E> getNode()
@@ -722,7 +733,7 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
         @Override
         public boolean hasPrevious()
         {
-            return node.previous!=first;
+            return node.previous != first;
         }
 
         @Override
@@ -730,10 +741,10 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
         {
             if (hasPrevious())
             {
-                p=node.previous;
-                node=node.previous;
-                index=Math.max(index-1,0);
-                pr=-1;
+                p = node.previous;
+                node = node.previous;
+                index = Math.max(index-1, 0);
+                pr = -1;
                 return p.vault;
             }
             return null;
@@ -754,7 +765,7 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
         @Override
         public void add(E e)
         {
-            LinkedDeque.this.insert(this,e);
+            LinkedDeque.this.insert(this, e);
         }
 
         private Node<E> getP()
@@ -765,22 +776,22 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
 
     public class DesQueIterator implements ListIterator<E>
     {
-        int pr=0;
+        int pr = 0;
         private Node<E> node;
         private Node<E> p;
         private int index;
 
         public DesQueIterator()
         {
-            node=last.previous;
-            p=null;
-            index=size-1;
+            node = last.previous;
+            p = null;
+            index = size-1;
         }
 
         @Override
         public boolean hasNext()
         {
-            return node!=first;
+            return node != first;
         }
 
         @Override
@@ -788,10 +799,10 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
         {
             if (hasNext())
             {
-                p=node;
-                node=node.previous;
-                index=Math.max(index-1,-1);
-                pr=1;
+                p = node;
+                node = node.previous;
+                index = Math.max(index-1, -1);
+                pr = 1;
                 return p.vault;
             }
             return null;
@@ -805,7 +816,7 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
 
         public void set(E e)
         {
-            LinkedDeque.this.set(this,e);
+            LinkedDeque.this.set(this, e);
         }
 
         private Node<E> getNode()
@@ -816,7 +827,7 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
         @Override
         public boolean hasPrevious()
         {
-            return node.next!=last;
+            return node.next != last;
         }
 
         @Override
@@ -824,10 +835,10 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
         {
             if (hasPrevious())
             {
-                p=node.next;
-                node=node.next;
-                index=Math.min(index+1,size-1);
-                pr=-1;
+                p = node.next;
+                node = node.next;
+                index = Math.min(index+1, size-1);
+                pr = -1;
                 return p.vault;
             }
             return null;
@@ -848,7 +859,7 @@ public class LinkedDeque<E> implements Deque<E>, Cloneable, Serializable
         @Override
         public void add(E e)
         {
-            LinkedDeque.this.insert(this,e);
+            LinkedDeque.this.insert(this, e);
         }
 
         private Node<E> getP()

@@ -1,26 +1,30 @@
 package me.nullaqua.api.collection;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 
+@SuppressWarnings("unused")
 public class Vector<E> implements Collection<E>, RandomAccess, Cloneable, java.io.Serializable
 {
     private E[] data;
-    private int top=-1;
+    private int top = -1;
 
     public Vector()
     {
         this(1);
     }
 
+    @SuppressWarnings("unchecked")
     public Vector(int size)
     {
-        data=(E[]) new Object[size];
+        data = (E[]) new Object[size];
     }
 
     @Override
     public boolean isEmpty()
     {
-        return size()==0;
+        return size() == 0;
     }
 
     public int size()
@@ -28,17 +32,18 @@ public class Vector<E> implements Collection<E>, RandomAccess, Cloneable, java.i
         return top+1;
     }
 
+    @NotNull
     @Override
     public Iterator<E> iterator()
     {
         return new Iterator<>()
         {
-            private int pos=0;
+            private int pos = 0;
 
             @Override
             public boolean hasNext()
             {
-                return pos<size();
+                return pos < size();
             }
 
             @Override
@@ -49,26 +54,29 @@ public class Vector<E> implements Collection<E>, RandomAccess, Cloneable, java.i
         };
     }
 
+    @NotNull
     @Override
-    public <T> T[] toArray(T[] a)
+    @SuppressWarnings({"unchecked", "SuspiciousSystemArraycopy"})
+    public <T> T @NotNull [] toArray(T[] a)
     {
-        E[] objects=toArray();
-        if (a.length<size())
+        E[] objects = toArray();
+        if (a.length < size())
         {
-            return (T[]) Arrays.copyOf(objects,size(),a.getClass());
+            return (T[]) Arrays.copyOf(objects, size(), a.getClass());
         }
-        System.arraycopy(objects,0,a,0,size());
-        if (a.length>size())
+        System.arraycopy(objects, 0, a, 0, size());
+        if (a.length > size())
         {
-            a[size()]=null;
+            a[size()] = null;
         }
         return a;
     }
 
+    @NotNull
     @Override
-    public E[] toArray()
+    public E @NotNull [] toArray()
     {
-        return Arrays.copyOf(data,size());
+        return Arrays.copyOf(data, size());
     }
 
     @Override
@@ -93,11 +101,11 @@ public class Vector<E> implements Collection<E>, RandomAccess, Cloneable, java.i
     @Override
     public boolean contains(Object o)
     {
-        if (o!=null)
+        if (o != null)
         {
             for (E b: this)
             {
-                if (Objects.equals(b,o))
+                if (Objects.equals(b, o))
                 {
                     return true;
                 }
@@ -127,39 +135,40 @@ public class Vector<E> implements Collection<E>, RandomAccess, Cloneable, java.i
     public void put(E b)
     {
         expand();
-        data[++top]=b;
+        data[++top] = b;
     }
 
     private void expand()
     {
-        if (size()<data.length)
+        if (size() < data.length)
         {
             return;
         }
         expand(data.length);
     }
 
+    @SuppressWarnings("unchecked")
     private void expand(int min)
     {
-        if (min<data.length)
+        if (min < data.length)
         {
             return;
         }
-        int x=1;
-        while (min>=(data.length<<x)) ++x;
-        E[] newData=(E[]) new Object[data.length<<x];
-        System.arraycopy(data,0,newData,0,data.length);
-        data=newData;
+        int x = 1;
+        while (min >= (data.length<<x)) ++x;
+        E[] newData = (E[]) new Object[data.length<<x];
+        System.arraycopy(data, 0, newData, 0, data.length);
+        data = newData;
     }
 
     @Override
-    public boolean removeAll(Collection<?> c)
+    public boolean removeAll(@NotNull Collection<?> c)
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean retainAll(Collection<?> c)
+    public boolean retainAll(@NotNull Collection<?> c)
     {
         throw new UnsupportedOperationException();
     }
@@ -167,26 +176,26 @@ public class Vector<E> implements Collection<E>, RandomAccess, Cloneable, java.i
     @Override
     public void clear()
     {
-        this.top=-1;
+        this.top = -1;
     }
 
-    public E set(int index,E b)
+    public E set(int index, E b)
     {
         //如果index小于0,抛出异常,如果大于等于size,扩容
-        if (index<0)
+        if (index < 0)
         {
             throw new IndexOutOfBoundsException("Index: "+index+" is out of bounds: 0~"+(size()-1));
         }
         expand(index);
-        E old=data[index];
-        data[index]=b;
-        top=Math.max(top,index);
+        E old = data[index];
+        data[index] = b;
+        top = Math.max(top, index);
         return old;
     }
 
     public E get(int pos)
     {
-        if (pos<0||pos>=size())
+        if (pos < 0 || pos >= size())
         {
             return null;
         }
@@ -195,7 +204,7 @@ public class Vector<E> implements Collection<E>, RandomAccess, Cloneable, java.i
 
     public E top()
     {
-        if (top>=0)
+        if (top >= 0)
         {
             return get(top);
         }
@@ -204,7 +213,7 @@ public class Vector<E> implements Collection<E>, RandomAccess, Cloneable, java.i
 
     public boolean remove()
     {
-        if (top>=0)
+        if (top >= 0)
         {
             --top;
             return true;
@@ -217,21 +226,22 @@ public class Vector<E> implements Collection<E>, RandomAccess, Cloneable, java.i
         return data.length;
     }
 
+    @SuppressWarnings("unchecked")
     public void setMaxSize(int size)
     {
-        if (size<size())
+        if (size < size())
         {
             throw new IllegalArgumentException("Size: "+size+" is less than current size: "+size());
         }
-        E[] es=(E[]) new Object[size];
-        System.arraycopy(data,0,es,0,size());
-        this.data=es;
+        E[] es = (E[]) new Object[size];
+        System.arraycopy(data, 0, es, 0, size());
+        this.data = es;
     }
 
     @Override
     public Vector<E> clone()
     {
-        var clone=new Vector<E>();
+        var clone = new Vector<E>();
         clone.put(this.toArray());
         return clone;
     }
@@ -247,27 +257,28 @@ public class Vector<E> implements Collection<E>, RandomAccess, Cloneable, java.i
     @Override
     public int hashCode()
     {
-        int res=0;
+        int res = 0;
         for (E b: this)
         {
-            res+=b.hashCode();
+            res += b.hashCode();
         }
         return res;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public boolean equals(Object obj)
     {
         if (obj instanceof Vector)
         {
-            Vector<E> v=(Vector<E>) obj;
-            if (v.size()!=size())
+            Vector<E> v = (Vector<E>) obj;
+            if (v.size() != size())
             {
                 return false;
             }
-            for (int i=0;i<size();++i)
+            for (int i = 0; i < size(); ++i)
             {
-                if (!Objects.equals(v.get(i),get(i)))
+                if (!Objects.equals(v.get(i), get(i)))
                 {
                     return false;
                 }
@@ -280,12 +291,12 @@ public class Vector<E> implements Collection<E>, RandomAccess, Cloneable, java.i
     @Override
     public String toString()
     {
-        StringBuilder sb=new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         sb.append("[");
-        for (int i=0;i<size();++i)
+        for (int i = 0; i < size(); ++i)
         {
             sb.append(get(i));
-            if (i!=size()-1)
+            if (i != size()-1)
             {
                 sb.append(",");
             }

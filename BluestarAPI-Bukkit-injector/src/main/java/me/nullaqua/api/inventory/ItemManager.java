@@ -24,7 +24,7 @@ import java.util.Set;
 
 public class ItemManager implements Cloneable, AutoSerialize
 {
-    private static final FieldAccessor meta=FieldAccessor.getDeclaredField(ItemStack.class,"meta");
+    private static final FieldAccessor meta=FieldAccessor.getField(ItemStack.class,"meta");
     private final ItemStack itemStack;
 
     public ItemManager(@NotNull Material type)

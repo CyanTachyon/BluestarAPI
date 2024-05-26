@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>BluestarAPI-kotlin-reflect</artifactId>
+    <description>Some kotlin reflection tools</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

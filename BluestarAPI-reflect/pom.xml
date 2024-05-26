@@ -10,6 +10,9 @@
     </parent>
 
     <artifactId>BluestarAPI-reflect</artifactId>
+    <description>
+        Some java reflection tools
+    </description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

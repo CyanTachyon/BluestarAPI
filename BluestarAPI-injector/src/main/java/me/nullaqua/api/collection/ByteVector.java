@@ -1,9 +1,12 @@
 package me.nullaqua.api.collection;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;
 
+@SuppressWarnings({"unused", "unchecked"})
 public class ByteVector implements Collection<Byte>, RandomAccess, Cloneable, java.io.Serializable
 {
     private byte[] data;
@@ -70,6 +73,7 @@ public class ByteVector implements Collection<Byte>, RandomAccess, Cloneable, ja
         return false;
     }
 
+    @NotNull
     @Override
     public Iterator<Byte> iterator()
     {
@@ -91,8 +95,9 @@ public class ByteVector implements Collection<Byte>, RandomAccess, Cloneable, ja
         };
     }
 
+    @NotNull
     @Override
-    public Byte[] toArray()
+    public Byte @NotNull [] toArray()
     {
         byte[] bytes=toByteArray();
         Byte[] bts=new Byte[bytes.length];
@@ -104,7 +109,7 @@ public class ByteVector implements Collection<Byte>, RandomAccess, Cloneable, ja
     }
 
     @Override
-    public <T> T[] toArray(T[] a)
+    public <T> T @NotNull [] toArray(T[] a)
     {
         Byte[] objects=toArray();
         if (a.length<size())
@@ -157,13 +162,13 @@ public class ByteVector implements Collection<Byte>, RandomAccess, Cloneable, ja
     }
 
     @Override
-    public boolean removeAll(Collection<?> c)
+    public boolean removeAll(@NotNull Collection<?> c)
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean retainAll(Collection<?> c)
+    public boolean retainAll(@NotNull Collection<?> c)
     {
         throw new UnsupportedOperationException();
     }
@@ -263,7 +268,7 @@ public class ByteVector implements Collection<Byte>, RandomAccess, Cloneable, ja
             {
                 if (pos<size())
                 {
-                    return get(pos++);
+                    return get(pos++)&0xFF;
                 }
                 return -1;
             }

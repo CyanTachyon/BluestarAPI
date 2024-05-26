@@ -15,13 +15,13 @@ public final class FieldAccessor
     private final MethodHandle setter;
     private final MethodHandle getter;
 
-    public static List<FieldAccessor> getDeclaredFields(Object o)
+    public static List<FieldAccessor> getFieldsInSuperClasses(Object o)
     {
         if (o==null)
         {
             return new ArrayList<>();
         }
-        return getDeclaredFields(o.getClass());
+        return getFieldsInSuperClasses(o.getClass());
     }
 
     public FieldAccessor(Field field)
@@ -37,14 +37,7 @@ public final class FieldAccessor
         boolean staticField=Modifier.isStatic(field.getModifiers());
         MethodHandle getter=null;
         MethodHandle setter=null;
-        if (field.getDeclaringClass().getPackage().equals(this.getClass().getPackage()))
-        {
-            this.field=field;
-            this.setter=null;
-            this.getter=null;
-            this.staticField=staticField;
-            return;
-        }
+        ReflectionAccessor.checkVisibility(field.getDeclaringClass());
         try
         {
             if (staticField)
@@ -69,7 +62,7 @@ public final class FieldAccessor
                 setter=setter.asType(VIRTUAL_FIELD_SETTER);
             }
         }
-        catch (Exception e)
+        catch (Exception ignored)
         {
         }
         this.field=field;
@@ -94,7 +87,13 @@ public final class FieldAccessor
         }
     }
 
-    public static FieldAccessor getDeclaredField(Class<?> c,String field)
+    /**
+     * 在一个类及其父类中查找字段, 若有同名字段, 则子类的字段优先
+     * @param c 类
+     * @param field 字段名
+     * @return 字段访问器, 若不存在则返回null
+     */
+    public static FieldAccessor getFieldInSuperClasses(Class<?> c,String field)
     {
         if (c==null||field==null)
         {
@@ -106,15 +105,14 @@ public final class FieldAccessor
             {
                 return new FieldAccessor(clazz.getDeclaredField(field));
             }
-            catch (Exception e)
+            catch (Exception ignored)
             {
-                continue;
             }
         }
         return null;
     }
 
-    public static List<FieldAccessor> getDeclaredFields(Class<?> type)
+    public static List<FieldAccessor> getFieldsInSuperClasses(Class<?> type)
     {
         List<FieldAccessor> fields=new ArrayList<>();
         for (Class<?> c: getAllSuperClass(type))
@@ -123,16 +121,7 @@ public final class FieldAccessor
         }
         return fields;
     }
-
-    public static List<FieldAccessor> getFields(Object o)
-    {
-        if (o==null)
-        {
-            return new ArrayList<>();
-        }
-        return getFields(o.getClass());
-    }
-
+    
     public static List<FieldAccessor> getFields(Class<?> type)
     {
         List<FieldAccessor> fields=new ArrayList<>();

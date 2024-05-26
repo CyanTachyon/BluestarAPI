@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.RandomAccess;
 
+@SuppressWarnings({"unused", "unchecked"})
 public class BitVector implements Collection<Boolean>, RandomAccess, Cloneable, java.io.Serializable
 {
     private static final long serialVersionUID=1L;
@@ -257,21 +258,16 @@ public class BitVector implements Collection<Boolean>, RandomAccess, Cloneable, 
         }
     }
 
-    @NotNull
     @Override
-    public <T> T[] toArray(@NotNull T @NotNull [] a)
+    public <T> T @NotNull [] toArray(@NotNull T @NotNull [] a)
     {
-        if (a.getClass().equals(Boolean[].class))
-        {
-            return (T[]) toArray();
-        }
-        return null;
+        return (T[]) toArray();
     }
 
     @Override
-    public Object[] toArray()
+    public Boolean @NotNull [] toArray()
     {
-        Object[] array=new Object[size()];
+        Boolean[] array=new Boolean[size()];
         for (int i=0;i<size();i++)
         {
             array[i]=get(i);
