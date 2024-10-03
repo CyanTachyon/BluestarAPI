@@ -1,16 +1,19 @@
+@file:Suppress("unused", "DEPRECATION_ERROR")
+
 package me.nullaqua.api.serialize
 
-import me.nullaqua.api.collection.Vector
+import me.nullaqua.api.kotlin.reflect.blankInstance
+import me.nullaqua.api.kotlin.reflect.setField
 import me.nullaqua.api.reflect.FieldAccessor
-import me.nullaqua.kotlin.reflect.blankInstance
-import me.nullaqua.kotlin.reflect.setField
 import java.lang.reflect.Modifier
 import java.util.*
 import java.util.zip.Deflater
 import java.util.zip.Inflater
 
+@Deprecated("该序列化API已被弃用", ReplaceWith("me.nullaqua.api.serializer.Serializer"), level = DeprecationLevel.ERROR)
 object Serialize
 {
+    @JvmStatic
     private val map = WeakHashMap<Any, SerializeObject>()
 
     @JvmStatic
@@ -23,7 +26,7 @@ object Serialize
             return x
         }
         if (o == null) return SimpleObject(null)
-        if (o.javaClass in SimpleObject.simpleClasses)
+        if (SimpleObject.simpleClasses.containsKey(o::class.java) || SimpleObject.simpleClasses.containsValue(o::class.java))
         {
             return SimpleObject(o)
         }
@@ -126,7 +129,7 @@ object Serialize
     @Throws(Throwable::class)
     private fun nxt(string: String, i: Int): Triple<String, String, Int>
     {
-        var i = i
+        @Suppress("NAME_SHADOWING") var i = i
         val sb = StringBuilder()
         while (string[i] != ';' && string[i] != '{') sb.append(string[i++])
         if (string[i] == ';') sb.append(string[i++])
@@ -153,9 +156,11 @@ object Serialize
     }
 }
 
+@Deprecated("该序列化API已被弃用", ReplaceWith("me.nullaqua.api.serializer.Serializer"), level = DeprecationLevel.ERROR)
 sealed class SerializeObject
 {
     private var deserialize: Any? = null
+    @Suppress("DEPRECATION_ERROR")
     protected var t = Time(0, 0)
     abstract val serializeClass: Class<*>
 
@@ -163,6 +168,7 @@ sealed class SerializeObject
     {
         if (new || deserialize == null)
         {
+            @Suppress("DEPRECATION_ERROR")
             deserialize = deserialize(Time(System.currentTimeMillis(), System.nanoTime()))
         }
         else
@@ -172,7 +178,7 @@ sealed class SerializeObject
         return@deserialize deserialize
     }
 
-    fun deserialize(time: Time): Any? = synchronized(this)
+    fun deserialize(@Suppress("DEPRECATION_ERROR") time: Time): Any? = synchronized(this)
     {
         return if (t.after(time)) deserialize
         else
@@ -218,7 +224,8 @@ sealed class SerializeObject
     abstract fun toString(map: MutableMap<SerializeObject, Int>, res: Vector<String>)
 }
 
-class SimpleObject(private val o: Any?) : SerializeObject()
+@Deprecated("该序列化API已被弃用", ReplaceWith("me.nullaqua.api.serializer.Serializer"), level = DeprecationLevel.ERROR)
+class SimpleObject(private val o: Any?): SerializeObject()
 {
     override val serializeClass: Class<*>
 
@@ -256,7 +263,7 @@ class SimpleObject(private val o: Any?) : SerializeObject()
         {
             val sb = StringBuilder()
             sb.append("String@")
-            for (c in (o as java.lang.String).getBytes(Charsets.UTF_8))
+            for (c in (o as String).toByteArray(Charsets.UTF_8))
             {
                 //每个字节转为2个16进制字符
                 sb.append(Integer.toHexString(c.toInt() shr 4 and 0xf))
@@ -289,13 +296,14 @@ class SimpleObject(private val o: Any?) : SerializeObject()
         {
             this.setField("o", null)
             this.setField("serializeClass", Void.TYPE)
+            return
         }
         val i = string.indexOf('@')
         val s = string.substring(0, i)
         val x = string.substring(i + 1)
         val o = when (s)
         {
-            "String" ->
+            "String"  ->
             {
                 val sb = StringBuilder()
                 for (t in x.indices step 2)
@@ -306,14 +314,14 @@ class SimpleObject(private val o: Any?) : SerializeObject()
             }
 
             "boolean" -> x.toBoolean()
-            "double" -> java.lang.Double.longBitsToDouble(java.lang.Long.parseLong(x, 16))
-            "float" -> java.lang.Float.intBitsToFloat(Integer.parseInt(x, 16))
-            "char" -> x.toInt(16).toChar()
-            "int" -> java.lang.Long.parseLong(x, 16).toInt()
-            "long" -> java.lang.Long.parseLong(x, 16)
-            "short" -> java.lang.Long.parseLong(x, 16).toShort()
-            "byte" -> java.lang.Long.parseLong(x, 16).toByte()
-            else -> throw IllegalArgumentException("Unknown type")
+            "double"  -> java.lang.Double.longBitsToDouble(java.lang.Long.parseLong(x, 16))
+            "float"   -> java.lang.Float.intBitsToFloat(Integer.parseInt(x, 16))
+            "char"    -> x.toInt(16).toChar()
+            "int"     -> java.lang.Long.parseLong(x, 16).toInt()
+            "long"    -> java.lang.Long.parseLong(x, 16)
+            "short"   -> java.lang.Long.parseLong(x, 16).toShort()
+            "byte"    -> java.lang.Long.parseLong(x, 16).toByte()
+            else      -> throw IllegalArgumentException("Unknown type")
         }
         this.setField("o", o)
         this.setField("serializeClass", if (s == "String") java.lang.String::class.java else o::class.javaPrimitiveType)
@@ -335,12 +343,11 @@ class SimpleObject(private val o: Any?) : SerializeObject()
             java.lang.Double::class.java to Double::class.javaPrimitiveType,
             java.lang.Void::class.java to Void::class.javaPrimitiveType
         )
-
-
     }
 }
 
-class ArrayObject : SerializeObject()
+@Deprecated("该序列化API已被弃用", ReplaceWith("me.nullaqua.api.serializer.Serializer"), level = DeprecationLevel.ERROR)
+class ArrayObject: SerializeObject()
 {
     private val array: Array<SerializeObject> = emptyArray()
     override val serializeClass: Class<*> = Array<Any>::class.java
@@ -403,7 +410,7 @@ class ArrayObject : SerializeObject()
         this.setField("array", Array<SerializeObject?>(list.size) { null })
         for (j in list.indices)
         {
-            val s = list[j]
+            @Suppress("NAME_SHADOWING") val s = list[j]
             if (s[0] in '0'..'9')
             {
                 val x = s.toInt()
@@ -419,7 +426,8 @@ class ArrayObject : SerializeObject()
     }
 }
 
-class ComplexObject : SerializeObject()
+@Deprecated("该序列化API已被弃用", ReplaceWith("me.nullaqua.api.serializer.Serializer"), level = DeprecationLevel.ERROR)
+class ComplexObject: SerializeObject()
 {
     private val map: Map<Pair<String, String>, SerializeObject> = Collections.emptyMap()
     override val serializeClass: Class<*> = Any::class.java
@@ -464,10 +472,10 @@ class ComplexObject : SerializeObject()
         map[this] = x
         val sb = StringBuilder()
         sb.append("${serializeClass.name}{\n")
-        val entrys = this.map.entries.toMutableList()
-        entrys.sortBy { it.key.first }
+        val entries = this.map.entries.toMutableList()
+        entries.sortBy { it.key.first }
         var last: Class<*>? = null
-        for (i in entrys)
+        for (i in entries)
         {
             if (last != null && i.key.first != last.name) if (last != serializeClass) sb.append("\n\t}")
             if (last != null) sb.append(",\n")
@@ -476,7 +484,7 @@ class ComplexObject : SerializeObject()
                 last = Class.forName(i.key.first)
                 if (last != serializeClass) sb.append("\t${last.name}{\n")
             }
-            if (last != serializeClass) sb.append("\t");
+            if (last != serializeClass) sb.append("\t")
             sb.append("\t${i.key.second}=")
             if (i.value is SimpleObject) sb.append(i.value.toString())
             else
@@ -534,7 +542,7 @@ class ComplexObject : SerializeObject()
             }
             else
             {
-                val x = SimpleObject::class.java.blankInstance()
+                val x = blankInstance<SimpleObject>()
                 x.deserialize(value)
                 map[clazz0 to name] = x
             }

@@ -3,7 +3,6 @@ package me.nullaqua.api.player.input;
 
 import net.wesjd.anvilgui.version.VersionMatcher;
 import net.wesjd.anvilgui.version.VersionWrapper;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -19,9 +18,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
+@SuppressWarnings("unused")
 public final class PlayerAnvilInput
 {
     private static final VersionWrapper WRAPPER=new VersionMatcher().match();
@@ -76,8 +77,8 @@ public final class PlayerAnvilInput
         WRAPPER.handleInventoryCloseEvent(this.player);
         WRAPPER.setActiveContainerDefault(this.player);
         Bukkit.getPluginManager().registerEvents(this.listener,this.plugin);
-        Object container=WRAPPER.newContainerAnvil(this.player,this.inventoryTitle);
-        this.inventory=WRAPPER.toBukkitInventory(container);
+        VersionWrapper.AnvilContainerWrapper container=WRAPPER.newContainerAnvil(this.player, this.inventoryTitle);
+        this.inventory=container.getBukkitInventory();
         this.inventory.setItem(0,this.inputLeft);
         if (this.inputRight!=null)
         {
@@ -258,7 +259,7 @@ public final class PlayerAnvilInput
 
         public PlayerAnvilInput.Builder onClose(Consumer<PlayerAnvilInput> closeListener)
         {
-            Validate.notNull(closeListener,"closeListener cannot be null");
+            Objects.requireNonNull(closeListener,"closeListener cannot be null");
             this.closeListener=closeListener;
             return this;
         }
@@ -277,35 +278,35 @@ public final class PlayerAnvilInput
 
         public PlayerAnvilInput.Builder onComplete(BiFunction<PlayerAnvilInput, String, PlayerAnvilInput.Response> completeFunction)
         {
-            Validate.notNull(completeFunction,"Complete function cannot be null");
+            Objects.requireNonNull(completeFunction,"Complete function cannot be null");
             this.completeFunction=completeFunction;
             return this;
         }
 
         public PlayerAnvilInput.Builder plugin(Plugin plugin)
         {
-            Validate.notNull(plugin,"Plugin cannot be null");
+            Objects.requireNonNull(plugin,"Plugin cannot be null");
             this.plugin=plugin;
             return this;
         }
 
         public PlayerAnvilInput.Builder text(String text)
         {
-            Validate.notNull(text,"Text cannot be null");
+            Objects.requireNonNull(text,"Text cannot be null");
             this.itemText=text;
             return this;
         }
 
         public PlayerAnvilInput.Builder title(String title)
         {
-            Validate.notNull(title,"title cannot be null");
+            Objects.requireNonNull(title,"title cannot be null");
             this.title=title;
             return this;
         }
 
         public PlayerAnvilInput.Builder itemLeft(ItemStack item)
         {
-            Validate.notNull(item,"item cannot be null");
+            Objects.requireNonNull(item,"item cannot be null");
             this.itemLeft=item;
             return this;
         }
@@ -316,11 +317,12 @@ public final class PlayerAnvilInput
             return this;
         }
 
+        @SuppressWarnings("UnusedReturnValue")
         public PlayerAnvilInput open(Player player)
         {
-            Validate.notNull(this.plugin,"Plugin cannot be null");
-            Validate.notNull(this.completeFunction,"Complete function cannot be null");
-            Validate.notNull(player,"Player cannot be null");
+            Objects.requireNonNull(this.plugin,"Plugin cannot be null");
+            Objects.requireNonNull(this.completeFunction,"Complete function cannot be null");
+            Objects.requireNonNull(player,"Player cannot be null");
             return new PlayerAnvilInput(this.plugin,
                                         player,
                                         this.title,

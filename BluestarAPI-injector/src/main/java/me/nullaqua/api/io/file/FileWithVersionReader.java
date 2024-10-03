@@ -94,7 +94,7 @@ public class FileWithVersionReader
     {
         for (Method method: worker.getClass().getDeclaredMethods())
         {
-            var readVersion=method.getAnnotation(ReadVersion.class);
+            var readVersion=method.getDeclaredAnnotation(ReadVersion.class);
             if (readVersion!=null&&
                 readVersion.value().equals(ver)&&
                 method.getParameterTypes().length==1&&

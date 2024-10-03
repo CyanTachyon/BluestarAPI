@@ -32,6 +32,7 @@ import java.util.stream.Stream;
  * 用告示牌让玩家输入(弹出告示牌输入框)
  * 需要ProtocolLib
  */
+@SuppressWarnings("unused")
 public final class PlayerSignInput
 {
     private final BiConsumer<Player, List<String>> action;
@@ -54,8 +55,6 @@ public final class PlayerSignInput
 
     /**
      * 获取一个新的Builder
-     *
-     * @return
      */
     public static Builder builder()
     {

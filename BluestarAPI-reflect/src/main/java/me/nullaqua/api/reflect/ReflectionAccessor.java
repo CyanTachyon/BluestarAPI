@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-@SuppressWarnings({"unused", "unchecked", "JavaLangClash", "JavaLangInvocation"})
+@SuppressWarnings({"unused", "JavaLangClash", "JavaLangInvocation"})
 @CallerSensitive
 public final class ReflectionAccessor
 {
@@ -223,115 +223,5 @@ public final class ReflectionAccessor
     public static List<FieldAccessor> getBothFields(Class<?> a, Class<?> b)
     {
         return FieldAccessor.getFieldsInSuperClasses(getBothSuperClass(a, b));
-    }
-
-    ///////////////////
-    /// force clone ///
-    ///////////////////
-
-    /**
-     * 强制深克隆一个对象, 即克隆对象的所有字段, 包括数组和对象.
-     * 理论上所有字段都会被强制克隆, 即使是一些不应存在两个的对象(例如线程, 类加载器, 枚举等).
-     * @param o 对象
-     * @return 克隆的对象
-     * @param <T> 对象类型
-     * @throws Throwable 异常
-     */
-    public static <T> T forceDeepObject(T o) throws Throwable
-    {
-        if (null == o)
-        {
-            return null;
-        }
-        Map<Object, Object> map = new HashMap<>();
-        return forceDeepObject(o, map);
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    private static boolean isSimpleObject(Object o)
-    {
-        Class<?> type = o.getClass();
-        return type.isPrimitive() ||
-               type.equals(String.class) ||
-               type.equals(Long.class) ||
-               type.equals(Boolean.class) ||
-               type.equals(Short.class) ||
-               type.equals(Integer.class) ||
-               type.equals(Character.class) ||
-               type.equals(Float.class) ||
-               type.equals(Double.class) ||
-               type.equals(Void.class) ||
-               type.equals(Byte.class) ||
-               type.isEnum() ||
-               type == Class.class ||
-               type == Method.class ||
-               type == Constructor.class;
-    }
-
-    private static <T> T forceDeepObject(T o, Map<Object, Object> map) throws Throwable
-    {
-        if (o == null)
-        {
-            return null;
-        }
-        if (isSimpleObject(o))
-        {
-            return o;
-        }
-        Object newInstance = map.get(o);
-        if (newInstance != null)
-        {
-            return (T) newInstance;
-        }
-
-        if (o.getClass().isArray())
-        {
-            newInstance = cloneArray(o, map);
-        }
-        else
-        {
-            newInstance = UnsafeOperation.blankInstance(o.getClass());
-        }
-        map.put(o, newInstance);
-        cloneFields(o, newInstance, map);
-        return (T) newInstance;
-    }
-
-    private static Object cloneArray(Object o, Map<Object, Object> map) throws Throwable
-    {
-        if (null == o)
-        {
-            return null;
-        }
-        if (!o.getClass().isArray())
-        {
-            return forceDeepObject(o, map);
-        }
-        int len = Array.getLength(o);
-        Object array = Array.newInstance(o.getClass().getComponentType(), len);
-        map.put(o, array);
-        for (int i = 0; i < len; i++)
-        {
-            if (Array.get(o, i) == null) continue;
-            var x = forceDeepObject(Array.get(o, i), map);
-            Array.set(array, i, x);
-        }
-        return array;
-    }
-
-    private static void cloneFields(Object object, Object newObject, Map<Object, Object> map) throws Throwable
-    {
-        if (object == null || newObject == null)
-        {
-            return;
-        }
-        List<FieldAccessor> fields = FieldAccessor.getFieldsInSuperClasses(object.getClass());
-        for (FieldAccessor f: fields)
-        {
-            if (!Modifier.isStatic(f.getField().getModifiers()))
-            {
-                f.set(newObject, forceDeepObject(f.get(object), map));
-            }
-        }
     }
 }

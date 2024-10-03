@@ -5,7 +5,7 @@
     <parent>
         <artifactId>BluestarAPI</artifactId>
         <groupId>me.nullaqua</groupId>
-        <version>4.1.1</version>
+        <version>4.3.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -23,7 +23,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -82,21 +82,21 @@
         <dependency>
             <groupId>com.comphenix.protocol</groupId>
             <artifactId>ProtocolLib</artifactId>
-            <version>4.8.0</version>
+            <version>5.1.0</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>net.wesjd</groupId>
             <artifactId>anvilgui</artifactId>
-            <version>1.6.3-SNAPSHOT</version>
+            <version>1.10.2-SNAPSHOT</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>de.tr7zw</groupId>
             <artifactId>item-nbt-api</artifactId>
-            <version>2.11.2</version>
+            <version>2.13.2</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -110,7 +110,7 @@
         <dependency>
             <groupId>me.nullaqua</groupId>
             <artifactId>BluestarAPI-injector</artifactId>
-            <version>4.1.1</version>
+            <version>4.3.0</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>

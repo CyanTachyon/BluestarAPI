@@ -1,8 +1,13 @@
 package me.nullaqua.api.reflect;
 
+import sun.reflect.ReflectionFactory;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.*;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 
 import static me.nullaqua.api.reflect.ReflectionAccessor.LOOKUP;
 import static me.nullaqua.api.reflect.ReflectionAccessor.UNSAFE;
@@ -51,6 +56,16 @@ public class UnsafeOperation
         return (T) UNSAFE.allocateInstance(type);
     }
 
+    public static void eraseToBlank(Object obj) throws Throwable
+    {
+        if (obj == null) return;
+        var blank = blankInstance(obj.getClass());
+        for (var field: FieldAccessor.getFieldsInSuperClasses(obj))
+        {
+            field.set(obj, field.get(blank));
+        }
+    }
+
     /**
      * 在成功时会返回一个新的Void类的实例
      *
@@ -60,6 +75,25 @@ public class UnsafeOperation
     public static Void voidInstance() throws Throwable
     {
         return blankInstance(Void.class);
+    }
+
+    private static <T> MethodAccessor createConstructor(Class<T> t,Constructor<?> constructor) throws Throwable
+    {
+        if (constructor==null)
+        {
+            constructor=ConstructorAccessor.getDeclaredConstructor(Object.class).getConstructor();
+        }
+        Class<?> c= ReflectionFactory.class;
+        FieldAccessor accessor=FieldAccessor.getField(c,"delegate");
+        Object o=accessor.get(null);
+        if (o==null) throw new IllegalStateException("ReflectionFactory delegate is null");
+        var co=(Constructor<?>) MethodAccessor.getMethod(o.getClass(),
+                                                                 "generateConstructor",
+                                                                 Class.class,
+                                                                 Constructor.class).invoke(o,t,constructor);
+        var ac=MethodAccessor.getMethod(o.getClass(),"getConstructorAccessor",Constructor.class).invoke(o,co);
+        if (ac==null) throw new IllegalStateException("ConstructorAccessor is null");
+        return new MethodAccessor(t, ac, "<init>", MethodType.methodType(Void.TYPE, constructor.getParameterTypes()));
     }
 
     /////////////////////
@@ -140,8 +174,6 @@ public class UnsafeOperation
         {
             throw new ExceptionInInitializerError(e);
         }
-
-
     }
 
     public static void setModifiers(Member member, int modifiers) throws Throwable
@@ -172,5 +204,117 @@ public class UnsafeOperation
     public static void setModifiers(Object /*java.lang.invoke.MemberName*/ member, int modifiers) throws Throwable
     {
         memberNameModifiersSetter.invoke(member, modifiers);
+    }
+
+
+
+    ///////////////////
+    /// force clone ///
+    ///////////////////
+
+    /**
+     * 强制深克隆一个对象, 即克隆对象的所有字段, 包括数组和对象.
+     * 理论上所有字段都会被强制克隆, 即使是一些不应存在两个的对象(例如线程, 类加载器, 枚举等).
+     * @param o 对象
+     * @return 克隆的对象
+     * @param <T> 对象类型
+     * @throws Throwable 异常
+     */
+    public static <T> T forceDeepObject(T o) throws Throwable
+    {
+        if (null == o)
+        {
+            return null;
+        }
+        Map<Object, Object> map = new IdentityHashMap<>();
+        return forceDeepObject(o, map);
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private static boolean isSimpleObject(Object o)
+    {
+        Class<?> type = o.getClass();
+        return type.isPrimitive() ||
+               type.equals(String.class) ||
+               type.equals(Long.class) ||
+               type.equals(Boolean.class) ||
+               type.equals(Short.class) ||
+               type.equals(Integer.class) ||
+               type.equals(Character.class) ||
+               type.equals(Float.class) ||
+               type.equals(Double.class) ||
+               type.equals(Void.class) ||
+               type.equals(Byte.class) ||
+               type.isEnum() ||
+               type == Class.class ||
+               type == Method.class ||
+               type == Constructor.class;
+    }
+
+    private static <T> T forceDeepObject(T o, Map<Object, Object> map) throws Throwable
+    {
+        if (o == null)
+        {
+            return null;
+        }
+        if (isSimpleObject(o))
+        {
+            return o;
+        }
+        Object newInstance = map.get(o);
+        if (newInstance != null)
+        {
+            return (T) newInstance;
+        }
+
+        if (o.getClass().isArray())
+        {
+            newInstance = cloneArray(o, map);
+        }
+        else
+        {
+            newInstance = UnsafeOperation.blankInstance(o.getClass());
+        }
+        map.put(o, newInstance);
+        cloneFields(o, newInstance, map);
+        return (T) newInstance;
+    }
+
+    private static Object cloneArray(Object o, Map<Object, Object> map) throws Throwable
+    {
+        if (null == o)
+        {
+            return null;
+        }
+        if (!o.getClass().isArray())
+        {
+            return forceDeepObject(o, map);
+        }
+        int len = Array.getLength(o);
+        Object array = Array.newInstance(o.getClass().getComponentType(), len);
+        map.put(o, array);
+        for (int i = 0; i < len; i++)
+        {
+            if (Array.get(o, i) == null) continue;
+            var x = forceDeepObject(Array.get(o, i), map);
+            Array.set(array, i, x);
+        }
+        return array;
+    }
+
+    private static void cloneFields(Object object, Object newObject, Map<Object, Object> map) throws Throwable
+    {
+        if (object == null || newObject == null)
+        {
+            return;
+        }
+        List<FieldAccessor> fields = FieldAccessor.getFieldsInSuperClasses(object.getClass());
+        for (FieldAccessor f: fields)
+        {
+            if (!Modifier.isStatic(f.getField().getModifiers()))
+            {
+                f.set(newObject, forceDeepObject(f.get(object), map));
+            }
+        }
     }
 }

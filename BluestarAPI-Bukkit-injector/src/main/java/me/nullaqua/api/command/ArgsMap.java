@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
 
+@SuppressWarnings("unused")
 class ArgsMap
 {
     private final Map<String,ArgsMap> commandMap=new HashMap<>();
@@ -248,46 +249,28 @@ class ArgsMap
         int i=0;
         for (var param: r.getParameters())
         {
-            var fromCommand=param.getAnnotation(Get.class);
+            var fromCommand=param.getDeclaredAnnotation(Get.class);
             String key=fromCommand!=null?fromCommand.value():"";
             //System.err.println("getArgs "+param+" "+key+" "+map.get(key));
-            if (param.getAnnotation(Sender.class)!=null)
+            if (param.isAnnotationPresent(Sender.class))
             {
                 var o=saveCase(param.getType(),sender);
-                if (o!=null)
-                {
-                    params[i]=o;
-                }
-                else
-                {
-                    params[i]=getArg(sender.toString(),param.getType());
-                }
+                if (o!=null) params[i]=o;
+                else params[i]=getArg(sender.toString(),param.getType());
             }
-            else if (param.getAnnotation(Cmd.class)!=null)
+            else if (param.isAnnotationPresent(Cmd.class))
             {
                 var o=saveCase(param.getType(),command);
-                if (o!=null)
-                {
-                    params[i]=o;
-                }
-                else
-                {
-                    params[i]=getArg(command.toString(),param.getType());
-                }
+                if (o!=null) params[i]=o;
+                else params[i]=getArg(command.toString(),param.getType());
             }
-            else if (param.getAnnotation(Label.class)!=null)
+            else if (param.isAnnotationPresent(Label.class))
             {
                 var o=saveCase(param.getType(),label);
-                if (o!=null)
-                {
-                    params[i]=o;
-                }
-                else
-                {
-                    params[i]=getArg(label,param.getType());
-                }
+                if (o!=null) params[i]=o;
+                else params[i]=getArg(label,param.getType());
             }
-            else if (param.getAnnotation(Args.class)!=null)
+            else if (param.isAnnotationPresent(Args.class))
             {
                 if (param.getType().isArray())
                 {
@@ -671,22 +654,11 @@ class ArgsMap
         final boolean isTab;
         final Object instance;
 
-        public Run(Method method,String format,String permission,Class<?>[] only,boolean isTab,Object instance)
+        public Run(Method method,Field field,String format,String permission,Class<?>[] only,boolean isTab,Object instance)
         {
-            this.method=new MethodAccessor(method);
+            this.method=method != null ? new MethodAccessor(method) : null;
             this.instance=instance;
-            this.field=null;
-            this.format=parseFormat(format);
-            this.permission=permission;
-            this.only=only;
-            this.isTab=isTab;
-        }
-
-        public Run(Field field,String format,String permission,Class<?>[] only,boolean isTab,Object instance)
-        {
-            this.instance=instance;
-            this.method=null;
-            this.field=new FieldAccessor(field);
+            this.field=field != null ? new FieldAccessor(field) : null;
             this.format=parseFormat(format);
             this.permission=permission;
             this.only=only;
@@ -700,40 +672,30 @@ class ArgsMap
 
         public static Run[] of(Method method,ParseCommand[] x,Object instance,String p)
         {
-            var res=new Run[x.length];
-            for (int i=0;i<x.length;i++)
-            {
-                res[i]=new Run(method,p+" "+x[i].value(),x[i].permission(),x[i].only(),false,instance);
-            }
-            return res;
+            return of(method, null,Arrays.stream(x).map(ParseCommand::value).toArray(String[]::new),instance,p,false);
         }
 
-        public static Run[] of(Method field,ParseTab[] x,Object instance,String p)
+        public static Run[] of(Method method,ParseTab[] x,Object instance,String p)
         {
-            var res=new Run[x.length];
-            for (int i=0;i<x.length;i++)
-            {
-                res[i]=new Run(field,p+" "+x[i].value(),x[i].permission(),x[i].only(),true,instance);
-            }
-            return res;
+            return of(method, null,Arrays.stream(x).map(ParseTab::value).toArray(String[]::new),instance,p,true);
         }
 
         public static Run[] of(Field field,ParseTab[] x,Object instance,String p)
         {
-            var res=new Run[x.length];
-            for (int i=0;i<x.length;i++)
-            {
-                res[i]=new Run(field,p+" "+x[i].value(),x[i].permission(),x[i].only(),true,instance);
-            }
-            return res;
+            return of(null, field,Arrays.stream(x).map(ParseTab::value).toArray(String[]::new),instance,p,true);
         }
 
         public static Run[] of(Field field,ParseCommand[] x,Object instance,String p)
         {
+            return of(null, field,Arrays.stream(x).map(ParseCommand::value).toArray(String[]::new),instance,p,false);
+        }
+
+        private static Run[] of(Method method, Field field,String[] x,Object instance,String p, boolean isTab)
+        {
             var res=new Run[x.length];
             for (int i=0;i<x.length;i++)
             {
-                res[i]=new Run(field,p+" "+x[i].value(),x[i].permission(),x[i].only(),false,instance);
+                res[i]=new Run(method, field,p+" "+x[i],"",new Class<?>[0],isTab,instance);
             }
             return res;
         }
@@ -814,7 +776,7 @@ class ArgsMap
         }
     }
 
-    static class CommandException extends Exception
+    public static class CommandException extends Exception
     {
         public CommandException(Run run,Throwable cause)
         {
@@ -855,7 +817,7 @@ class ArgsMap
     }
 
     //由诸多命令中的错误构成的异常
-    static class CommandExceptions extends CommandException
+    public static class CommandExceptions extends CommandException
     {
         Set<CommandException> exceptions=new HashSet<>();
 

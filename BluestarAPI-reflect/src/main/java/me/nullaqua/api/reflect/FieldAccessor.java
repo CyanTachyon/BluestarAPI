@@ -125,10 +125,7 @@ public final class FieldAccessor
     public static List<FieldAccessor> getFields(Class<?> type)
     {
         List<FieldAccessor> fields=new ArrayList<>();
-        List.of(type.getDeclaredFields()).forEach(field ->
-                                                  {
-                                                      fields.add(new FieldAccessor(field));
-                                                  });
+        List.of(type.getDeclaredFields()).forEach(field -> fields.add(new FieldAccessor(field)));
         return fields;
     }
 

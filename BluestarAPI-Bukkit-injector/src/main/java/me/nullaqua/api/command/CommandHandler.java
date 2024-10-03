@@ -39,17 +39,12 @@ public final class CommandHandler implements CommandExecutor, TabExecutor
 
     private void add(@NotNull Object instance,@NotNull Class<?> c)
     {
-        SubCommand subCommand=c.getAnnotation(SubCommand.class);
-        SubCommands subCommands=c.getAnnotation(SubCommands.class);
-        if (subCommand!=null) add(instance,c,subCommand.value());
-        if (subCommands!=null)
+        SubCommand[] subCommands=c.getAnnotationsByType(SubCommand.class);
+        for (var subCommand1: subCommands)
         {
-            for (var subCommand1: subCommands.value())
-            {
-                add(instance,c,subCommand1.value());
-            }
+            add(instance,c,subCommand1.value());
         }
-        if (subCommands==null&&subCommand==null)
+        if (subCommands.length==0)
         {
             add(instance,c,"");
         }
@@ -61,25 +56,17 @@ public final class CommandHandler implements CommandExecutor, TabExecutor
         Objects.requireNonNull(instance);
         for (var method: c.getDeclaredMethods())
         {
-            ParseCommands parseCommand=method.getAnnotation(ParseCommands.class);
-            ParseTabs parseTab=method.getAnnotation(ParseTabs.class);
-            ParseCommand parseCommand1=method.getAnnotation(ParseCommand.class);
-            ParseTab parseTab1=method.getAnnotation(ParseTab.class);
-            if (parseCommand!=null) add(ArgsMap.Run.of(method,parseCommand.value(),instance,head));
-            if (parseTab!=null) add(ArgsMap.Run.of(method,parseTab.value(),instance,head));
-            if (parseCommand1!=null) add(ArgsMap.Run.of(method,new ParseCommand[]{parseCommand1},instance,head));
-            if (parseTab1!=null) add(ArgsMap.Run.of(method,new ParseTab[]{parseTab1},instance,head));
+            ParseCommand[] parseCommand=method.getDeclaredAnnotationsByType(ParseCommand.class);
+            ParseTab[] parseTab=method.getDeclaredAnnotationsByType(ParseTab.class);
+            if (parseCommand!=null) add(ArgsMap.Run.of(method,parseCommand,instance,head));
+            if (parseTab!=null) add(ArgsMap.Run.of(method,parseTab,instance,head));
         }
         for (var field: c.getDeclaredFields())
         {
-            ParseCommands parseCommand=field.getAnnotation(ParseCommands.class);
-            ParseTabs parseTab=field.getAnnotation(ParseTabs.class);
-            ParseCommand parseCommand1=field.getAnnotation(ParseCommand.class);
-            ParseTab parseTab1=field.getAnnotation(ParseTab.class);
-            if (parseCommand!=null) add(ArgsMap.Run.of(field,parseCommand.value(),instance,head));
-            if (parseTab!=null) add(ArgsMap.Run.of(field,parseTab.value(),instance,head));
-            if (parseCommand1!=null) add(ArgsMap.Run.of(field,new ParseCommand[]{parseCommand1},instance,head));
-            if (parseTab1!=null) add(ArgsMap.Run.of(field,new ParseTab[]{parseTab1},instance,head));
+            ParseCommand[] parseCommand=field.getDeclaredAnnotationsByType(ParseCommand.class);
+            ParseTab[] parseTab=field.getDeclaredAnnotationsByType(ParseTab.class);
+            if (parseCommand!=null) add(ArgsMap.Run.of(field,parseCommand,instance,head));
+            if (parseTab!=null) add(ArgsMap.Run.of(field,parseTab,instance,head));
         }
         if (c.getSuperclass()!=Object.class&&c.getSuperclass()!=null) add(instance,c.getSuperclass());
     }

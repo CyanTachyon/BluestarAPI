@@ -1,7 +1,7 @@
-@file:JvmName("KotlinReflection")
+@file:JvmName("JvmReflection")
 @file:Suppress("NOTHING_TO_INLINE", "UNUSED")
 
-package me.nullaqua.kotlin.reflect
+package me.nullaqua.api.kotlin.reflect
 
 import me.nullaqua.api.reflect.*
 import me.nullaqua.api.reflect.UnsafeOperation.blankInstance
@@ -78,6 +78,9 @@ inline fun <T: Any> KClass<T>.blankInstance(): T = java.blankInstance()
 @Throws(Throwable::class)
 inline fun <reified T: Any> blankInstance(): T = (T::class).blankInstance()
 
+@Throws(Throwable::class)
+inline fun Any?.eraseToBlank() = UnsafeOperation.eraseToBlank(this)
+
 /**
  * 返回一个[Void]的实例
  */
@@ -103,7 +106,7 @@ inline fun nothingInstance(): Any = (Nothing::class as KClass<*>).blankInstance(
  * 实现方式是
  */
 @Throws(Throwable::class)
-inline fun <T> T?.forceDeepClone(): T? = ReflectionAccessor.forceDeepObject(this)
+inline fun <T> T?.forceDeepClone(): T? = UnsafeOperation.forceDeepObject(this)
 inline fun <T> T?.getFieldsInSuperClasses(): List<FieldAccessor>
 {
     return FieldAccessor.getFieldsInSuperClasses(this)
@@ -135,7 +138,7 @@ inline fun getCallerMethods(): List<Invoker<*>> = ReflectionAccessor.getCallerMe
 /**
  * 在一个已经创建的对象上调用其构造函数, 通过该方法可以使得构造函数在一个对象上反复调用.
  */
-inline fun <T> invokeInitMethod(t: T, constructor: Constructor<T>, vararg args: Any?)
+inline fun <T> T.invokeInitMethod(constructor: Constructor<out T>, vararg args: Any?)
 {
-    UnsafeOperation.getInitMethod(constructor).invokeMethod(t, *args)
+    UnsafeOperation.getInitMethod(constructor).invokeMethod(this, *args)
 }

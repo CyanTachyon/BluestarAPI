@@ -6,7 +6,7 @@
 
     <groupId>me.nullaqua</groupId>
     <artifactId>BluestarAPI</artifactId>
-    <version>4.1.1</version>
+    <version>4.3.0</version>
     <modules>
         <module>BluestarAPI-Bukkit-injector</module>
         <module>BluestarAPI-plugin</module>
@@ -26,7 +26,7 @@
         <java.version>10</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <github.global.server>github</github.global.server>
-        <kotlin.version>1.9.23</kotlin.version>
+        <kotlin.version>2.0.20</kotlin.version>
     </properties>
 
     <licenses>
@@ -54,6 +54,11 @@
         <repository>
             <id>spigotmc-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>maven_central</id>
+            <name>Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2/</url>
         </repository>
     </repositories>
 
@@ -135,7 +140,7 @@
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>23.1.0</version>
+            <version>24.1.0</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>

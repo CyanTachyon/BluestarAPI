@@ -11,16 +11,20 @@ import java.util.*;
 
 import static me.nullaqua.api.reflect.ReflectionAccessor.LOOKUP;
 
+@SuppressWarnings("unused")
 public final class MethodAccessor implements Invoker<Object>
 {
     private static final Class<?> javaMethodAccessor;
     private static MethodAccessor javaMethodAccessorInvoke = null;
+    private static final Class<?> javaConstructorAccessor;
+    private static MethodAccessor javaConstructorAccessorInvoke = null;
 
     static
     {
         try
         {
             javaMethodAccessor = Class.forName("jdk.internal.reflect.MethodAccessor");
+            javaConstructorAccessor = Class.forName("jdk.internal.reflect.ConstructorAccessor");
         }
         catch (Exception e)
         {
@@ -34,6 +38,14 @@ public final class MethodAccessor implements Invoker<Object>
         Method method = javaMethodAccessor.getDeclaredMethod("invoke", Object.class, Object[].class);
         javaMethodAccessorInvoke = new MethodAccessor(method);
         return javaMethodAccessorInvoke;
+    }
+
+    static MethodAccessor getJavaConstructorAccessorInvoke() throws NoSuchMethodException
+    {
+        if (javaConstructorAccessorInvoke != null) return javaConstructorAccessorInvoke;
+        Method method = javaConstructorAccessor.getDeclaredMethod("newInstance", Object[].class);
+        javaConstructorAccessorInvoke = new MethodAccessor(method);
+        return javaConstructorAccessorInvoke;
     }
 
     private final Object methodHandle;
@@ -176,17 +188,21 @@ public final class MethodAccessor implements Invoker<Object>
 
     public Object invokeMethod(Object target, Object... args) throws Throwable
     {
-        if (methodHandle instanceof Method)
-        {
-            return ((Method) methodHandle).invoke(target, args);
-        }
         if (methodHandle instanceof MethodHandle)
         {
             return ((MethodHandle) methodHandle).invoke(target, args);
         }
+        if (methodHandle instanceof Method)
+        {
+            return ((Method) methodHandle).invoke(target, args);
+        }
         if (javaMethodAccessor.isInstance(methodHandle))
         {
             return getJavaMethodAccessorInvoke().invokeMethod(methodHandle, target, args);
+        }
+        if (javaConstructorAccessor.isInstance(methodHandle))
+        {
+            return getJavaConstructorAccessorInvoke().invokeMethod(methodHandle, args);
         }
         throw new UnsupportedOperationException("Unsupported method handle type: "+methodHandle.getClass());
     }

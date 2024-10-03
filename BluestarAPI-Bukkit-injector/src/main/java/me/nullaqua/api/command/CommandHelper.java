@@ -11,33 +11,33 @@ import java.util.Objects;
 
 public final class CommandHelper
 {
-    private final CommandHandler executor=new CommandHandler();
-    private String permission=null;
+    private final CommandHandler executor = new CommandHandler();
+    private String permission = null;
 
     public CommandHelper()
     {
     }
 
-    public static PluginCommand fastCreateCommand(JavaPlugin plugin,Object o)
+    public static PluginCommand fastCreateCommand(JavaPlugin plugin, Object o)
     {
         if (o instanceof Class)
         {
-            return fastCreateCommand(plugin,(Class<?>) o);
+            return fastCreateCommand(plugin, (Class<?>) o);
         }
-        CommandHelper helper=new CommandHelper();
+        CommandHelper helper = new CommandHelper();
         helper.add(o);
-        var commandName=o.getClass().getAnnotation(CommandName.class);
-        var aliases=o.getClass().getAnnotation(CommandAlias.class);
-        var alias=new ArrayList<String>();
-        if (aliases!=null) Arrays.stream(aliases.value()).map(CommandAlia::value).forEach(alias::add);
-        var alia=o.getClass().getAnnotation(CommandAlia.class);
-        if (alia!=null) alias.add(alia.value());
-        if (commandName==null)
+        var alias = Arrays.stream(o.getClass().getDeclaredAnnotationsByType(CommandAlia.class))
+                          .map(CommandAlia::value)
+                          .toArray(String[]::new);
+        var commandName = o.getClass().getDeclaredAnnotation(CommandName.class);
+        if (commandName == null)
         {
-            throw new IllegalArgumentException("Class "+o.getClass()
-                                                         .getName()+" don't have annotation "+CommandName.class.getName());
+            throw new IllegalArgumentException("Class "+
+                                               o.getClass().getName()+
+                                               " don't have annotation "+
+                                               CommandName.class.getName());
         }
-        return helper.createCommand(plugin,commandName.value(),alias.toArray(new String[0]),commandName.permission());
+        return helper.createCommand(plugin, commandName.value(), alias, commandName.permission());
     }
 
     public CommandExecutor toCommandExecutor()
@@ -56,19 +56,19 @@ public final class CommandHelper
         return new CommandHelper().add(o).toCommandExecutor();
     }
 
-    public PluginCommand createCommand(JavaPlugin plugin,String name,String[] aliases,String permission)
+    public PluginCommand createCommand(JavaPlugin plugin, String name, String[] aliases, String permission)
     {
         Objects.requireNonNull(plugin);
         Objects.requireNonNull(name);
-        if (permission.isEmpty()) permission=null;
-        if (aliases==null) aliases=new String[0];
+        if (permission.isEmpty()) permission = null;
+        if (aliases == null) aliases = new String[0];
         if (name.isEmpty()) throw new IllegalArgumentException("Command name can't be empty");
-        var command=plugin.getCommand(name);
-        if (command==null)
+        var command = plugin.getCommand(name);
+        if (command == null)
         {
-            command=CommandManager.newPluginCommand(name,plugin);
+            command = CommandManager.newPluginCommand(name, plugin);
         }
-        if (command==null)
+        if (command == null)
         {
             throw new IllegalArgumentException("Plugin don't have command "+name+",and can't create it");
         }
@@ -90,7 +90,7 @@ public final class CommandHelper
 
     public CommandHelper permission(String permission)
     {
-        this.permission=permission;
+        this.permission = permission;
         return this;
     }
 

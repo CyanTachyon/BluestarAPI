@@ -5,7 +5,7 @@
     <parent>
         <artifactId>BluestarAPI</artifactId>
         <groupId>me.nullaqua</groupId>
-        <version>4.1.1</version>
+        <version>4.3.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -25,7 +25,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -63,7 +63,7 @@
         <dependency>
             <groupId>me.nullaqua</groupId>
             <artifactId>BluestarAPI-Bukkit-injector</artifactId>
-            <version>4.1.1</version>
+            <version>4.3.0</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>

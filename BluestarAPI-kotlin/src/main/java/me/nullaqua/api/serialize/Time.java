@@ -1,5 +1,9 @@
 package me.nullaqua.api.serialize;
 
+import kotlin.Deprecated;
+import kotlin.DeprecationLevel;
+
+@Deprecated(message = "This class is deprecated and will be removed in the future.", level = DeprecationLevel.ERROR)
 public class Time
 {
     long time;

@@ -1,6 +1,5 @@
 package me.nullaqua.api.player.input;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,6 +23,7 @@ import java.util.function.Consumer;
  *
  * @param <T> 输入的类型
  */
+@SuppressWarnings("unused")
 public final class PlayerChatInput<T>
 {
 
@@ -120,7 +120,7 @@ public final class PlayerChatInput<T>
      * @param player 玩家
      * @return 是否正在被监听
      */
-    public static boolean isInputing(UUID player)
+    public static boolean isWaitingForInput(UUID player)
     {
         return players.contains(player);
     }
@@ -131,7 +131,7 @@ public final class PlayerChatInput<T>
         if (message.equalsIgnoreCase(cancel))
         {
             onCancel.accept(player);
-            end(EndReason.PLAYER_CANCELLS);
+            end(EndReason.PLAYER_CANCELS);
             return;
         }
         if (isValidInput.apply(player,message))
@@ -169,7 +169,7 @@ public final class PlayerChatInput<T>
 
     private void start()
     {
-        if (isInputing(player.getUniqueId()))
+        if (isWaitingForInput(player.getUniqueId()))
         {
             throw new IllegalAccessError("Can't ask for input to a player that is already inputing");
         }
@@ -248,14 +248,15 @@ public final class PlayerChatInput<T>
      */
     public enum EndReason
     {
-        PLAYER_CANCELLS,
+        PLAYER_CANCELS,
         FINISH,
         RUN_OUT_OF_TIME,
-        PLAYER_DISCONECTS,
+        PLAYER_DISCONNECTS,
         INVALID_INPUT,
         CUSTOM
     }
 
+    @SuppressWarnings("unused")
     public static class Builder<U>
     {
 
@@ -347,8 +348,8 @@ public final class PlayerChatInput<T>
         /**
          * 将有效的输入转换到对应的值
          *
-         * @param setValue
-         * @return
+         * @param setValue 当输入有效时执行,第一个参数是玩家,第二个参数是玩家输入的信息,返回值是输入的值
+         * @return 这个构造器
          */
         public Builder<U> setValue(@NotNull BiFunction<Player,String,U> setValue)
         {
@@ -414,7 +415,7 @@ public final class PlayerChatInput<T>
             }
             for (EndReason cm: after)
             {
-                if (cm==EndReason.PLAYER_DISCONECTS)
+                if (cm==EndReason.PLAYER_DISCONNECTS)
                 {
                     continue;
                 }
@@ -457,9 +458,8 @@ public final class PlayerChatInput<T>
 
         public PlayerChatInput<U> open(@NotNull Player player)
         {
-
-            Validate.notNull(plugin,"Plugin cannot be null");
-            Validate.notNull(player,"Player cannot be null");
+            Objects.requireNonNull(plugin,"Plugin cannot be null");
+            Objects.requireNonNull(player,"Player cannot be null");
             return new PlayerChatInput<>(plugin,
                                          player,
                                          value,
@@ -492,7 +492,7 @@ public final class PlayerChatInput<T>
                     return;
                 }
                 onDisconnect.run();
-                end(EndReason.PLAYER_DISCONECTS);
+                end(EndReason.PLAYER_DISCONNECTS);
             }
         }
 

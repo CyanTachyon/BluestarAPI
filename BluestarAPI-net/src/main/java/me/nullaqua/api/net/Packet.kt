@@ -71,6 +71,7 @@ class PacketCoderGroup()
     }
 
     operator fun get(id: UByte): PacketCoder<*>? = coders[id.toInt()]
+    @Suppress("UNCHECKED_CAST")
     operator fun <T: Packet> get(arg: Class<in T>): PacketCoder<in T>?
     {
         var clazz: Class<in T> = arg
