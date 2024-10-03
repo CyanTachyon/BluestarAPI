@@ -1,10 +1,6 @@
-package me.nullaqua.api.serializer
+@file:Suppress("unused")
 
-import me.nullaqua.api.LOCK
-import me.nullaqua.api.kotlin.reflect.blankInstance
-import me.nullaqua.api.kotlin.reflect.setField
-import org.junit.Test
-import java.io.ByteArrayOutputStream
+package me.nullaqua.api.serializer
 
 class Test
 {

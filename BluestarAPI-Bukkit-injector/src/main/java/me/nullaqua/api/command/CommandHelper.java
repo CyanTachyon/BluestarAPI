@@ -5,10 +5,10 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
+@SuppressWarnings("unused")
 public final class CommandHelper
 {
     private final CommandHandler executor = new CommandHandler();
@@ -22,7 +22,7 @@ public final class CommandHelper
     {
         if (o instanceof Class)
         {
-            return fastCreateCommand(plugin, (Class<?>) o);
+            return fastCreateCommand(plugin, o);
         }
         CommandHelper helper = new CommandHelper();
         helper.add(o);

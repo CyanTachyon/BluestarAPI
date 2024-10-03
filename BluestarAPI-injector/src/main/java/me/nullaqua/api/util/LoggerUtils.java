@@ -10,6 +10,7 @@ import java.util.logging.Logger;
  * Logger Utils
  * @author nullaqua
  */
+@SuppressWarnings("unused")
 public class LoggerUtils
 {
     private final Logger logger;
@@ -55,9 +56,7 @@ public class LoggerUtils
     /**
      * Log a SEVERE message with a runnable.
      * <p>
-     * If the logger is currently enabled for the SEVERE message
-     * level then the given runnable is executed and the resulting message
-     * is forwarded to all the registered output Handler objects.
+     * Execute the runnable and log the message if the runnable throws an exception.
      *
      * @param run The runnable to be executed
      * @param msg The string message (or a key in the message catalog)
@@ -70,9 +69,7 @@ public class LoggerUtils
     /**
      * Log a SEVERE message with a boolean supplier.
      * <p>
-     * If the logger is currently enabled for the SEVERE message
-     * level then the given boolean supplier is executed and the resulting message
-     * is forwarded to all the registered output Handler objects.
+     * Execute the boolean supplier and log the message if the supplier returns true.
      *
      * @param supplier The boolean supplier to be executed
      * @param msg      The string message (or a key in the message catalog)
@@ -114,9 +111,7 @@ public class LoggerUtils
     /**
      * Log a WARNING message with a runnable.
      * <p>
-     * If the logger is currently enabled for the WARNING message
-     * level then the given runnable is executed and the resulting message
-     * is forwarded to all the registered output Handler objects.
+     * Execute the runnable and log the message if the runnable throws an exception.
      *
      * @param run The runnable to be executed
      * @param msg The string message (or a key in the message catalog)
@@ -129,9 +124,7 @@ public class LoggerUtils
     /**
      * Log a WARNING message with a boolean supplier.
      * <p>
-     * If the logger is currently enabled for the WARNING message
-     * level then the given boolean supplier is executed and the resulting message
-     * is forwarded to all the registered output Handler objects.
+     * Execute the boolean supplier and log the message if the supplier returns true.
      *
      * @param supplier The boolean supplier to be executed
      * @param msg      The string message (or a key in the message catalog)
@@ -173,9 +166,7 @@ public class LoggerUtils
     /**
      * Log an INFO message with a runnable.
      * <p>
-     * If the logger is currently enabled for the INFO message
-     * level then the given runnable is executed and the resulting message
-     * is forwarded to all the registered output Handler objects.
+     * Execute the runnable and log the message if the runnable throws an exception.
      *
      * @param run The runnable to be executed
      * @param msg The string message (or a key in the message catalog)
@@ -188,9 +179,7 @@ public class LoggerUtils
     /**
      * Log an INFO message with a boolean supplier.
      * <p>
-     * If the logger is currently enabled for the INFO message
-     * level then the given boolean supplier is executed and the resulting message
-     * is forwarded to all the registered output Handler objects.
+     * Execute the boolean supplier and log the message if the supplier returns true.
      *
      * @param supplier The boolean supplier to be executed
      * @param msg      The string message (or a key in the message catalog)
@@ -203,9 +192,9 @@ public class LoggerUtils
     /**
      * Log a CONFIG message.
      * <p>
-     *     If the logger is currently enabled for the CONFIG message
-     *     level then the given message is forwarded to all the
-     *     registered output Handler objects.
+     * If the logger is currently enabled for the CONFIG message
+     * level then the given message is forwarded to all the
+     * registered output Handler objects.
      *
      * @param msg The string message (or a key in the message catalog)
      */
@@ -217,9 +206,10 @@ public class LoggerUtils
     /**
      * Log a CONFIG message with a throwable.
      * <p>
-     *     If the logger is currently enabled for the CONFIG message
-     *     level then the given message and throwable are forwarded to all the
-     *     registered output Handler objects.
+     * If the logger is currently enabled for the CONFIG message
+     * level then the given message and throwable are forwarded to all the
+     * registered output Handler objects.
+     *
      * @param msg The string message (or a key in the message catalog)
      * @param t The throwable associated with the message
      */
@@ -231,9 +221,8 @@ public class LoggerUtils
     /**
      * Log a CONFIG message with a runnable.
      * <p>
-     *     If the logger is currently enabled for the CONFIG message
-     *     level then the given runnable is executed and the resulting message
-     *     is forwarded to all the registered output Handler objects.
+     * Execute the runnable and log the message if the runnable throws an exception.
+     *
      * @param run The runnable to be executed
      * @param msg The string message (or a key in the message catalog)
      */
@@ -245,9 +234,8 @@ public class LoggerUtils
     /**
      * Log a CONFIG message with a boolean supplier.
      * <p>
-     *     If the logger is currently enabled for the CONFIG message
-     *     level then the given boolean supplier is executed and the resulting message
-     *     is forwarded to all the registered output Handler objects.
+     * Execute the boolean supplier and log the message if the supplier returns true.
+     *
      * @param supplier The boolean supplier to be executed
      * @param msg The string message (or a key in the message catalog)
      */
@@ -288,9 +276,7 @@ public class LoggerUtils
     /**
      * Log a FINE message with a runnable.
      * <p>
-     * If the logger is currently enabled for the FINE message
-     * level then the given runnable is executed and the resulting message
-     * is forwarded to all the registered output Handler objects.
+     * Execute the runnable and log the message if the runnable throws an exception.
      *
      * @param run The runnable to be executed
      * @param msg The string message (or a key in the message catalog)
@@ -303,9 +289,7 @@ public class LoggerUtils
     /**
      * Log a FINE message with a boolean supplier.
      * <p>
-     * If the logger is currently enabled for the FINE message
-     * level then the given boolean supplier is executed and the resulting message
-     * is forwarded to all the registered output Handler objects.
+     * Execute the boolean supplier and log the message if the supplier returns true.
      *
      * @param supplier The boolean supplier to be executed
      * @param msg      The string message (or a key in the message catalog)
@@ -347,9 +331,7 @@ public class LoggerUtils
     /**
      * Log a FINER message with a runnable.
      * <p>
-     * If the logger is currently enabled for the FINER message
-     * level then the given runnable is executed and the resulting message
-     * is forwarded to all the registered output Handler objects.
+     * Execute the runnable and log the message if the runnable throws an exception.
      *
      * @param run The runnable to be executed
      * @param msg The string message (or a key in the message catalog)
@@ -362,9 +344,7 @@ public class LoggerUtils
     /**
      * Log a FINER message with a boolean supplier.
      * <p>
-     * If the logger is currently enabled for the FINER message
-     * level then the given boolean supplier is executed and the resulting message
-     * is forwarded to all the registered output Handler objects.
+     * Execute the boolean supplier and log the message if the supplier returns true.
      *
      * @param supplier The boolean supplier to be executed
      * @param msg      The string message (or a key in the message catalog)
@@ -406,9 +386,7 @@ public class LoggerUtils
     /**
      * Log a FINEST message with a runnable.
      * <p>
-     * If the logger is currently enabled for the FINEST message
-     * level then the given runnable is executed and the resulting message
-     * is forwarded to all the registered output Handler objects.
+     * Execute the runnable and log the message if the runnable throws an exception.
      *
      * @param run The runnable to be executed
      * @param msg The string message (or a key in the message catalog)
@@ -421,9 +399,7 @@ public class LoggerUtils
     /**
      * Log a FINEST message with a boolean supplier.
      * <p>
-     * If the logger is currently enabled for the FINEST message
-     * level then the given boolean supplier is executed and the resulting message
-     * is forwarded to all the registered output Handler objects.
+     * Execute the boolean supplier and log the message if the supplier returns true.
      *
      * @param supplier The boolean supplier to be executed
      * @param msg      The string message (or a key in the message catalog)

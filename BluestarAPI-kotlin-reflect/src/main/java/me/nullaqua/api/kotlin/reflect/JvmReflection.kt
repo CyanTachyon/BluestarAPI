@@ -62,6 +62,7 @@ inline fun <T: Any> T.invokeMethod(methodName: String, types: Array<Class<*>>, v
  * 这会使得该实例中所有基础类型均为默认值(0/false), 引用类型均为null.
  */
 @Throws(Throwable::class)
+@UnsafeJvmReflection
 inline fun <T> Class<T>.blankInstance(): T = blankInstance(this)
 
 /**
@@ -69,6 +70,7 @@ inline fun <T> Class<T>.blankInstance(): T = blankInstance(this)
  * 这会使得该实例中所有基础类型均为默认值(0/false), 引用类型均为null.
  */
 @Throws(Throwable::class)
+@UnsafeJvmReflection
 inline fun <T: Any> KClass<T>.blankInstance(): T = java.blankInstance()
 
 /**
@@ -76,21 +78,25 @@ inline fun <T: Any> KClass<T>.blankInstance(): T = java.blankInstance()
  * @throws Throwable 当反射出现错误时抛出
  */
 @Throws(Throwable::class)
+@UnsafeJvmReflection
 inline fun <reified T: Any> blankInstance(): T = (T::class).blankInstance()
 
 @Throws(Throwable::class)
+@UnsafeJvmReflection
 inline fun Any?.eraseToBlank() = UnsafeOperation.eraseToBlank(this)
 
 /**
  * 返回一个[Void]的实例
  */
 @Throws(Throwable::class)
+@UnsafeJvmReflection
 inline fun jvmVoidInstance(): Void = UnsafeOperation.voidInstance()
 
 /**
  * 返回一个[System]的实例
  */
 @Throws(Throwable::class)
+@UnsafeJvmReflection
 inline fun jvmSystemInstance(): System = blankInstance()
 
 /**
@@ -99,6 +105,7 @@ inline fun jvmSystemInstance(): System = blankInstance()
  * @throws Throwable 当反射出现错误时抛出
  */
 @Throws(Throwable::class)
+@UnsafeJvmReflection
 inline fun nothingInstance(): Any = (Nothing::class as KClass<*>).blankInstance()
 
 /**
@@ -106,39 +113,55 @@ inline fun nothingInstance(): Any = (Nothing::class as KClass<*>).blankInstance(
  * 实现方式是
  */
 @Throws(Throwable::class)
+@UnsafeJvmReflection
 inline fun <T> T?.forceDeepClone(): T? = UnsafeOperation.forceDeepObject(this)
-inline fun <T> T?.getFieldsInSuperClasses(): List<FieldAccessor>
-{
-    return FieldAccessor.getFieldsInSuperClasses(this)
-}
+inline fun <T> T?.getFieldsInSuperClasses(): List<FieldAccessor> =
+    FieldAccessor.getFieldsInSuperClasses(this)
 
-inline fun <T> T?.getMethodsInSuperClasses(): List<MethodAccessor>
-{
-    return MethodAccessor.getMethodsInSuperClasses(this)
-}
+inline fun <T> T?.getMethodsInSuperClasses(): List<MethodAccessor> =
+    MethodAccessor.getMethodsInSuperClasses(this)
 
 @CallerSensitive
+@KallerSensitive
 inline fun getCaller(): StackWalker.StackFrame? = ReflectionAccessor.getCaller()
 
 @CallerSensitive
+@KallerSensitive
 inline fun getCallerClass(): Class<*>? = ReflectionAccessor.getCallerClass()
 
 @CallerSensitive
+@KallerSensitive
 inline fun getCallerMethod(): Invoker<*>? = ReflectionAccessor.getCallerMethod()
 
 @CallerSensitive
+@KallerSensitive
 inline fun getCallers(): List<StackWalker.StackFrame> = ReflectionAccessor.getCallers()
 
 @CallerSensitive
+@KallerSensitive
 inline fun getCallerClasses(): List<Class<*>> = ReflectionAccessor.getCallerClasses()
 
 @CallerSensitive
+@KallerSensitive
 inline fun getCallerMethods(): List<Invoker<*>> = ReflectionAccessor.getCallerMethods()
 
 /**
  * 在一个已经创建的对象上调用其构造函数, 通过该方法可以使得构造函数在一个对象上反复调用.
  */
+@UnsafeJvmReflection
 inline fun <T> T.invokeInitMethod(constructor: Constructor<out T>, vararg args: Any?)
 {
     UnsafeOperation.getInitMethod(constructor).invokeMethod(this, *args)
 }
+
+/**
+ * 表示该方法是不安全的, 可能会引发安全问题.
+ */
+@RequiresOptIn(level = RequiresOptIn.Level.ERROR, message = "This API is unsafe and may cause security issues.")
+annotation class UnsafeJvmReflection
+
+/**
+ * 表示该函数对调用者敏感
+ */
+@RequiresOptIn(level = RequiresOptIn.Level.ERROR, message = "This API is sensitive to the caller.")
+annotation class KallerSensitive

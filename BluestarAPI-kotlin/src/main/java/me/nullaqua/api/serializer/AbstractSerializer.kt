@@ -3,6 +3,7 @@
 package me.nullaqua.api.serializer
 
 import me.nullaqua.api.collection.Vector
+import me.nullaqua.api.kotlin.reflect.UnsafeJvmReflection
 import me.nullaqua.api.kotlin.reflect.blankInstance
 import me.nullaqua.api.kotlin.reflect.getFieldsInSuperClasses
 import me.nullaqua.api.reflect.FieldAccessor
@@ -106,7 +107,7 @@ abstract class AbstractSerializer: Serializer
                     map["size"]!! as Int
                 )
             )
-            else vector.add(clazz.blankInstance())
+            else vector.add(@OptIn(UnsafeJvmReflection::class) clazz.blankInstance())
         }
         for ((i, v) in serialized.withIndex())
         {

@@ -2,6 +2,7 @@
 
 package me.nullaqua.api.serialize
 
+import me.nullaqua.api.kotlin.reflect.UnsafeJvmReflection
 import me.nullaqua.api.kotlin.reflect.blankInstance
 import me.nullaqua.api.kotlin.reflect.setField
 import me.nullaqua.api.reflect.FieldAccessor
@@ -79,6 +80,7 @@ object Serialize
         val string = sss.replace("\t|\n|\r|\\s".toRegex(), "")
         if (!string.contains("{") && !string.contains("["))
         {
+            @OptIn(UnsafeJvmReflection::class)
             val simple = SimpleObject::class.java.blankInstance()
             simple.deserialize(string)
             return simple
@@ -418,6 +420,7 @@ class ArrayObject: SerializeObject()
             }
             else
             {
+                @OptIn(UnsafeJvmReflection::class)
                 val x = SimpleObject::class.java.blankInstance()
                 x.deserialize(s)
                 array[j] = x
@@ -462,6 +465,7 @@ class ComplexObject: SerializeObject()
 
     override fun blankInstance(): Any?
     {
+        @OptIn(UnsafeJvmReflection::class)
         return serializeClass.blankInstance()
     }
 
@@ -542,6 +546,7 @@ class ComplexObject: SerializeObject()
             }
             else
             {
+                @OptIn(UnsafeJvmReflection::class)
                 val x = blankInstance<SimpleObject>()
                 x.deserialize(value)
                 map[clazz0 to name] = x
