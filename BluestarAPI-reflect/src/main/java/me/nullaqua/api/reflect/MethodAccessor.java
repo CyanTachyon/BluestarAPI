@@ -14,6 +14,20 @@ import static me.nullaqua.api.reflect.ReflectionAccessor.LOOKUP;
 @SuppressWarnings("unused")
 public final class MethodAccessor implements Invoker<Object>
 {
+    private final static MethodAccessor getMethods;
+
+    static
+    {
+        try
+        {
+            getMethods = new MethodAccessor(Class.class.getDeclaredMethod("getDeclaredMethods0", boolean.class));
+        }
+        catch (NoSuchMethodException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static final Class<?> javaMethodAccessor;
     private static MethodAccessor javaMethodAccessorInvoke = null;
     private static final Class<?> javaConstructorAccessor;
@@ -48,7 +62,7 @@ public final class MethodAccessor implements Invoker<Object>
         return javaConstructorAccessorInvoke;
     }
 
-    private final Object methodHandle;
+    public final Object methodHandle;
     private final String methodName;
     private final MethodType methodType;
     private final Class<?> declaringClass;
@@ -76,6 +90,7 @@ public final class MethodAccessor implements Invoker<Object>
         }
         catch (Throwable ignored)
         {
+            ignored.printStackTrace();
             method.setAccessible(true);
         }
         this.methodHandle = handler;
@@ -102,6 +117,36 @@ public final class MethodAccessor implements Invoker<Object>
         );
     }
 
+    public static List<Method> getJvmMethods(Class<?> clazz)
+    {
+        if (clazz == null)
+        {
+            return null;
+        }
+        try
+        {
+            return new ArrayList<>(Arrays.asList((Method[]) getMethods.invokeMethod(clazz, false)));
+        }
+        catch (Throwable e)
+        {
+            return null;
+        }
+    }
+
+    public static List<MethodAccessor> getMethods(Class<?> clazz)
+    {
+        if (clazz == null)
+        {
+            return null;
+        }
+        List<MethodAccessor> list = new ArrayList<>();
+        for (Method method: getJvmMethods(clazz))
+        {
+            list.add(new MethodAccessor(method));
+        }
+        return list;
+    }
+
     public static MethodAccessor getMethod(Class<?> clazz, String name, Class<?>... classes)
     {
         if (clazz == null || name == null)
@@ -111,7 +156,14 @@ public final class MethodAccessor implements Invoker<Object>
         classes = classes == null?new Class[0]:classes;
         try
         {
-            return new MethodAccessor(clazz.getDeclaredMethod(name, classes));
+            for (MethodAccessor method: getMethods(clazz))
+            {
+                if (method.methodName.equals(name) && Arrays.equals(method.methodType().parameterArray(), classes))
+                {
+                    return method;
+                }
+            }
+            return null;
         }
         catch (Exception e)
         {
@@ -137,7 +189,7 @@ public final class MethodAccessor implements Invoker<Object>
         {
             try
             {
-                return new MethodAccessor(clazz.getDeclaredMethod(name, classes));
+                return getMethod(clazz, name, classes);
             }
             catch (Exception ignored)
             {
@@ -235,11 +287,29 @@ public final class MethodAccessor implements Invoker<Object>
         if (methodHandle instanceof Method) return (Method) methodHandle;
         try
         {
-            return declaringClass.getDeclaredMethod(methodName, methodType.parameterArray());
+            for (Method method: getJvmMethods(declaringClass))
+            {
+                if (method.getName().equals(methodName) && method.getParameterCount() == methodType.parameterCount())
+                {
+                    return method;
+                }
+            }
+            return null;
         }
         catch (Throwable e)
         {
             return null;
         }
+    }
+
+    @Override
+    public String toString()
+    {
+        return "MethodAccessor{"+
+            "methodHandle="+methodHandle+
+            ", methodName='"+methodName+'\''+
+            ", methodType="+methodType+
+            ", declaringClass="+declaringClass+
+            '}';
     }
 }

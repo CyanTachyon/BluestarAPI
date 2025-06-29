@@ -10,21 +10,13 @@ import static me.nullaqua.api.reflect.ReflectionAccessor.*;
 
 public final class FieldAccessor
 {
+    private final static MethodAccessor getFields = MethodAccessor.getMethod(Class.class, "getDeclaredFields0", boolean.class);;
     private final Field field;
     private final boolean staticField;
     private final MethodHandle setter;
     private final MethodHandle getter;
 
-    public static List<FieldAccessor> getFieldsInSuperClasses(Object o)
-    {
-        if (o==null)
-        {
-            return new ArrayList<>();
-        }
-        return getFieldsInSuperClasses(o.getClass());
-    }
-
-    public FieldAccessor(Field field)
+    public FieldAccessor(Field field) throws NoSuchFieldException
     {
         if (field==null)
         {
@@ -32,6 +24,7 @@ public final class FieldAccessor
             this.setter=null;
             this.getter=null;
             this.staticField=false;
+            check();
             return;
         }
         boolean staticField=Modifier.isStatic(field.getModifiers());
@@ -69,6 +62,15 @@ public final class FieldAccessor
         this.staticField=staticField;
         this.getter=getter;
         this.setter=setter;
+        check();
+    }
+
+    private void check() throws NoSuchFieldException
+    {
+        if (field == null && getter == null && setter == null)
+        {
+            throw new NoSuchFieldException("FieldAccessor is invalid");
+        }
     }
 
     public static FieldAccessor getField(Class<?> c,String field)
@@ -79,9 +81,17 @@ public final class FieldAccessor
         }
         try
         {
-            return new FieldAccessor(c.getDeclaredField(field));
+            final var fields = (Field[]) getFields.invokeMethod(c,false);
+            for (Field f: fields)
+            {
+                if (f.getName().equals(field))
+                {
+                    return new FieldAccessor(f);
+                }
+            }
+            return null;
         }
-        catch (NoSuchFieldException e)
+        catch (Throwable e)
         {
             return null;
         }
@@ -103,16 +113,25 @@ public final class FieldAccessor
         {
             try
             {
-                return new FieldAccessor(clazz.getDeclaredField(field));
+                return getField(clazz,field);
             }
-            catch (Exception ignored)
+            catch (Throwable ignored)
             {
             }
         }
         return null;
     }
 
-    public static List<FieldAccessor> getFieldsInSuperClasses(Class<?> type)
+    public static List<FieldAccessor> getFieldsInSuperClasses(Object o) throws Throwable
+    {
+        if (o==null)
+        {
+            return new ArrayList<>();
+        }
+        return getFieldsInSuperClasses(o.getClass());
+    }
+
+    public static List<FieldAccessor> getFieldsInSuperClasses(Class<?> type) throws Throwable
     {
         List<FieldAccessor> fields=new ArrayList<>();
         for (Class<?> c: getAllSuperClass(type))
@@ -122,10 +141,13 @@ public final class FieldAccessor
         return fields;
     }
     
-    public static List<FieldAccessor> getFields(Class<?> type)
+    public static List<FieldAccessor> getFields(Class<?> type) throws Throwable
     {
         List<FieldAccessor> fields=new ArrayList<>();
-        List.of(type.getDeclaredFields()).forEach(field -> fields.add(new FieldAccessor(field)));
+        for (var field: (Field[]) getFields.invokeMethod(type,false))
+        {
+            fields.add(new FieldAccessor(field));
+        }
         return fields;
     }
 
@@ -134,7 +156,6 @@ public final class FieldAccessor
     {
         return "FieldAccessor{"+field+"}";
     }
-
 
     public Field getField()
     {

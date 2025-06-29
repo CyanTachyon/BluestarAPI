@@ -658,7 +658,14 @@ class ArgsMap
         {
             this.method=method != null ? new MethodAccessor(method) : null;
             this.instance=instance;
-            this.field=field != null ? new FieldAccessor(field) : null;
+            try
+            {
+                this.field=field != null ? new FieldAccessor(field) : null;
+            }
+            catch (NoSuchFieldException e)
+            {
+                throw new RuntimeException("FieldAccessor is invalid",e);
+            }
             this.format=parseFormat(format);
             this.permission=permission;
             this.only=only;

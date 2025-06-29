@@ -18,7 +18,7 @@ class LoggerUtil(logger: Logger): LoggerUtils(logger)
      * @param msg The string message (or a key in the message catalog)
      * @param block The runnable to be executed
      */
-    inline fun severe(msg: String, block: () -> Unit) = logOnFailure(Level.SEVERE, msg, block)
+    inline fun <T> severe(msg: String, block: () -> T) = logOnFailure(Level.SEVERE, msg, block)
 
     /**
      * Log a WARNING message with a runnable.
@@ -29,7 +29,7 @@ class LoggerUtil(logger: Logger): LoggerUtils(logger)
      * @param msg The string message (or a key in the message catalog)
      * @param block The runnable to be executed
      */
-    inline fun warning(msg: String, block: () -> Unit) = logOnFailure(Level.WARNING, msg, block)
+    inline fun <T> warning(msg: String, block: () -> T) = logOnFailure(Level.WARNING, msg, block)
 
     /**
      * Log a INFO message with a runnable.
@@ -40,7 +40,7 @@ class LoggerUtil(logger: Logger): LoggerUtils(logger)
      * @param msg The string message (or a key in the message catalog)
      * @param block The runnable to be executed
      */
-    inline fun info(msg: String, block: () -> Unit) = logOnFailure(Level.INFO, msg, block)
+    inline fun <T> info(msg: String, block: () -> T) = logOnFailure(Level.INFO, msg, block)
 
     /**
      * Log a CONFIG message with a runnable.
@@ -51,7 +51,7 @@ class LoggerUtil(logger: Logger): LoggerUtils(logger)
      * @param msg The string message (or a key in the message catalog)
      * @param block The runnable to be executed
      */
-    inline fun config(msg: String, block: () -> Unit) = logOnFailure(Level.CONFIG, msg, block)
+    inline fun <T> config(msg: String, block: () -> T) = logOnFailure(Level.CONFIG, msg, block)
 
     /**
      * Log a FINE message with a runnable.
@@ -62,7 +62,7 @@ class LoggerUtil(logger: Logger): LoggerUtils(logger)
      * @param msg The string message (or a key in the message catalog)
      * @param block The runnable to be executed
      */
-    inline fun fine(msg: String, block: () -> Unit) = logOnFailure(Level.FINE, msg, block)
+    inline fun <T> fine(msg: String, block: () -> T) = logOnFailure(Level.FINE, msg, block)
 
     /**
      * Log a FINER message with a runnable.
@@ -73,7 +73,7 @@ class LoggerUtil(logger: Logger): LoggerUtils(logger)
      * @param msg The string message (or a key in the message catalog)
      * @param block The runnable to be executed
      */
-    inline fun finer(msg: String, block: () -> Unit) = logOnFailure(Level.FINER, msg, block)
+    inline fun <T> finer(msg: String, block: () -> T) = logOnFailure(Level.FINER, msg, block)
 
     /**
      * Log a FINEST message with a runnable.
@@ -84,10 +84,8 @@ class LoggerUtil(logger: Logger): LoggerUtils(logger)
      * @param msg The string message (or a key in the message catalog)
      * @param block The runnable to be executed
      */
-    inline fun finest(msg: String, block: () -> Unit) = logOnFailure(Level.FINEST, msg, block)
+    inline fun <T> finest(msg: String, block: () -> T) = logOnFailure(Level.FINEST, msg, block)
 
-    inline fun logOnFailure(level: Level, msg: String, block: () -> Unit)
-    {
+    inline fun <T> logOnFailure(level: Level, msg: String, block: () -> T) =
         runCatching(block).onFailure { logger.log(level, msg, it) }
-    }
 }

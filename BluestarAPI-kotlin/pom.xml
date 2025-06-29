@@ -6,7 +6,7 @@
     <parent>
         <groupId>me.nullaqua</groupId>
         <artifactId>BluestarAPI</artifactId>
-        <version>4.3.3</version>
+        <version>4.3.4</version>
     </parent>
 
     <artifactId>BluestarAPI-kotlin</artifactId>
@@ -63,6 +63,13 @@
             <groupId>me.nullaqua</groupId>
             <artifactId>BluestarAPI-kotlin-reflect</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <!-- kotlin coroutines -->
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-coroutines-core</artifactId>
+            <version>${kotlin.coroutines.version}</version>
         </dependency>
 
         <!-- test -->

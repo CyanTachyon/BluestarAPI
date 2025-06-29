@@ -281,7 +281,6 @@ class StringSerializer(
             if (c == TERMINATOR) break
         }
         val array = vector.toArray(Array<Pair<Class<*>, Map<String, Any>>>(vector.size) { Any::class.java to emptyMap() })
-//        println(array.joinToString(separator = "\n") { "${it.first} -> ${it.second}" })
         return deserialize(array)
     }
 }

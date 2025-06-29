@@ -1,10 +1,12 @@
 package me.nullaqua.api;
 
+import me.nullaqua.api.reflect.BluestarI;
+
 import java.util.Random;
 
-public class BluestarUtils
+public class BluestarUtils extends BluestarI
 {
-    private static final Random random=new Random();
+    private static final Random random = new Random();
 
     /**
      * 随机一个0到给定数之间的整数
@@ -34,7 +36,7 @@ public class BluestarUtils
      */
     public static byte randomByte()
     {
-        int x=randomInt();
+        int x = randomInt();
         return (byte) ((x&0xff)^(x>>8&0xff)^(x>>16&0xff)^(x>>24&0xff));
     }
 
@@ -56,7 +58,7 @@ public class BluestarUtils
      */
     public static byte[] randomBytes(int len)
     {
-        var x=new byte[len];
+        var x = new byte[len];
         randomBytes(x);
         return x;
     }
@@ -90,7 +92,7 @@ public class BluestarUtils
      */
     public static boolean probability(double p)
     {
-        return randomDouble()<p;
+        return randomDouble() < p;
     }
 
     /**

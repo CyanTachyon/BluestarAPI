@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings({"unused", "JavaLangClash", "JavaLangInvocation"})
 @CallerSensitive
-public final class ReflectionAccessor
+public final class ReflectionAccessor extends BluestarI
 {
-    static final MethodHandles.Lookup LOOKUP;
+    public static final MethodHandles.Lookup LOOKUP;
     static final Unsafe UNSAFE;
     static final MethodType STATIC_FIELD_GETTER = MethodType.methodType(Object.class);
     static final MethodType STATIC_FIELD_SETTER = MethodType.methodType(Void.TYPE, Object.class);
@@ -39,9 +39,12 @@ public final class ReflectionAccessor
             long offset = unsafe.staticFieldOffset(trustedLookup);
             Object baseValue = unsafe.staticFieldBase(trustedLookup);
             lookup = (MethodHandles.Lookup) unsafe.getObject(baseValue, offset);
+
+
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             lookup = MethodHandles.lookup();
             unsafe = null;
         }
@@ -205,7 +208,7 @@ public final class ReflectionAccessor
      * @param b 对象b
      * @return 两个对象的共同父类的所有字段
      */
-    public static List<FieldAccessor> getBothFields(Object a, Object b)
+    public static List<FieldAccessor> getBothFields(Object a, Object b) throws Throwable
     {
         if (a == null || b == null)
         {
@@ -220,7 +223,7 @@ public final class ReflectionAccessor
      * @param b 类b
      * @return 两个类的共同父类的所有字段
      */
-    public static List<FieldAccessor> getBothFields(Class<?> a, Class<?> b)
+    public static List<FieldAccessor> getBothFields(Class<?> a, Class<?> b) throws Throwable
     {
         return FieldAccessor.getFieldsInSuperClasses(getBothSuperClass(a, b));
     }

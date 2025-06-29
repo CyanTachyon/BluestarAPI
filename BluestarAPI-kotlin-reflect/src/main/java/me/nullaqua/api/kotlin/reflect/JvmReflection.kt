@@ -6,7 +6,14 @@ package me.nullaqua.api.kotlin.reflect
 import me.nullaqua.api.reflect.*
 import me.nullaqua.api.reflect.UnsafeOperation.blankInstance
 import java.lang.reflect.Constructor
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 import kotlin.reflect.KClass
+
+inline operator fun MethodAccessor.invoke(`this`: Any?, vararg args: Any?): Any? = this.invokeMethod(`this`, *args)
+inline operator fun FieldAccessor.get(`this`: Any?): Any? = this.get(`this`)
+inline operator fun FieldAccessor.set(`this`: Any?, value: Any?) = this.set(`this`, value)
+inline operator fun <T> ConstructorAccessor<T>.invoke(vararg args: Any?): T = this.invoke(*args)
 
 /**
  * 获取一个对象某字段的值.
@@ -107,6 +114,37 @@ inline fun jvmSystemInstance(): System = blankInstance()
 @Throws(Throwable::class)
 @UnsafeJvmReflection
 inline fun nothingInstance(): Any = (Nothing::class as KClass<*>).blankInstance()
+
+@Throws(Throwable::class)
+fun createMethod(
+    clazz: Class<*>,
+    slot: Int = 6,
+    name: String,
+    returnType: Class<*> = Void::class.javaPrimitiveType!!,
+    parameterTypes: Array<Class<*>> = arrayOf(),
+    exceptionTypes: Array<Class<*>> = arrayOf(),
+    modifiers: Int = Modifier.PUBLIC,
+    signature: String? = null,
+    annotations: ByteArray? = null,
+    parameterAnnotations: ByteArray? = null,
+    annotationDefault: ByteArray? = null,
+    checkArgs: Boolean = true,
+    impl: Any?.(args: Array<Any?>) -> Any?
+): Method = UnsafeOperation.createMethod(
+    clazz,
+    slot,
+    name,
+    returnType,
+    parameterTypes,
+    exceptionTypes,
+    modifiers,
+    signature,
+    annotations,
+    parameterAnnotations,
+    annotationDefault,
+    checkArgs,
+    impl
+)
 
 /**
  * 强制深克隆一个对象, 对目标类没有任何要求, 不需要实现Cloneable接口/Serializable接口/无参构造器.

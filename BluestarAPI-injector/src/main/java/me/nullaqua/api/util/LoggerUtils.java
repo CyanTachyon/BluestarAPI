@@ -1,5 +1,6 @@
 package me.nullaqua.api.util;
 
+import me.nullaqua.api.reflect.BluestarI;
 import me.nullaqua.api.util.function.RunWithThrow;
 
 import java.util.function.BooleanSupplier;
@@ -11,7 +12,7 @@ import java.util.logging.Logger;
  * @author nullaqua
  */
 @SuppressWarnings("unused")
-public class LoggerUtils
+public class LoggerUtils extends BluestarI
 {
     private final Logger logger;
 

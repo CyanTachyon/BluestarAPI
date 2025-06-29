@@ -8,6 +8,8 @@ import java.lang.reflect.*;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import static me.nullaqua.api.reflect.ReflectionAccessor.LOOKUP;
 import static me.nullaqua.api.reflect.ReflectionAccessor.UNSAFE;
@@ -206,7 +208,59 @@ public class UnsafeOperation
         memberNameModifiersSetter.invoke(member, modifiers);
     }
 
+    /////////////////////
+    /// create method ///
+    /// /////////////////
 
+    private static final Map<String, FieldAccessor> methodFields = new IdentityHashMap<>();
+    private static FieldAccessor getMethodField(String name)
+    {
+        return methodFields.computeIfAbsent(name, n -> FieldAccessor.getField(Method.class, n));
+    }
+
+    public static Method createMethod(
+        Class<?> clazz,
+        int slot,
+        String name,
+        Class<?> returnType,
+        Class<?>[] parameterTypes,
+        Class<?>[] exceptionTypes,
+        int modifiers,
+        String signature,
+        byte[] annotations,
+        byte[] parameterAnnotations,
+        byte[] annotationDefault,
+        boolean checkArgs,
+        BiFunction<Object, Object[], Object> impl
+    ) throws Throwable
+    {
+        Method method = UnsafeOperation.blankInstance(Method.class);
+        getMethodField("clazz").set(method, clazz);
+        getMethodField("slot").set(method, slot);
+        getMethodField("name").set(method, name);
+        getMethodField("returnType").set(method, returnType);
+        getMethodField("parameterTypes").set(method, parameterTypes);
+        getMethodField("exceptionTypes").set(method, exceptionTypes);
+        getMethodField("modifiers").set(method, modifiers);
+        getMethodField("signature").set(method, signature);
+        getMethodField("annotations").set(method, annotations);
+        getMethodField("parameterAnnotations").set(method, parameterAnnotations);
+        getMethodField("annotationDefault").set(method, annotationDefault);
+        if (!checkArgs) CustomJdkMethodAccessor.replaceMethodAccessor(method, impl);
+        else CustomJdkMethodAccessor.replaceMethodAccessor(method, (m, args) -> {
+            if (args.length != parameterTypes.length)
+                throw new IllegalArgumentException("Wrong number of arguments");
+            for (int i = 0; i < args.length; i++)
+            {
+                if (args[i] != null && !parameterTypes[i].isInstance(args[i]))
+                {
+                    throw new IllegalArgumentException("Argument " + i + " is not an instance of " + parameterTypes[i]);
+                }
+            }
+            return impl.apply(m, args);
+        });
+        return method;
+    }
 
     ///////////////////
     /// force clone ///

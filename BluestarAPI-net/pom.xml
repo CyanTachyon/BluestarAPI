@@ -5,7 +5,7 @@
     <parent>
         <groupId>me.nullaqua</groupId>
         <artifactId>BluestarAPI</artifactId>
-        <version>4.3.3</version>
+        <version>4.3.4</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>BluestarAPI-net</artifactId>
@@ -46,13 +46,13 @@
             <artifactId>kotlin-stdlib-jdk8</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
-        <!-- kotlin 协程 -->
         <dependency>
             <groupId>me.nullaqua</groupId>
             <artifactId>BluestarAPI-kotlin</artifactId>
-            <version>4.3.3</version>
+            <version>4.3.4</version>
             <scope>compile</scope>
         </dependency>
+
     </dependencies>
 
 </project>
