@@ -9,30 +9,38 @@ import java.security.ProtectionDomain;
 @SuppressWarnings("unused")
 public class ClassLoaderAccessor
 {
-    private final static MethodAccessor addClass=MethodAccessor.getMethod(ClassLoader.class,"addClass",Class.class);
-    private final static MethodAccessor defineClass=MethodAccessor.getMethod(ClassLoader.class,
-                                                                             "defineClass",
-                                                                             byte[].class,
-                                                                             int.class,
-                                                                             int.class);
-    private final static MethodAccessor defineClass2=MethodAccessor.getMethod(ClassLoader.class,
-                                                                              "defineClass",
-                                                                              String.class,
-                                                                              byte[].class,
-                                                                              int.class,
-                                                                              int.class);
-    private final static MethodAccessor defineClass3=MethodAccessor.getMethod(ClassLoader.class,
-                                                                              "defineClass",
-                                                                              String.class,
-                                                                              byte[].class,
-                                                                              int.class,
-                                                                              int.class,
-                                                                              ProtectionDomain.class);
-    private final static MethodAccessor defineClass4=MethodAccessor.getMethod(ClassLoader.class,
-                                                                              "defineClass",
-                                                                              String.class,
-                                                                              ByteBuffer.class,
-                                                                              ProtectionDomain.class);
+    private final static MethodAccessor addClass = MethodAccessor.getMethod(ClassLoader.class, "addClass", Class.class);
+    private final static MethodAccessor defineClass = MethodAccessor.getMethod(
+        ClassLoader.class,
+        "defineClass",
+        byte[].class,
+        int.class,
+        int.class
+    );
+    private final static MethodAccessor defineClass2 = MethodAccessor.getMethod(
+        ClassLoader.class,
+        "defineClass",
+        String.class,
+        byte[].class,
+        int.class,
+        int.class
+    );
+    private final static MethodAccessor defineClass3 = MethodAccessor.getMethod(
+        ClassLoader.class,
+        "defineClass",
+        String.class,
+        byte[].class,
+        int.class,
+        int.class,
+        ProtectionDomain.class
+    );
+    private final static MethodAccessor defineClass4 = MethodAccessor.getMethod(
+        ClassLoader.class,
+        "defineClass",
+        String.class,
+        ByteBuffer.class,
+        ProtectionDomain.class
+    );
 
     private final ClassLoader classLoader;
 

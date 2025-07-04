@@ -5,12 +5,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static me.nullaqua.api.reflect.ReflectionAccessor.*;
 
 public final class FieldAccessor
 {
-    private final static MethodAccessor getFields = MethodAccessor.getMethod(Class.class, "getDeclaredFields0", boolean.class);;
+    private final static MethodAccessor getFields = MethodAccessor.getMethod(Class.class, "getDeclaredFields0", boolean.class);
     private final Field field;
     private final boolean staticField;
     private final MethodHandle setter;
@@ -82,6 +83,7 @@ public final class FieldAccessor
         try
         {
             final var fields = (Field[]) getFields.invokeMethod(c,false);
+            assert fields != null;
             for (Field f: fields)
             {
                 if (f.getName().equals(field))
@@ -144,7 +146,7 @@ public final class FieldAccessor
     public static List<FieldAccessor> getFields(Class<?> type) throws Throwable
     {
         List<FieldAccessor> fields=new ArrayList<>();
-        for (var field: (Field[]) getFields.invokeMethod(type,false))
+        for (var field: (Field[]) Objects.requireNonNull(getFields.invokeMethod(type, false)))
         {
             fields.add(new FieldAccessor(field));
         }
@@ -169,7 +171,7 @@ public final class FieldAccessor
 
     public Object get(Object instance) throws Throwable
     {
-        if (getter==null)
+        if (getter==null && UNSAFE == null)
         {
             ReflectionAccessor.checkVisibility(field.getDeclaringClass());
             field.setAccessible(true);
@@ -177,19 +179,40 @@ public final class FieldAccessor
             field.setAccessible(false);
             return o;
         }
-        if (this.staticField)
+        if (getter==null)
         {
-            return this.getter.invokeExact();
+            if (this.staticField)
+            {
+                if (field.getType() == boolean.class) return UNSAFE.getBoolean(null, UNSAFE.staticFieldOffset(field));
+                if (field.getType() == byte.class) return UNSAFE.getByte(null, UNSAFE.staticFieldOffset(field));
+                if (field.getType() == char.class) return UNSAFE.getChar(null, UNSAFE.staticFieldOffset(field));
+                if (field.getType() == short.class) return UNSAFE.getShort(null, UNSAFE.staticFieldOffset(field));
+                if (field.getType() == int.class) return UNSAFE.getInt(null, UNSAFE.staticFieldOffset(field));
+                if (field.getType() == long.class) return UNSAFE.getLong(null, UNSAFE.staticFieldOffset(field));
+                if (field.getType() == float.class) return UNSAFE.getFloat(null, UNSAFE.staticFieldOffset(field));
+                if (field.getType() == double.class) return UNSAFE.getDouble(null, UNSAFE.staticFieldOffset(field));
+                return UNSAFE.getObject(null, UNSAFE.staticFieldOffset(field));
+            }
+            else
+            {
+                if (field.getType() == boolean.class) return UNSAFE.getBoolean(instance, UNSAFE.objectFieldOffset(field));
+                if (field.getType() == byte.class) return UNSAFE.getByte(instance, UNSAFE.objectFieldOffset(field));
+                if (field.getType() == char.class) return UNSAFE.getChar(instance, UNSAFE.objectFieldOffset(field));
+                if (field.getType() == short.class) return UNSAFE.getShort(instance, UNSAFE.objectFieldOffset(field));
+                if (field.getType() == int.class) return UNSAFE.getInt(instance, UNSAFE.objectFieldOffset(field));
+                if (field.getType() == long.class) return UNSAFE.getLong(instance, UNSAFE.objectFieldOffset(field));
+                if (field.getType() == float.class) return UNSAFE.getFloat(instance, UNSAFE.objectFieldOffset(field));
+                if (field.getType() == double.class) return UNSAFE.getDouble(instance, UNSAFE.objectFieldOffset(field));
+                return UNSAFE.getObject(instance, UNSAFE.objectFieldOffset(field));
+            }
         }
-        else
-        {
-            return this.getter.invokeExact(instance);
-        }
+        if (this.staticField) return this.getter.invokeExact();
+        else return this.getter.invokeExact(instance);
     }
 
     public void set(Object instance,Object value) throws Throwable
     {
-        if (setter==null)
+        if (setter==null && UNSAFE == null)
         {
             ReflectionAccessor.checkVisibility(field.getDeclaringClass());
             field.setAccessible(true);
@@ -197,13 +220,35 @@ public final class FieldAccessor
             field.setAccessible(false);
             return;
         }
-        if (this.staticField)
+        if (setter == null)
         {
-            this.setter.invokeExact(value);
+            if (this.staticField)
+            {
+                if (field.getType() == boolean.class) UNSAFE.putBoolean(null, UNSAFE.staticFieldOffset(field), (boolean) value);
+                else if (field.getType() == byte.class) UNSAFE.putByte(null, UNSAFE.staticFieldOffset(field), (byte) value);
+                else if (field.getType() == char.class) UNSAFE.putChar(null, UNSAFE.staticFieldOffset(field), (char) value);
+                else if (field.getType() == short.class) UNSAFE.putShort(null, UNSAFE.staticFieldOffset(field), (short) value);
+                else if (field.getType() == int.class) UNSAFE.putInt(null, UNSAFE.staticFieldOffset(field), (int) value);
+                else if (field.getType() == long.class) UNSAFE.putLong(null, UNSAFE.staticFieldOffset(field), (long) value);
+                else if (field.getType() == float.class) UNSAFE.putFloat(null, UNSAFE.staticFieldOffset(field), (float) value);
+                else if (field.getType() == double.class) UNSAFE.putDouble(null, UNSAFE.staticFieldOffset(field), (double) value);
+                else UNSAFE.putObject(null, UNSAFE.staticFieldOffset(field), value);
+            }
+            else
+            {
+                if (field.getType() == boolean.class) UNSAFE.putBoolean(instance, UNSAFE.objectFieldOffset(field), (boolean) value);
+                else if (field.getType() == byte.class) UNSAFE.putByte(instance, UNSAFE.objectFieldOffset(field), (byte) value);
+                else if (field.getType() == char.class) UNSAFE.putChar(instance, UNSAFE.objectFieldOffset(field), (char) value);
+                else if (field.getType() == short.class) UNSAFE.putShort(instance, UNSAFE.objectFieldOffset(field), (short) value);
+                else if (field.getType() == int.class) UNSAFE.putInt(instance, UNSAFE.objectFieldOffset(field), (int) value);
+                else if (field.getType() == long.class) UNSAFE.putLong(instance, UNSAFE.objectFieldOffset(field), (long) value);
+                else if (field.getType() == float.class) UNSAFE.putFloat(instance, UNSAFE.objectFieldOffset(field), (float) value);
+                else if (field.getType() == double.class) UNSAFE.putDouble(instance, UNSAFE.objectFieldOffset(field), (double) value);
+                else UNSAFE.putObject(instance, UNSAFE.objectFieldOffset(field), value);
+            }
+            return;
         }
-        else
-        {
-            this.setter.invokeExact(instance,value);
-        }
+        if (this.staticField) this.setter.invokeExact(value);
+        else this.setter.invokeExact(instance,value);
     }
 }

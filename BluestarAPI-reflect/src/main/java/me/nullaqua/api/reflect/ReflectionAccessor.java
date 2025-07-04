@@ -8,12 +8,14 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-@SuppressWarnings({"unused", "JavaLangClash", "JavaLangInvocation"})
 @CallerSensitive
 public final class ReflectionAccessor extends BluestarAPI
 {
+    private static final Logger logger = Logger.getLogger(ReflectionAccessor.class.getName());
     public static final MethodHandles.Lookup LOOKUP;
     static final Unsafe UNSAFE;
     static final MethodType STATIC_FIELD_GETTER = MethodType.methodType(Object.class);
@@ -22,8 +24,10 @@ public final class ReflectionAccessor extends BluestarAPI
     static final MethodType VIRTUAL_FIELD_SETTER = MethodType.methodType(Void.TYPE, Object.class, Object.class);
     static final StackWalker walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
-    private ReflectionAccessor()
+    private ReflectionAccessor(LOCK lock)
     {
+        Objects.requireNonNull(lock);
+        lock.check().check().check();
     }
 
     static
@@ -39,12 +43,10 @@ public final class ReflectionAccessor extends BluestarAPI
             long offset = unsafe.staticFieldOffset(trustedLookup);
             Object baseValue = unsafe.staticFieldBase(trustedLookup);
             lookup = (MethodHandles.Lookup) unsafe.getObject(baseValue, offset);
-
-
         }
-        catch (Exception e)
+        catch (Throwable e)
         {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "初始化反射工具失败，反射系统将退化到MethodHandles.lookup()", e);
             lookup = MethodHandles.lookup();
             unsafe = null;
         }

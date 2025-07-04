@@ -5,7 +5,7 @@
     <parent>
         <artifactId>BluestarAPI</artifactId>
         <groupId>me.nullaqua</groupId>
-        <version>4.3.6</version>
+        <version>4.3.7</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -111,7 +111,7 @@
         <dependency>
             <groupId>me.nullaqua</groupId>
             <artifactId>BluestarAPI-injector</artifactId>
-            <version>4.3.6</version>
+            <version>4.3.7</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>

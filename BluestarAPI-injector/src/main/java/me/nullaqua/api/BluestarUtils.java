@@ -1,11 +1,19 @@
 package me.nullaqua.api;
 
 import me.nullaqua.api.reflect.BluestarAPI;
+import me.nullaqua.api.reflect.LOCK;
 
+import java.util.Objects;
 import java.util.Random;
 
 public class BluestarUtils extends BluestarAPI
 {
+    private BluestarUtils(LOCK lock)
+    {
+        Objects.requireNonNull(lock);
+        lock.check().check().check();
+    }
+
     private static final Random random = new Random();
 
     /**

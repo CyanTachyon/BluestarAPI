@@ -8,8 +8,8 @@ import java.lang.reflect.*;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import static me.nullaqua.api.reflect.ReflectionAccessor.LOOKUP;
 import static me.nullaqua.api.reflect.ReflectionAccessor.UNSAFE;
@@ -17,8 +17,10 @@ import static me.nullaqua.api.reflect.ReflectionAccessor.UNSAFE;
 @SuppressWarnings("unused")
 public class UnsafeOperation
 {
-    UnsafeOperation()
+    UnsafeOperation(LOCK lock)
     {
+        Objects.requireNonNull(lock);
+        lock.check().check().check();
     }
 
     private static final MethodAccessor generateMethod;
@@ -119,15 +121,13 @@ public class UnsafeOperation
         );
     }
 
-    public static MethodAccessor getClinitMethod(Class<?> clazz) throws Throwable
+    public static MethodAccessor getClinitMethod(Class<?> clazz)
     {
-        final var h = LOOKUP.unreflect(UnsafeOperation.class.getDeclaredMethod("initClass", Class.class));
-        return new MethodAccessor(clazz, h, "<clinit>", MethodType.methodType(Void.TYPE, Class.class));
-    }
-
-    private static void initClass(Class<?> clazz) throws Throwable
-    {
-        Class.forName(clazz.getName(), true, clazz.getClassLoader());
+        // 由于<clinit>方法只能被虚拟机调用，因此暂时没有调用<clinit>方法的方式
+        // 因此该方法现在返回的是一个空的MethodAccessor，无法实际调用<clinit>方法
+        // 计划未来通过运行时生成字节码的方式，生成一个字节码与<clinit>方法相同的方法，
+        // 以达到调用<clinit>方法的大致等同的效果
+        return MethodAccessor.emptyMethodAccessor(clazz, "<clinit>", MethodType.methodType(Void.TYPE, Class.class));
     }
 
     public static <T> T invokeConstructorStepByStep(Constructor<T> constructor, Object... args) throws Throwable
@@ -305,6 +305,7 @@ public class UnsafeOperation
                type == Constructor.class;
     }
 
+    @SuppressWarnings("unchecked")
     private static <T> T forceDeepObject(T o, Map<Object, Object> map) throws Throwable
     {
         if (o == null)
