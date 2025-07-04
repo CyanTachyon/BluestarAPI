@@ -6,9 +6,10 @@
     <parent>
         <groupId>me.nullaqua</groupId>
         <artifactId>BluestarAPI</artifactId>
-        <version>4.3.4</version>
+        <version>4.3.6</version>
     </parent>
 
+    <name>BluestarAPI-reflect</name>
     <artifactId>BluestarAPI-reflect</artifactId>
     <description>
         Some java reflection tools

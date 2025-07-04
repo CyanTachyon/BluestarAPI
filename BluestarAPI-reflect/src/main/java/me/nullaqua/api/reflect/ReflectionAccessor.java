@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings({"unused", "JavaLangClash", "JavaLangInvocation"})
 @CallerSensitive
-public final class ReflectionAccessor extends BluestarI
+public final class ReflectionAccessor extends BluestarAPI
 {
     public static final MethodHandles.Lookup LOOKUP;
     static final Unsafe UNSAFE;

